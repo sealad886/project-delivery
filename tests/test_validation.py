@@ -121,6 +121,33 @@ class PluginCheckerTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("missing required release file", result.stdout)
 
+    def test_public_fixture_absolute_home_path_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project-delivery"
+            create_minimal_plugin(root)
+            fixtures = root / "tests" / "fixtures"
+            fixtures.mkdir(parents=True)
+            (fixtures / "receipt.json").write_text(
+                '{"cache": "/Users/example/.codex/cache"}', encoding="utf-8"
+            )
+            result = run_checker(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("absolute user-home path", result.stdout)
+
+    def test_public_fixture_raw_task_identifier_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project-delivery"
+            create_minimal_plugin(root)
+            fixtures = root / "tests" / "fixtures"
+            fixtures.mkdir(parents=True)
+            (fixtures / "receipt.json").write_text(
+                '{"task": "019f7a5c-0d65-7053-a4db-fa66e20e289c"}',
+                encoding="utf-8",
+            )
+            result = run_checker(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("raw task identifier", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

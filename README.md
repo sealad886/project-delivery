@@ -32,6 +32,8 @@ Context → Requirements → Solution Design → Delivery Plan ↔ Coordination
 
 Start with `project-delivery:delivery-orchestrator` for end-to-end, incomplete, or mixed requests. Invoke a lifecycle skill directly when the target and authority are already bounded.
 
+The lifecycle is a logical evidence and gate model, not a command that blindly invokes every skill in one total order. Required capability owners, conditional branches, valid existing evidence, safety precedence, and controller returns determine the actual route.
+
 | Work shape | Default depth | Typical result |
 |---|---|---|
 | Small, low-risk change | Compact context and acceptance, design delta when needed, short plan, targeted verification, proportional review/release checks | One coherent PR with exact evidence and rollback notes |
@@ -128,7 +130,9 @@ cache-refresh workflow, do not hand-edit Codex configuration, and report the
 installed plugin version and cache identity.
 ```
 
-Start a new Codex task after installation so all 13 skills and the plugin presentation metadata are loaded. Invoke the orchestrator explicitly as `$project-delivery:delivery-orchestrator`.
+Start a new Codex task after installation and invoke `$project-delivery:delivery-orchestrator`. The installed bundle contains all 13 skills and their presentation metadata. Codex applies a global initial skill-metadata budget, so a crowded task may omit otherwise valid skills from its initial model-visible list. The orchestrator is instructed to resolve each selected Project Delivery specialist from its installed sibling path and block truthfully if the file is actually unavailable. Disabling superseded or unused workflow plugins after their canaries pass may improve initial-list visibility; do not rename skills to game ordering.
+
+See OpenAI's [Build skills](https://learn.chatgpt.com/docs/build-skills.md) documentation for progressive disclosure, explicit invocation, and the initial-list budget.
 
 For local development, edit the cloned source and ask `$plugin-creator` to run its supported cachebuster and reinstall workflow after each change. Keep the source directory stable and do not edit product-managed installation state by hand.
 
@@ -141,15 +145,16 @@ From a source checkout, the repository's dependency-free checks use only Python'
 ```bash
 python3 scripts/check_plugin.py . --layout source
 python3 scripts/check_routes.py .
+python3 scripts/check_route_receipts.py tests/fixtures/blind-route-observations-v1.3.1.json --root . --allow-subset --allow-historical-annotations
 python3 scripts/check_distribution_bundle.py .
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
-`tests/route-contracts.json` contains 17 machine-readable authored-route contracts. Passing them proves that scenario data is complete, references real skills, covers the taxonomy, and forbids legacy runtime dependencies. It does **not** prove which skills a fresh agent actually selected. Behavioral claims require a new-task route receipt using the template in [`skills/.shared/artifact-templates.md`](skills/.shared/artifact-templates.md).
+`tests/route-contracts.json` contains 21 machine-readable semantic contracts: the original 17 prompts plus four explicit platform-claim variants. Passing them proves that policy data is complete, references disjoint real capability owners, covers the taxonomy, declares substantive conditional triggers, acyclic entry precedence, two-sided occurrence-aware controller entry/return rules, and forbidden legacy runtime dependencies. It does **not** prove that a trigger applies, which skills a fresh agent selected, or that delivery work ran. The committed v1.3.1 fixture preserves genuinely blind route choices, but its schema-v2 taxonomy, rationales, and conditional dispositions are explicitly post-hoc and accepted only with the dedicated historical flag; it establishes historical route-shape compatibility, not current-policy conformance or candidate behavior. Fresh route-policy claims require a no-effect task to freeze the route, taxonomy, branch dispositions, extra-capability decisions, evidence, and gaps before comparison; record loaded specialists; and mark delivery not run. Exact total-order equality is intentionally not a conformance rule.
 
-The installable distribution bundle carries the complete runtime skill tree, shared operating model, templates, and icons while leaving maintainer-only audit and test material in the source repository.
+The distribution check is a minimum runtime-closure simulation. It proves that a 63-file subset containing the complete skill tree, shared operating model, templates, and icons is internally valid; it does not claim that Codex's local-source installer or an external marketplace emits exactly that subset or filters maintainer-only files.
 
-Release validation also includes Plugin Creator validation, Skill Creator validation for all 13 skills, source/cache comparison, a deterministic installable-bundle simulation, the pinned HOL scanner, and independent review. Current evidence and limitations are recorded in the [validation report](https://github.com/sealad886/project-delivery/blob/main/references/validation-report.md).
+Release validation also includes Plugin Creator validation, Skill Creator validation for all 13 skills, source/cache comparison, a deterministic minimum runtime-closure simulation, the pinned HOL scanner, and independent review. Current evidence and limitations are recorded in the [validation report](https://github.com/sealad886/project-delivery/blob/main/references/validation-report.md).
 
 ## Trust, privacy, and dependencies
 
@@ -168,7 +173,7 @@ Project Delivery is intended to replace generic project-management and software-
 3. inventory installed IDs, versions, configuration locations, and supported reinstall sources without secrets;
 4. run representative small and medium canaries;
 5. disable one superseded generic plugin at a time and start a fresh task;
-6. confirm skill discovery, routing, artifacts, and absence of legacy runtime requests; and
+6. confirm packaged files, explicit and orchestrated loading, semantic routing, artifacts, stable plugin state, and absence of legacy invocation/runtime requests; and
 7. uninstall only after an observation period and explicit user confirmation.
 
 Specialist platform, provider, security, CI, deployment, and observability tools may remain because they supply access or evidence rather than competing lifecycle authority. The [detailed migration map](https://github.com/sealad886/project-delivery/blob/main/references/migration-and-decommission.md) remains with the standalone plugin source.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and validate the standalone plugin's installable distribution bundle."""
+"""Build and validate a minimum self-contained plugin runtime closure."""
 
 from __future__ import annotations
 
@@ -89,20 +89,20 @@ def select_paths(root: Path) -> set[Path]:
     return selected
 
 
-def validate_bundle(root: Path) -> tuple[list[str], int]:
+def validate_runtime_closure(root: Path) -> tuple[list[str], int]:
     errors: list[str] = []
     try:
         selected = sorted(select_paths(root))
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
         return [str(error)], 0
 
-    with tempfile.TemporaryDirectory(prefix="project-delivery-distribution-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="project-delivery-runtime-closure-") as temporary:
         destination = Path(temporary) / "project-delivery"
         started = time.monotonic()
         for index, relative in enumerate(selected, 1):
             elapsed = time.monotonic() - started
             eta = (elapsed / index) * (len(selected) - index)
-            print(f"BUNDLE [{index}/{len(selected)}] file={relative} eta={eta:.1f}s", flush=True)
+            print(f"CLOSURE [{index}/{len(selected)}] file={relative} eta={eta:.1f}s", flush=True)
             source = root / relative
             target = destination / relative
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -111,21 +111,21 @@ def validate_bundle(root: Path) -> tuple[list[str], int]:
         bundle_errors, skill_count, _ = validate(destination, "source")
         errors.extend(bundle_errors)
         if skill_count != 13:
-            errors.append(f"distribution bundle must contain 13 skills, found {skill_count}")
+            errors.append(f"runtime closure must contain 13 skills, found {skill_count}")
         for required in (
             "skills/.shared/operating-model.md",
             "skills/.shared/artifact-templates.md",
             "skills/.shared/external-systems.md",
         ):
             if not (destination / required).is_file():
-                errors.append(f"distribution bundle is missing runtime dependency: {required}")
+                errors.append(f"runtime closure is missing dependency: {required}")
     return errors, len(selected)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
     root = Path(args.root).expanduser().resolve()
-    errors, selected_count = validate_bundle(root)
+    errors, selected_count = validate_runtime_closure(root)
     if errors:
         print("\n".join(f"ERROR {error}" for error in errors))
         return 1

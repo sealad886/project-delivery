@@ -1,6 +1,6 @@
 ---
 name: delivery-orchestrator
-description: Route an idea, change, review, or release through the minimum sufficient project-delivery lifecycle. Use for end-to-end delivery, ambiguous requests, multi-PR initiatives, or when the correct workflow depth is unclear.
+description: Use first to route end-to-end, ambiguous, multi-phase, review, release, incident, or decommission work through the minimum sufficient project-delivery lifecycle when depth, state, or authority is unclear.
 license: MIT
 ---
 
@@ -11,6 +11,8 @@ license: MIT
 Own lifecycle routing and truthful state. Do not replace specialist work; invoke or apply the relevant skills and carry their artifacts forward.
 
 Read `../.shared/operating-model.md` before routing. Use `../.shared/artifact-templates.md` when the repository has no canonical format.
+
+After choosing a route, resolve each selected specialist's sibling directory and read its `SKILL.md` before applying it. Codex may shorten or omit entries from the initial skill list when many skills are installed; an omitted catalog entry is not proof that an installed specialist is unavailable. Treat a specialist as unavailable only after its installed file cannot be resolved or read, and record that as a routing blocker instead of silently absorbing its work.
 
 ## When to invoke
 
@@ -46,6 +48,19 @@ Inspect the user request; applicable `AGENTS.md`; repository status/history/bran
 6. Apply gates. Implementation may begin only when the Ready and necessary Design gates are satisfied. For low-risk work these may be concise and implicit in inspected evidence, but state that evidence.
 7. Maintain a visible checklist/status for multi-stage work. Report blockers, decisions, evidence, and next transition.
 8. End with the handoff contract and residual risk.
+
+## Routing contract
+
+Routes are capability and gate contracts, not brittle total-order scripts. Record the lead capability, required specialists, conditional branches, gate precedence, allowed re-entry, and why a conditional specialist was activated, deferred, blocked, or not applicable.
+
+- Preserve lifecycle precedence where both stages apply: context before requirements, requirements before solution design, design before delivery planning, planning before implementation, and implementation before quality evidence. Incident containment and release evidence recovery may precede this sequence.
+- Use `testing-quality` when checks must be selected, executed, measured, or triaged. `review-audit` or `release-change` may inspect existing quality evidence without a separate quality branch, but must route there when evidence is missing, failing, stale, quantitative, or needs execution.
+- Use `security-operations` for explicit security/privacy/reliability/operations scope, sensitive data, privileged boundaries, infrastructure or migrations, high blast radius, incidents, and production release. Other skills retain their proportional security and operability lenses; a separate security branch is conditional for ordinary low-risk design or review.
+- Use `delivery-coordination` when live external sources, trackers, status, meetings, messages, provider mutations, or handoff synchronization are actually involved. Do not append it merely to make a route look complete.
+- Use `documentation-knowledge` when canonical knowledge changes or release/operational handoff requires it. Use `retrospective-improvement` after an actual meaningful outcome, incident, failure, cancellation, or recurring friction—not for a route-only simulation.
+- For a hotfix or incident, `delivery-orchestrator` owns route recovery while `release-change` owns incident change control, restoration or rollback disposition, and the final recovery decision. Containment and evidence preservation precede nonessential ceremony; supporting security work must not delay an authorized emergency containment action.
+- Re-entry is valid when a controller first opens evidence recovery and later makes the final decision, such as `release-change → testing-quality → release-change` or `review-audit → security-operations → review-audit`. Declare both which selected owners require prior controller entry and which owners must finish before the controller's final return; incident containment may be an explicit entry exception when immediate safety requires it.
+- Extra proportional safety capabilities are allowed. A behavioral route fails for missing required ownership, unsafe authority, forbidden dependency, invalid gate order, or unexplained conditional omission—not merely because its exact sequence differs from an example.
 
 ## Bounded delegation
 

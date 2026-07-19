@@ -4,7 +4,21 @@ This file records user-visible changes to Project Delivery. Dates use ISO 8601 a
 
 ## Unreleased
 
-No unreleased changes.
+## 1.4.0-rc.1 - 2026-07-19
+
+### Added
+
+- Semantic route-contract schema v2 with required and conditional capabilities, partial-order safety edges, two-sided controller entry and return contracts, and 21 canonical scenarios including separate performance, packaging, signing/notarization, and distribution variants.
+- Dependency-free validation for no-effect contract-blind route receipts, including an all-semantic-field freeze declaration, evidence-bearing taxonomy rationale, explicit separation of fresh observations from post-hoc historical annotations, and adversarial tests for missing ownership/loading/evidence, route-only authority effects, unexplained conditional omissions, invalid controller entry or return, cyclic precedence, contradictory policy, unjustified extras, and legacy dependencies.
+
+### Changed
+
+- Instructed the orchestrator to load selected sibling specialists directly from the installed plugin bundle when Codex's global initial skill-metadata budget omits their catalog entries, with unreadable specialists blocking the route.
+- Replaced exact total-array route grading with semantic capability, gate, authority, and evidence comparison.
+- Strengthened implementation and testing preflight for wrapper side effects such as signing, fixed temporary paths, deletion, credentials, network/provider access, packaging, publication, and deployment.
+- Split structural skill completeness, Skills UI presentation, initial-list visibility, explicit invocation, orchestrated loading, and runtime behavior into distinct evidence classes.
+- Added a reusable recovery-record template and expanded decommission rollback guidance to distinguish CLI, remote-synced, direct-registration, symlink, standalone-source, and cache identities.
+- Reclassified preserved `1.3.1` receipts as historical route-shape compatibility evidence rather than current-policy or candidate-behavior proof, including explicit future-only retrospective branches.
 
 ## 1.3.2 - 2026-07-19
 

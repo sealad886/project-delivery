@@ -127,7 +127,34 @@ Communication: audience | channel/recipient | purpose | draft/authorized-to-send
 Write receipt: provider | target | actor | timestamp | changed fields | prior/new state | ID/URL | verification
 ```
 
-## Live route receipt
+## Plugin recovery record
+
+Keep consumer-specific paths and state in the consumer's canonical private artifact. Never record secret values.
+
+```markdown
+Identity and display name:
+Canonical selector:
+Owning control plane:
+Pre-action installed and enabled state:
+Configured source and immutable source identity:
+Marketplace identity and immutable revision:
+Cache identity:
+Manifest SHA-256:
+Payload SHA-256 and deterministic hashing method:
+Configuration locations (names/paths only; no secret values):
+Supported temporary-disable method:
+Supported uninstall method:
+Supported reinstall/recovery method and exact version behavior:
+Pre-action readback:
+Action performed:
+Post-action readback:
+Fresh-task verification:
+Recovery drill result: pass | fail | blocked | not run
+Limitations and unresolved control-plane gaps:
+Owner and timestamp:
+```
+
+## Live semantic route receipt
 
 ```markdown
 Scenario/prompt:
@@ -135,17 +162,26 @@ Plugin source version and commit:
 Installed plugin/cache identity:
 Task/model identity and timestamp:
 Repository revision and relevant instructions:
-Expected route / actual route:
-Scale/risk rationale:
+Discovery evidence: packaged files / Skills UI / initial task list / explicitly loaded specialists
+Observation scope and effects performed:
+Semantic freeze declaration, complete field scope, evidence, and annotation provenance:
+Lead capability and actual route:
+Required capabilities and dispositions:
+Conditional capabilities: trigger / activated | not applicable | deferred | blocked / evidence and rationale
+Gate precedence and controller re-entry:
+Loaded specialist source paths:
+Justified extra capabilities:
+Scale/risk/authority taxonomy rationale and evidence:
 Expected / produced artifacts:
 Authority classification and actions refused or deferred:
-Legacy dependency check:
+Legacy dependency check: administrative visibility / invocation / runtime or hook start / branded state
 Commands/evidence and actual results:
-Outcome: pass | fail | blocked
+Route outcome: pass | fail | blocked | insufficient receipt
+Delivery outcome: pass | fail | blocked | not run
 Residual gaps:
 ```
 
-Static route-contract validation checks authored routing data; only a fresh task exercising the installed plugin may populate an actual route receipt.
+Semantic route-policy validation checks required owners, evidence-bearing taxonomy and conditional dispositions, entry precedence, two-sided occurrence-aware controller entry/return, route-only authority, specialist loading, justified extras, and forbidden dependencies. It intentionally allows justified proportional specialists and equivalent unconstrained evidence-owner ordering. A fresh behavioral receipt must declare and evidence that its route, taxonomy and rationale, branch dispositions, extra-capability decisions, evidence, and gaps were all frozen before contract comparison. Post-hoc semantic annotations can establish only historical route-shape compatibility. A capability such as retrospective learning may be named `planned-future` when its outcome trigger has not occurred; that is not present activation. The route-policy checker accepts only no-effect observations with delivery marked not run; delivery artifacts and execution evidence require a separate delivery receipt and review.
 
 ## Retrospective
 

@@ -1,10 +1,12 @@
 # Orchestrator smoke tests
 
-The canonical authored cases are machine-readable in [`../tests/route-contracts.json`](../tests/route-contracts.json) and validated by `python3 scripts/check_routes.py .`. That check proves contract completeness, valid skill names, taxonomy coverage, and forbidden-runtime declarations. It is static evidence only; it does not execute Codex or prove fresh-task routing.
+The canonical authored cases are machine-readable in [`../tests/route-contracts.json`](../tests/route-contracts.json) and validated by `python3 scripts/check_routes.py .`. The suite contains the original 17 canary prompts plus four explicit performance, packaging, signing/notarization, and distribution variants. It proves semantic-contract completeness, valid/disjoint capability owners, substantive conditional-trigger declarations, acyclic entry precedence, occurrence-aware controller-return declarations, taxonomy coverage, and forbidden-runtime declarations. It does not prove whether a trigger is true for a real change, execute Codex, or establish fresh-task routing.
+
+Compare a fresh frozen blind route-only receipt set with `python3 scripts/check_route_receipts.py <receipts.json> --root .`. Before the expected contracts are revealed, freeze the route, scale/risk/authority taxonomy and rationale, conditional dispositions, extra-capability decisions, evidence, and gaps; record the complete freeze scope and evidence. The observation must load every selected specialist, perform no effects, start no legacy runtime, and mark delivery not run. Required capabilities and safety edges must pass; conditional omissions require evidence and a disposition; extras require evidence and justification. Equivalent unconstrained specialist order and declared two-sided controller entry/return are allowed. Never grade a risk-scaled route by exact total-array equality. The separate `--allow-historical-annotations` option exists only to regression-check preserved historical route shapes whose semantic annotations were added later; it cannot establish current-policy conformance, candidate behavior, or delivery/authority execution evidence.
 
 Use the prompts below for post-install and decommission smoke tests. Record fresh behavior with the Live route receipt in [`../skills/.shared/artifact-templates.md`](../skills/.shared/artifact-templates.md).
 
-| Scenario | Expected routing | Required artifacts/evidence |
+| Scenario | Semantic routing policy | Required artifacts/evidence |
 |---|---|---|
 | Clarify and plan this small bug fix | orchestrator planning-only → compact context → compact AC → design delta if needed → plan; stop without edits | problem/root-cause hypothesis, scope, AC, short ordered plan, targeted test and rollback note |
 | Design and implement this medium-sized feature | context → requirements → design → plan → implementation → quality → docs → review/security as risk → release prep | brief, REQ/AC, design/tradeoffs/contracts, WBS, changes, actual tests, docs, findings, release gate |
@@ -22,7 +24,11 @@ Use the prompts below for post-install and decommission smoke tests. Record fres
 | Flaky CI or external missing logs | quality → release-change with provider capability fallback | first causal signal, native/external provider, same-revision rerun, classification, narrow retry or explicit evidence gap |
 | Flagged staged release and failed deployment | release-change + security-operations + coordination for separately authorized communications | immutable release unit, environment, flag lifecycle, state transition, telemetry baseline/window/result, stop/rollback, incident timeline |
 | Preview environment with data migration | planning → security-operations → quality → release-change | revision/data/secrets isolation, parity/TTL/teardown, migration compatibility, restore rehearsal, artifact-bound evidence |
-| Platform performance or packaging claim | quality → release-change | focused scenario, exact revision/device/runtime/build, fresh artifact, comparable measurements/limitations, signing/notarization/distribution evidence if applicable |
+| Combined platform performance or packaging claim | quality/security/release owners as applicable; surface unresolved variant predicates | focused scenario, exact revision/device/runtime/build, fresh artifact, comparable measurements/limitations, signing/notarization/distribution evidence if applicable |
+| Performance-only claim | quality leads; security/review/release/docs are evidence-triggered | focused scenario, comparable baseline, threshold, runs, variance, exact platform/build |
+| Package-only claim | release and quality lead; security/review/docs are evidence-triggered | exact package and provenance, content/execution validation, no implicit signing or publication |
+| Signing/notarization claim | security, quality, and release lead; no signing action under review authority | read-only signature/certificate/notarization evidence without private material |
+| Distribution claim | release, quality, and security lead; coordination only for authorized provider/status work | channel/artifact identity, read-only state, integrity/access checks, no external mutation |
 
 ## Post-uninstall assertions
 
@@ -31,16 +37,17 @@ Before disabling a legacy workflow, inspect active `AGENTS.md` and repository in
 For each live smoke test, record:
 
 - exact prompt, repository revision, relevant instructions, task/model identity, timestamp, plugin source version, installation source, and installed cache identity;
-- expected and actual route, scale/risk rationale, authority classification, artifacts expected/produced, commands/evidence, result, and residual gaps;
-- whether any output requested `boss`, `epic`, `epic-harness`, Superpowers, `.boss/`, `.harness/`, `.superpowers/`, legacy hooks, or legacy MCP servers; and
+- lead and actual route; required/conditional capability dispositions; precedence/re-entry; loaded specialist paths; scale/risk; authority; artifacts expected/produced; commands/evidence; route and delivery results; and residual gaps;
+- whether a legacy identity was merely visible administratively versus actually invoked, requested, started as a hook/MCP/runtime, or used to create `.boss/`, `.harness/`, or `.superpowers/` state; and
 - whether connectors remained optional and unavailable operations were truthfully reported.
 
-A behavioral pass requires the expected artifacts, explicit actual/not-run evidence, no fabricated project history, and no legacy runtime request. A blocked result is not a pass. Re-enable the disabled plugin immediately if parity or routing fails.
+A route-policy pass requires every mandatory capability, evidence-bearing branch disposition, no-effect authority boundary, specialist load, entry-precedence edge, controller return, justified extra, and forbidden-dependency check. The route-policy checker requires delivery to be not run. A separate real-repository canary may pass delivery only with expected artifacts and actual evidence reviewed at a pinned revision. Administrative inventory visibility alone is not a legacy dependency. A blocked result is not a pass. Re-enable the disabled plugin immediately if parity, state stability, or routing fails.
 
 ## Evidence classes
 
-- **Static contract pass:** `check_routes.py` validates authored scenario data. It does not establish agent behavior.
-- **Fresh-task route pass:** a new task using the installed cache produces a complete route receipt for the prompt.
+- **Semantic contract pass:** `check_routes.py` validates authored scenario policy. It does not establish agent behavior.
+- **Blind fresh-task route-policy pass:** a new no-effect task fixes every semantic route field before seeing the expected contract, then `check_route_receipts.py` validates selection, taxonomy evidence, loading, authority scope, and legacy-runtime absence. It does not validate delivery.
+- **Historical route-shape compatibility:** a preserved pre-comparison route may be checked with conspicuously post-hoc semantic annotations. It is regression evidence only and does not establish current-policy or candidate behavior.
 - **Real-repository canary pass:** authorized work produces repository-native artifacts and actual validation evidence at a pinned revision.
 - **Decommission pass:** affected fresh-task and real-repository cases still pass after one legacy workflow is disabled, with rollback captured.
 

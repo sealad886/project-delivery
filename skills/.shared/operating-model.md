@@ -11,6 +11,14 @@
 7. Preserve authority. Do not merge, publish, deploy, delete, rewrite history, accept risk, or communicate externally without appropriate authorization.
 8. Coordinate without coupling. Preserve native external state, map it to internal IDs, and keep the workflow useful when no connector is installed.
 
+## Progressive discovery and route semantics
+
+Codex may shorten descriptions or omit skills from its initial list when many skills are installed. The orchestrator must resolve selected Project Delivery specialists from their installed sibling paths and read their complete instructions before applying them. Initial-list visibility, explicit selector visibility, installed-file presence, successful specialist loading, and actual invocation are distinct evidence classes.
+
+A route is a set of capability owners plus gate constraints, not necessarily one exact linear sequence. Required specialists must be loaded and applied. Conditional specialists require an explicit `activated`, `not applicable`, `deferred`, or `blocked` disposition with evidence. Additional proportional safety work is allowed, and controller skills may re-enter after evidence recovery. Compare live behavior using required capabilities, forbidden capabilities, precedence, authority, conditional dispositions, and artifacts—not total-order string equality.
+
+A handoff names the next capability eligible to own unresolved work; it is not an unconditional command to invoke every downstream skill. The orchestrator or current controller applies route conditions, authority, lifecycle state, and existing evidence before selecting that owner.
+
 ## Scale and risk classification
 
 Classify on two axes before routing.
@@ -55,7 +63,7 @@ Prefer existing repository locations and formats. If none exist, use the templat
 - Coordination record: source-of-truth map, native status/ID mappings, freshness, conflicts, planned actions, authorization, and mutation receipts.
 - Security assessment: mode, target snapshot, reviewed/excluded/deferred surfaces, candidate closure, proof/counterevidence, validation, and residual risk.
 - Runtime/release evidence: focused scenario, exact revision/artifact/environment, source/query/window, baseline/threshold/result, limitations, and decision.
-- Route receipt: prompt, plugin/cache/task identity, expected and actual route, scale/risk, artifacts, authority decision, forbidden-dependency check, result, timestamp, and gaps.
+- Route receipt: prompt, plugin/cache/task identity, lead and actual route, required/conditional capability dispositions, scale/risk, artifacts, authority decision, forbidden-dependency check, semantic comparison result, timestamp, and gaps.
 
 ## Release and provider evidence
 

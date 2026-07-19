@@ -50,24 +50,24 @@ Exclusion means the inspected mechanism is not reproduced; the user outcome is c
 ## Decommission readiness gates
 
 1. Manifest, skill, and link validators pass at the release revision.
-2. All 13 skills are discoverable in a fresh task after installation.
+2. All 13 skills are packaged and structurally readable; all 13 fully qualified selectors load the intended skill; all 13 skill cards appear in the Skills UI when that UI is expected to enumerate plugin skills; and the orchestrator loads every selected sibling from the installed bundle. Initial model-list visibility is measured separately under catalog pressure. A selector, UI, or orchestrated-loading failure remains a decommission blocker unless the user explicitly accepts a bounded product limitation.
 3. Active repository instructions, prompt templates, hooks/configuration, and prior plans have been checked for imperative legacy calls; archival provenance is clearly non-operative.
-4. The smoke scenarios in `smoke-tests.md` produce expected artifacts and routing without invoking legacy plugins.
+4. The semantic smoke scenarios in `smoke-tests.md` satisfy required capabilities, conditional dispositions, safety precedence, controller re-entry, authority, and artifacts without invoking legacy plugins. Administrative visibility is distinguished from actual invocation, runtime/hook/MCP start, or branded state creation.
 5. At least one real small change and one medium or multi-PR dry run complete with requirement-to-evidence traceability.
 6. Review/security/release flows work with legacy plugins disabled in a canary task.
 7. Canonical repository artifacts are used; no new `.boss`, `.harness`, or `.superpowers` state appears.
 8. Optional specialist-plugin decisions are recorded individually.
-9. A rollback exists: preserve the pre-uninstall plugin list/config and reinstall source/version information without retaining secrets.
+9. Exact rollback is proven using the shared Plugin recovery record template: selector, owning control plane, enabled state, source revision, manifest and payload hashes, configuration locations without secret values, supported reinstall mechanism, readback, fresh-task verification, and limitations. A mutable selector or retained cache alone is not exact rollback.
 10. User confirms the superseded plugin list and accepts any explicitly documented parity exclusions.
 
 ## Safe decommission sequence
 
 1. Install or refresh the standalone Project Delivery source with Plugin Creator's supported local-source workflow, then start a new task.
 2. Inspect active instructions, prompt templates, hooks/configuration, historical plans, and branded state. Convert imperative legacy calls to non-operative provenance and move durable decisions into canonical current artifacts.
-3. Capture the installed plugin/configuration rollback inventory, then run the smoke suite with all plugins still installed; correct gaps using Plugin Creator's cachebuster/update flow.
+3. Capture each identity and control plane separately: CLI-managed plugin, product-managed or remote-synced plugin, directly registered skill, symlink-discovered skill, standalone clone, configured source, and cached payload. Capture exact rollback evidence, then run the smoke suite with all plugins still installed; correct gaps using Plugin Creator's cachebuster/update flow.
 4. Disable (do not immediately delete) one superseded generic lifecycle plugin at a time, beginning with the most redundant.
-5. Start a fresh task and rerun affected smoke scenarios after each change.
-6. If parity holds, uninstall that plugin using Codex's supported plugin workflow; do not hand-edit global configuration.
+5. Verify expected enabled state before the observation, start a genuinely fresh task, rerun affected semantic smoke scenarios, and verify state again afterward. Unexplained state drift invalidates the observation window.
+6. If parity holds, uninstall only when the identity's owning control plane exposes a supported uninstall action and its exact recovery drill has already passed. Otherwise retain it and record unsupported control as a blocker; never manipulate a cache as a substitute for control-plane removal. Do not hand-edit global configuration.
 7. Retain specialist plugins unless explicitly classified as superseded.
 8. After the observation window, record final plugin set, versions, smoke evidence, residual gaps, and rollback status.
 
