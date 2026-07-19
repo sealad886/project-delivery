@@ -23,11 +23,11 @@ Resolve exact scope/base/head/revision and review mode. Inspect requirements/AC,
    - Security: trust boundaries, attacker inputs, authn/authz, secrets, sensitive data/privacy, dependencies, abuse paths, severity/exploitability.
    - Release readiness: requirement/test evidence, CI, approvals, migrations, flags, observability, rollback, support, residual risk.
 2. Trace `REQ/AC → design → diff/work → test/docs/release evidence`; identify omissions and unsupported claims.
-3. Validate each candidate finding against source and reachable behavior. Deduplicate by root cause while retaining every affected location.
-4. Report only actionable findings with `FIND-*`, severity, priority, exact location, evidence, impact, recommended fix, release-blocking state, and residual risk. Label inference and confidence.
+3. Define assessment mode, target revision/snapshot, reviewed surfaces, exclusions, deferred/not-applicable surfaces, and coverage completeness. Validate each candidate against source and reachable behavior; for security paths record source, control, sink, reachable boundary, preconditions/outcome, counterevidence, proof gaps, and static/dynamic validation rationale.
+4. Deduplicate by stable root-cause identity/fingerprint while retaining every affected location and its role. Report actionable `FIND-*` with severity, priority, exact location, evidence, impact, recommended fix, release-blocking state, confidence, uncertainty, and residual risk.
 5. Distinguish confirmed defect, design concern, test/evidence gap, question, and accepted residual risk. Do not inflate style preference into correctness.
 6. Technically adjudicate incoming review comments; verify before accepting or rejecting them.
-7. Re-review fixes and rerun relevant evidence before closing findings. Final states: fixed, not reproducible, accepted residual risk (with authority), deferred/blocked (with owner/action).
+7. Re-review fixes and rerun relevant evidence before closing findings. Final states: fixed, reportable/open, suppressed with rationale, not applicable, not reproducible, accepted residual risk (with authority), or deferred/blocked (with owner/action). Verify remediation invariant, regression evidence, and sibling/variant exposure.
 
 ## Outputs and handoff
 

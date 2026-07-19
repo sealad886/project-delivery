@@ -12,10 +12,11 @@ from pathlib import Path
 
 def main() -> int:
     root = Path(sys.argv[1] if len(sys.argv) > 1 else Path(__file__).parents[1]).resolve()
+    excluded_dirs = {".git", ".venv", "__pycache__", "node_modules"}
     files = sorted(
         p
         for p in root.rglob("*")
-        if p.is_file() and ".git" not in p.parts and "__pycache__" not in p.parts
+        if p.is_file() and not excluded_dirs.intersection(p.parts)
     )
     errors: list[str] = []
     started = time.monotonic()

@@ -21,7 +21,7 @@ Read `../../references/operating-model.md` before routing. Use `../../assets/art
 
 ## Inputs and evidence
 
-Inspect the user request; applicable `AGENTS.md`; repository status/history/branches/tags; README/contributing/architecture/security docs; code/tests; issue/PR templates; CI/release config; prior plans/ADRs/decisions; available local memory only when authorized and accessible. Treat marketplace/plugin capabilities as optional tools, never assumed facts.
+Inspect the user request; applicable `AGENTS.md`; repository status/history/branches/tags; README/contributing/architecture/security docs; code/tests; issue/PR templates; CI/release config; prior plans/ADRs/decisions; authorized external systems and local memory when accessible. Treat marketplace/plugin capabilities as optional adapters, never assumed facts.
 
 ## Workflow
 
@@ -36,11 +36,13 @@ Inspect the user request; applicable `AGENTS.md`; repository status/history/bran
    - Design-only: context → requirements → solution design; stop with decision/open-question handoff.
    - Review-only: resolve exact scope/base → review-audit; add security-operations and release-change checks when risk warrants.
    - Release-only: recover requirements/test/review evidence → route missing test, documentation, review, or security/operations evidence to its owning skill → return to release-change; do not retroactively claim missing proof.
+   - Coordination/tracker/status/meeting/communication-only: recover canonical sources and authority → `delivery-coordination` → documentation or planning only when durable state changes; do not turn analysis or drafts into external writes.
    - Documentation-only: compact context/AC → documentation-knowledge → appropriate link/build checks. Add security-operations and release-change checks when the documentation concerns operations, configuration, migration, deployment, rollback, or production support.
-   - Hotfix/incident: establish incident facts and authority → compact requirements/design for the safest bounded fix → root-cause implementation → targeted regression plus the broadest time-feasible quality gate → authorized release/rollback and post-release verification → retrospective/follow-up. Record every deferred normal gate and owner.
-5. Apply gates. Implementation may begin only when the Ready and necessary Design gates are satisfied. For low-risk work these may be concise and implicit in inspected evidence, but state that evidence.
-6. Maintain a visible checklist/status for multi-stage work. Report blockers, decisions, evidence, and next transition.
-7. End with the handoff contract and residual risk.
+   - Hotfix/incident: detect/contain and preserve timeline/evidence → mitigate or rollback under explicit incident authority → diagnose and repair → targeted regression plus the broadest time-feasible quality gate → verify recovery and communicate when separately authorized → retrospective/follow-up. Production restoration may precede normal completeness only under incident authority; record every deferred gate and owner.
+5. Invoke `delivery-coordination` when external sources may contain requirements/decisions, after plans need synchronization, before status or meetings, after review findings need tracking, and during release communication/handoff. Detect provider/tool capability; core execution must still work without it.
+6. Apply gates. Implementation may begin only when the Ready and necessary Design gates are satisfied. For low-risk work these may be concise and implicit in inspected evidence, but state that evidence.
+7. Maintain a visible checklist/status for multi-stage work. Report blockers, decisions, evidence, and next transition.
+8. End with the handoff contract and residual risk.
 
 ## Outputs
 

@@ -9,6 +9,7 @@
 5. Trace outcomes. Give requirements stable IDs and connect them to design decisions, work items, tests, findings, and release evidence.
 6. Evidence before claims. Completion requires actual command results or directly inspected artifacts, with failures and omissions disclosed.
 7. Preserve authority. Do not merge, publish, deploy, delete, rewrite history, or communicate externally without appropriate authorization.
+8. Coordinate without coupling. Preserve native external state, map it to internal IDs, and keep the workflow useful when no connector is installed.
 
 ## Scale and risk classification
 
@@ -28,9 +29,10 @@ Raise rigor for authentication/authorization, sensitive or regulated data, money
 - Ready gate: acceptance criteria are testable; dependencies and material unknowns are owned; design depth matches risk.
 - Design gate: interfaces, compatibility, migration/rollback, security, operability, tests, and release effects are addressed.
 - Plan gate: work is ordered, owned or explicitly unassigned, dependency-safe, incrementally deliverable, and verifiable.
+- Coordination gate: canonical sources and native mappings are known; live state has freshness; conflicts are visible; planned writes are authorized; completed mutations have readback receipts.
 - Implementation gate: approved scope is implemented using repository conventions; unrelated changes are preserved.
 - Quality gate: selected checks ran against the relevant revision/environment and results are recorded.
-- Release gate: blockers are closed or explicitly accepted by an authorized owner; rollback and post-release checks exist.
+- Release gate: blockers are closed or explicitly accepted by an authorized owner; immutable release unit and environment are identified; migrations/flags/rollout/rollback are safe; baseline-linked post-release checks exist.
 - Learning gate: outcomes, debt, decisions, and follow-ups are captured in canonical locations.
 
 For a small low-risk change, gates may be short sections in one status update. Never erase the gate; compress it.
@@ -50,6 +52,13 @@ Prefer existing repository locations and formats. If none exist, use the templat
 - Release plan/evidence: version/change set, gates, approvals, rollout, migrations, observability, rollback, post-release result.
 - Status report: outcome/health, completed, in progress, next, RAID changes, decisions needed, evidence links.
 - Decision/assumption log: durable decision/assumption, evidence, owner, date, consequences, revisit trigger.
+- Coordination record: source-of-truth map, native status/ID mappings, freshness, conflicts, planned actions, authorization, and mutation receipts.
+- Security assessment: mode, target snapshot, reviewed/excluded/deferred surfaces, candidate closure, proof/counterevidence, validation, and residual risk.
+- Runtime/release evidence: focused scenario, exact revision/artifact/environment, source/query/window, baseline/threshold/result, limitations, and decision.
+
+## Release and provider evidence
+
+A release unit is the immutable commit plus built artifact/deployment identity and provenance promoted through environments where supported. Environment identity includes provider/account/project/service, region, configuration version, and secret/config presence without values. Deployment states are explicit; readiness is not liveness; rollback claims include data/config compatibility. Feature flags have owners, safe defaults, ramp/guardrail/kill/expiry/removal records. External providers are capability adapters governed by `external-systems.md`, never implicit dependencies.
 
 ## Traceability
 

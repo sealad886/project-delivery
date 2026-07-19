@@ -13,19 +13,21 @@ Use for PR/branch integration strategy, failing CI, release preparation, version
 
 ## Inputs and evidence
 
-Resolve exact change set/revision, host/branch/PR conventions, required reviewers/status checks, CI workflows and artifacts, version/release/changelog policy, deploy/IaC/config/data migration path, environments, feature flags, approvals/change windows, monitoring/alerts/runbooks, rollback, and prior release evidence. Use repository reality over assumed GitHub flow.
+Resolve exact change set/revision, host/provider and available read/write capabilities, base/head/PR conventions, required reviewers/status checks, native versus external CI and artifacts, version/release/changelog policy, deploy/IaC/config/data migration path, environments, feature flags, approvals/change windows, monitoring/alerts/runbooks, rollback, and prior release evidence. Use repository reality over an assumed host or provider.
 
 ## Workflow
 
 1. Recover traceability: requirements, accepted design, work/PRs, actual tests, docs, review/security findings, and unresolved risks. Missing proof remains a blocker/gap, not a retrospective assertion.
-2. Define branch/PR/merge strategy, base/head, dependency order, required approvals/checks, merge queue/rebase policy, and integration test point from repository rules.
-3. Diagnose CI failures from actual logs/config; separate change-caused, flaky, infrastructure, and pre-existing failures. Fix only within authority and rerun required checks.
-4. Decide version from the project’s release policy/public contract. If Semantic Versioning applies: breaking public contract → major, backward-compatible feature → minor, backward-compatible fix → patch. Prerelease/build metadata follow repository rules.
-5. Update canonical changelog/release notes with audience-relevant added/changed/deprecated/removed/fixed/security/migration/known-risk information. Do not use commit dumps as release communication.
-6. Plan flags/config/secrets and data/schema migrations, compatibility/coexistence, backfill/verification, deployment order, traffic/canary/staged rollout, stop conditions, and rollback/roll-forward.
-7. Confirm monitoring, alerts, ownership, support/runbooks, capacity/cost, observation window, post-release checks, and incident/hotfix route.
-8. Produce a release gate decision. Preparation does not authorize merge/tag/push/publish/deploy. Execute each external or production-changing action only when user authority is clear; record timestamp, actor/tool, revision/artifact, result, and rollback readiness.
-9. Verify production/user outcome, not only pipeline success. If degraded, stop/rollback/escalate per plan and preserve evidence.
+2. Declare the release unit: commit, artifact/deployment ID or digest, provenance/build result, promotion history, and target account/project/service/region/environment/configuration identity. Prefer build-once/promotion of the exact validated artifact when the platform supports it; record exceptions.
+3. Define branch/PR/merge strategy, exact base/head, dependency order, required approvals/checks, native versus external check providers, missing/pending-log gaps, merge queue/rebase policy, and integration test point from repository rules.
+4. Diagnose the first causal CI failure from actual logs/config using the quality failure taxonomy. Use same-revision reproduction and narrow evidence-backed retry; never repeatedly retry or redeploy unchanged work. Fix only within authority and rerun required checks.
+5. Decide version from the project’s release policy/public contract. If Semantic Versioning applies: breaking public contract → major, backward-compatible feature → minor, backward-compatible fix → patch. Prerelease/build metadata follow repository rules.
+6. Update canonical changelog/release notes with audience-relevant added/changed/deprecated/removed/fixed/security/migration/known-risk information. Do not use commit dumps as release communication.
+7. Define preview/ephemeral policy (revision, isolated data, secrets, parity gaps, TTL/cost, teardown) and deployment states: build → pre-deploy/migrate → start capacity → readiness → traffic switch/ramp → drain → observe → complete. Record stop signals, readiness/liveness policy, backward-compatible migration window, restore rehearsal, and why code rollback can or cannot undo data/config changes.
+8. For every flag record provider/key, safe default/failure behavior, environments/cohorts, owner, ramp, exposure metric, guardrail/stop threshold, kill path, expiry/removal work, and cleanup proof. Flag/config writes require separate external authority.
+9. Establish pre-release baseline and release-correlated observation: provider/source, environment, revision/release marker, query/metric, window, threshold, observed delta, redaction/limitations, and stop/rollback decision. Confirm alerts, support/runbooks, drain behavior, capacity/cost, and incident route.
+10. Produce a release gate decision. Preparation does not authorize merge/tag/push/publish/deploy, tracker updates, flag changes, or communications. Execute each action only under its authority; record timestamp, actor/tool, target, revision/artifact, result, readback where available, and rollback readiness. Include packaging/signing/notarization/distribution evidence when the platform requires it.
+11. Verify production/user outcome, not only pipeline success. If degraded: detect/contain → preserve timeline/evidence → mitigate/rollback → diagnose → repair → verify recovery → communicate when authorized → follow up.
 
 ## Outputs and handoff
 

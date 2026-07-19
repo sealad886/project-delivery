@@ -8,21 +8,22 @@ Project Delivery is a complete, independent replacement for fragmented Codex pro
 
 Repository evidence and user requirements drive a single risk-scaled lifecycle:
 
-`Context → Requirements → Solution Design → Delivery Plan → Implementation → Quality → Documentation → Review/Security/Operational Audit → Release → Retrospective`
+`Context → Requirements → Solution Design → Delivery Plan ↔ Coordination → Implementation → Quality → Documentation → Review/Security/Operational Audit → Release → Retrospective`
 
 One router owns scale and phase selection. Gates are always present but compress for low-risk changes. Existing repository artifacts and conventions outrank plugin templates.
 
 ## Skill taxonomy
 
-Twelve substantial skills have non-overlapping ownership: orchestration; project context; requirements/acceptance; solution design; delivery planning; implementation; testing/quality; documentation/knowledge; review/audit; security/operations; release/change; retrospective/improvement.
+Thirteen substantial skills have non-overlapping ownership: orchestration; project context; requirements/acceptance; solution design; delivery planning; provider-neutral delivery coordination; implementation; testing/quality; documentation/knowledge; review/audit; security/operations; release/change; retrospective/improvement.
 
 ## Evidence synthesis
 
 - Superpowers contributes repository-first discovery, explicit design readiness, systematic debugging, test-first options, fresh verification, independent review, and safe branch completion. Rigid universal ceremony and absolute TDD are removed.
 - Epic contributes lifecycle traceability, phase gates, audit deduplication, threat-to-triage thinking, CI evidence, and retrospectives. Its unavailable runtime, proprietary state, telemetry, self-modification, and auto-approval are excluded.
 - Boss contributes artifact handoffs, repository preflight, write-set/dependency planning, evidence waves, contract matrices, and test result reporting. Its unavailable CLI/hooks, mandatory role swarm, fixed thresholds, and duplicate `.boss` artifacts are excluded.
-- Marketplace sources reinforce PASS/LIGHT/FULL routing, acceptance receipts, fresh-eyes review, roadmaps, multi-PR waves, status closeout, and documentation readiness.
-- Codex Security, GitHub, CodeRabbit, connectors, and deployment plugins remain optional specialist surfaces. Core lifecycle behavior does not depend on them.
+- The exact `openai-curated` snapshot adds a coherent cross-system coordination contract, security coverage/candidate proof, CI failure taxonomy, immutable release-unit promotion, deployment state, baseline-correlated telemetry, flag lifecycle, preview isolation, drain/restore readiness, and artifact-bound platform evidence.
+- Other marketplace sources reinforce PASS/LIGHT/FULL routing, acceptance receipts, fresh-eyes review, roadmaps, multi-PR waves, status closeout, and documentation readiness.
+- Codex Security, GitHub, CodeRabbit, connectors, and deployment plugins remain optional specialist access/depth surfaces. Their generic workflow ideas are synthesized, but core behavior does not depend on them.
 
 ## Dependency and safety policy
 

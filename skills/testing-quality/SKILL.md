@@ -20,11 +20,12 @@ Expect exact target revision/diff and requirements/acceptance when available. In
 1. Build a risk-to-test matrix. Cover changed logic and the most consequential regressions, boundaries, permissions, failure/retry/recovery paths, data compatibility, concurrency/idempotency, and operational signals.
 2. Select applicable levels: unit, component, integration, contract/API/schema, end-to-end/user journey, regression/characterization, property/invariant/fuzz, migration/rollback, static analysis, type/lint/format, dependency/security, performance/load/resource, accessibility, docs/link/example/build.
 3. Prefer deterministic, isolated, maintainable tests; specify environment, versions, data provenance, seeds, credentials handling, external-service substitution, and cleanup.
-4. Run targeted checks early, then the broadest practical repository/CI-parity gates. Capture command, exit status, revision, environment, counts/duration, and artifact/log locations.
-5. Triage failures: reproduce, distinguish product/test/environment/flaky/pre-existing failure, isolate root cause, make the smallest authorized correction, and rerun the relevant slice plus regression gates. Never hide or blanket-retry a failure into green.
+4. Run targeted checks early, then the broadest practical repository/CI-parity gates. Bind evidence as `question → focused scenario → matching method → fresh identified artifact → observable/quantitative result → limitations`. Capture command, exit status, revision, device/browser/runtime/build variant, environment, data/run count, counts/duration, and artifact/log locations. Compare before/after only under comparable conditions; one noisy sample is a lead, not a conclusion.
+5. Triage the first causal failing job/step and dependency fanout. Classify configuration, environment/toolchain, dependency/cache, product/test regression, flaky/timing, external/transient infrastructure, downstream cascade, pre-existing, or setup/proof gap. Reproduce on the same revision when useful; distinguish counterevidence from inability to test. Retry only the smallest evidence-confirmed transient unit, never a deterministic failure, and retain JUnit/result artifacts and retry metadata.
 6. Compare each `AC-*`/risk to actual evidence. Mark verified, failed, not run with reason, or not applicable.
-7. For performance/security claims, use representative measurements/tools and state limitations. A lack of findings is not proof of absence.
-8. Produce a gate decision with residual gaps and release impact.
+7. For performance/security claims, use representative measurements/tools and state limitations. Prove artifact freshness and identity; for leaks or ownership defects validate the offending path/invariant, not merely a smaller capture. A lack of findings is not proof of absence.
+8. Assess CI quality when relevant: reproducible lock/cache inputs, retained result artifacts, slow/flaky baseline, before/after duration and pass/retry metrics, and approval gates paired with restricted credentials. Select optional domain-specialist tools from the actual platform, but keep the evidence contract provider-neutral.
+9. Produce a gate decision with residual gaps and release impact.
 
 ## Outputs and handoff
 

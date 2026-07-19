@@ -6,7 +6,7 @@ Audit date: 2026-07-19. Sources were inspected statically; downloaded installati
 
 - Workspace `/Users/andrew/.codex/skills` is a small Git repository with three commits and extensive pre-existing untracked skill directories. It has no remote, tags, README, CI, issue/PR templates, changelog, or release configuration. Those unrelated changes were preserved.
 - Applicable instructions require repository-first reuse, evidence-based verification, current authoritative docs for third-party APIs, visible progress, project `.venv` use, Conventional Commits, and safe handling of unrelated changes.
-- Codex config explicitly lists five marketplaces with 182 total entries. A separate visible official `openai-curated` catalog contains 180 entries.
+- Codex config explicitly lists five marketplaces with 182 total entries. The official `openai-curated` marketplace is a complete local Git snapshot with 180 entries; sibling `openai-api-curated` has 29 overlapping API-oriented entries and is not double-counted.
 - The personal marketplace did not exist before Plugin Creator created it for this plugin.
 
 ## Marketplace inventory
@@ -18,9 +18,29 @@ Audit date: 2026-07-19. Sources were inspected statically; downloaded installati
 | mlx-optimizer-local | configured Git `https://github.com/sealad886/mlx-optimizer-plugin.git` | `7762ed1c…` | 1 | High |
 | everything-claude-code | configured Git `https://github.com/WorldFlowAI/everything-claude-code.git` | `432485ba…` | 1 | High |
 | awesome-codex-plugins | configured Git `https://github.com/hashgraph-online/awesome-codex-plugins.git`, sparse main | `fa1d122e…` | 170 | High |
-| openai-curated | visible official local snapshot `/Users/andrew/.codex/.tmp/plugins` | exact catalog revision unavailable | 180 | Medium provenance/high local metadata |
+| openai-curated | official local Git snapshot `/Users/andrew/.codex/.tmp/plugins`; manifest `.agents/plugins/marketplace.json` | `11c74d6ba24d3a6d48f54a194cd00ef3beea18f9`, 2026-07-13 | 180 | High exact contents/medium upstream transport (checkout has no remote) |
 
 Every marketplace manifest was parsed and searched across names, descriptions, categories, skills, and source paths. Shortlisted sources already existed in pinned local snapshots, so no temporary downloads were needed.
+
+### OpenAI curated implementation evidence
+
+Relevant source trees were inspected statically at the exact snapshot above; no app, MCP server, hook, script, installer, or provider operation was executed.
+
+| Source/version | Implementation evidence | Capability adopted | Treatment/confidence |
+|---|---|---|---|
+| Atlassian Rovo 1.0.3; Notion 0.1.5; Linear 0.0.3; Airtable 0.1.3 | skills/references and manifests | read-first source-of-truth, schema/status mapping, backlog sync, audience status, duplicate detection | Adapt → `delivery-coordination`; High static |
+| Box 0.0.3; Drive 0.1.7; SharePoint 0.1.3 | skills/references | exact document/revision, permission boundary, backlink/readback | Adapt → coordination/docs; High static |
+| Google Calendar 1.2.3; Outlook Calendar 0.1.3; Outlook Email 0.1.3; Slack 0.1.2; Teams 0.1.3 | skills/references | meeting prep/follow-up, exact destination, draft/send split, no silent task creation | Adapt → coordination; High static |
+| Codex Security 0.1.11 | 12 skills, shared scan/assessment references | scope/coverage, candidate proof/counterevidence, stable findings, closure | Adapt → security/review/templates; High static; exclude runtime/schemas |
+| GitHub 0.1.6; CircleCI 1.0.4 | skills, references, helper source | capability-aware host routing, native/external checks, first-failure taxonomy, narrow retry | Adapt → release/quality/coordination; High static |
+| Render 0.1.3; Vercel 0.21.3; Netlify 1.1.2; Cloudflare 0.1.2 | deployment/monitoring/preview/operations skills | artifact promotion, deployment states, readiness/drain, preview isolation, observability | Adapt provider-neutral release/operations contract; High static |
+| Sentry 0.1.2; PostHog 0.1.2 | read-only/API helper and static skills | environment/release-bound telemetry, redaction, flag/experiment lifecycle | Adapt general evidence; High/medium-high static |
+| Datadog 0.1.2; Statsig 2.0.3; Asana/ClickUp/Monday/Teamwork | app declarations/marketplace prompts only | advertised optional operational/work surfaces | Metadata-only optional adapters; Medium; no behavior inferred |
+| build iOS/macOS/web and test Android | platform skills/references | focused scenario, fresh artifact identity, comparable measurement, packaging/distribution gates | Adapt generic evidence contract; High static |
+| Plugin Eval 0.1.2 | skill/package/benchmark references | fresh-task scenario benchmarking and comparison | Optional authoring validation only; High static |
+| CodeRabbit 1.1.4 | skill source | specialized review | Exclude dependency/installer; unsafe remote-pipe install guidance conflicts with policy; High |
+
+All ten user-visible recommended connectors (Atlassian Rovo, Box, Google Calendar, Google Drive, Notion, Outlook Calendar, Outlook Email, SharePoint, Slack, Teams) had locally inspectable implementations in this snapshot. They are available but not installed and remain optional adapters, not dependencies.
 
 ## Installed-source matrix
 

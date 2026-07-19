@@ -6,6 +6,7 @@ Accessed 2026-07-19. Principles were synthesized; no source text is copied as a 
 
 - Current Codex manual, fetched with the local `openai-docs` helper: plugin manifests live at `.codex-plugin/plugin.json`; skills use progressive disclosure and concise trigger descriptions; personal marketplaces use `~/.agents/plugins/marketplace.json`; installed local copies require refresh/new-task pickup. Source pages: [Build plugins](https://learn.chatgpt.com/docs/build-plugins) and [Build skills](https://learn.chatgpt.com/docs/build-skills).
 - Local Plugin Creator: `/Users/andrew/.codex/skills/.system/plugin-creator/SKILL.md`, `references/plugin-json-spec.md`, and `references/installing-and-updating.md`. These define the scaffold, manifest validation, personal marketplace, cachebuster, and handoff flow used here.
+- Official `openai-curated` marketplace: `/Users/andrew/.codex/.tmp/plugins/.agents/plugins/marketplace.json`, 180 entries, inspected Git snapshot `11c74d6ba24d3a6d48f54a194cd00ef3beea18f9` (2026-07-13). Relevant local manifests, skills, references, and scripts were read statically. The checkout has no configured remote; manifests generally declare `https://github.com/openai/plugins` or an official vendor repository, so exact local contents are High confidence and upstream transport provenance is Medium confidence.
 
 ## Delivery and flow
 

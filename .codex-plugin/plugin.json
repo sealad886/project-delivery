@@ -1,7 +1,7 @@
 {
   "name": "project-delivery",
-  "version": "1.0.0+codex.20260719070136",
-  "description": "A repository-grounded, risk-scaled workflow for planning, implementing, verifying, reviewing, releasing, and improving software changes.",
+  "version": "1.1.0+codex.20260719071949",
+  "description": "A repository-grounded, risk-scaled workflow for coordinating, planning, implementing, verifying, reviewing, releasing, and improving software changes.",
   "author": {
     "name": "Local developer"
   },
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "Project Delivery",
     "shortDescription": "Take software work from idea to safe release",
-    "longDescription": "Project Delivery provides one coherent, repository-grounded lifecycle for clarifying requests, defining requirements, designing solutions, planning delivery, implementing changes, producing test evidence, updating canonical documentation, reviewing risk, preparing releases, and capturing improvements. It scales from documentation and small fixes to multi-PR, multi-release initiatives.",
+    "longDescription": "Project Delivery provides one coherent, repository-grounded lifecycle for clarifying requests, defining requirements, designing solutions, coordinating systems of record, planning delivery, implementing changes, producing test evidence, updating canonical documentation, reviewing risk, preparing releases, and capturing improvements. It scales from documentation and small fixes to multi-PR, multi-release initiatives without requiring any provider integration.",
     "developerName": "Local developer",
     "category": "Developer Tools",
     "capabilities": [

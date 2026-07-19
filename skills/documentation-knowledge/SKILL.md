@@ -13,17 +13,17 @@ Use during design for ADRs, during implementation for contract/config docs, befo
 
 ## Inputs and evidence
 
-Inspect repository documentation conventions, README/contributing, docs site/config, API/schema generators, ADR/runbook locations, changelog/release policy, issue/PR templates, code/tests/config/CLI help, and target audience. Treat generated documentation according to repository ownership rules.
+Inspect repository documentation conventions, README/contributing, docs site/config, API/schema generators, ADR/runbook locations, changelog/release policy, issue/PR templates, code/tests/config/CLI help, target audience, and authorized external canonical sources. Record source identity, freshness, ownership, and contradictions. Treat generated documentation according to repository ownership rules.
 
 ## Workflow
 
 1. Identify audiences and changed knowledge: users, API consumers, developers, reviewers, operators/support, security/privacy, project stakeholders, and future agents.
-2. Update the canonical source before creating a new file. Link rather than duplicate; retire or redirect stale guidance when safe and authorized.
-3. Cover as applicable: usage/behavior, examples, configuration/defaults, API/data contracts, compatibility/deprecation, migration/rollback, architecture/ADR, development/test workflow, deployment/runbook/troubleshooting, monitoring/alerts, security/privacy, changelog/release notes, PR description, status/decision/assumption logs.
+2. Build or consult the source-of-truth registry. Update the canonical source before creating a new file; distinguish canonical from derived artifacts, preserve backlinks/citations and last-verified metadata, and surface contradictions. Link rather than duplicate; retire or redirect stale guidance when safe and authorized.
+3. Cover as applicable: usage/behavior, examples, configuration/defaults, API/data contracts, compatibility/deprecation, migration/rollback, architecture/ADR, development/test workflow, deployment/runbook/troubleshooting, dashboards/queries and stop/rollback triggers, security/privacy, feature-flag lifecycle/removal, environment/configuration identity, changelog/release notes, PR description, status/decision/assumption logs.
 4. Keep claims aligned with implementation and actual test/release evidence. Distinguish planned from released behavior and commands run from illustrative commands.
 5. Use repository terminology and navigation. Avoid plugin-branded project folders or private session details.
 6. Validate links, examples, generated docs, CLI help, docs builds, and version references using repository tools.
-7. Record knowledge ownership and follow-up for intentionally deferred docs.
+7. For external documents, choose update versus append versus new artifact deliberately, verify by readback, and record knowledge ownership/follow-up for intentionally deferred docs.
 
 ## Outputs and handoff
 

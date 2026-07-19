@@ -80,12 +80,16 @@ Not run and reason:
 Residual gaps:
 ```
 
+For CI/runtime evidence add: first causal job/step; category; same-revision rerun; retry rationale; focused scenario; revision/device/runtime/build; fresh artifact; baseline/result; limitations.
+
 ## Review report
 
 ```markdown
 Overall decision: approve | approve with residual risk | changes required | blocked
 Scope/base/head/environment:
 | ID | Severity | Priority | Location | Evidence | Impact | Recommended fix | Blocks release? |
+Assessment mode/snapshot/reviewed surfaces/exclusions/deferred/coverage:
+Candidate proof (source → control → sink → reachable boundary), counterevidence, proof gaps, affected-location roles, and disposition:
 Residual risks and accepted-by:
 Positive evidence (brief):
 ```
@@ -93,15 +97,31 @@ Positive evidence (brief):
 ## Release plan and evidence
 
 ```markdown
-Change set/version/target:
+Change set/version/target and provider capability:
+Release unit (commit, artifact/deployment ID or digest, provenance, promotion history):
+Environment identity (account/project/service/region/config; never secret values):
 Required checks and approvals:
-Feature flags/config/data migrations:
-Deployment sequence and stop conditions:
-Rollback trigger, owner, and tested procedure:
-Monitoring/alerts/support/runbook:
-Post-release checks and observation window:
+Preview environment (revision, isolation, parity gaps, TTL/cost, teardown):
+Feature flags (key/provider/default/failure behavior/cohorts/owner/ramp/metric/guardrail/kill/expiry/removal):
+Config/data migrations, compatibility window, restore evidence:
+Deployment state (build → predeploy → capacity → readiness → traffic/ramp → drain → observe) and stop conditions:
+Rollback trigger, owner, tested procedure, and data/config limitation:
+Monitoring/alerts/support/runbook and telemetry classification/redaction:
+Post-release source/query/metric, release marker, baseline, threshold, window, observed result, decision:
 Actual results, timestamps, revision/artifact IDs:
 Incidents/hotfix/follow-up:
+```
+
+## Delivery coordination
+
+```markdown
+Source-of-truth map: artifact/field | canonical system + ID/URL | owner | as-of | derived copies | conflict
+System inventory: provider | workspace/project | capability | authorization | limitation
+Mapping: internal ID | external provider/ID/URL | native status | normalized status | last verified
+Sync ledger: proposed action | exact target | authority | result | readback | residual divergence
+Meeting brief/record: objective | evidence/pre-read | decisions (confirmed only) | actions/owner/date provenance | unresolved
+Communication: audience | channel/recipient | purpose | draft/authorized-to-send | source facts | result
+Write receipt: provider | target | actor | timestamp | changed fields | prior/new state | ID/URL | verification
 ```
 
 ## Retrospective

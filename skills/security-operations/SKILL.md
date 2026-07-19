@@ -17,13 +17,14 @@ Inspect repository/security/privacy policies, data flows/classification/retentio
 
 ## Workflow
 
-1. Define assets, actors, attacker capabilities, entry points, trust boundaries, sensitive data, privileges, invariants, and assumptions. Reuse/update a repository threat model if current; otherwise create one only when risk warrants.
+1. Choose assessment mode (design threat model, change/diff review, scoped assessment, or repository assessment) and pin revision or deterministic snapshot. Define reviewed surfaces, exclusions, deferred/not-applicable areas, coverage completeness, assets, actors, attacker capabilities, entry points, trust boundaries, sensitive data, privileges, invariants, and assumptions.
 2. Analyze abuse paths and controls: authentication, authorization and tenant isolation, validation/encoding, injection, filesystem/network boundaries, cryptography/session handling, secrets, least privilege, auditability, dependency/supply chain, build/deploy integrity, and denial/resource exhaustion.
 3. Analyze privacy: collection/minimization, purpose, consent where applicable, retention/deletion, residency, access/export, logs/telemetry, third parties, and migration/backfill exposure. Escalate legal conclusions to qualified owners.
-4. Analyze failure modes and reliability: dependency/timeouts/retries/backoff/circuit breaking, idempotency, consistency, capacity, graceful degradation, backups/restore, DR, partial rollout, config skew, and human error.
-5. Define operational readiness: health, logs/metrics/traces, actionable alerts, dashboards, ownership/on-call/support, runbooks, incident/hotfix path, cost/capacity signals, post-release verification.
-6. Validate with appropriate static/dynamic/dependency/config/IaC/permission tests and recovery exercises. Calibrate severity using reachability, exploitability, impact, existing controls, and evidence.
-7. Produce mitigations with owner/order, verification, rollback, residual risk, and release-blocking decision. Risk acceptance requires authorized ownership.
+4. Maintain candidate evidence through closure. For material security paths record source, control, sink, reachable boundary, counterevidence/proof gaps, attack preconditions, concrete outcome, stable root-cause identity, and affected-location roles. Choose static/dynamic validation deliberately and distinguish setup failure from counterevidence.
+5. Analyze failure modes and reliability: dependency/timeouts/retries/backoff/circuit breaking, idempotency, consistency, capacity, graceful degradation, readiness versus liveness behavior, request/worker/queue/connection drain, backups and tested restore, DR, partial rollout, config skew, one-way data changes, and human error.
+6. Define operational readiness: classified/redacted/access-controlled telemetry, secret-free logs, authenticated ingestion, actionable alerts/dashboards, ownership/on-call/support, runbooks, preview data/secrets isolation and teardown, incident/hotfix path, cost/capacity signals, and post-release verification.
+7. Validate with appropriate static/dynamic/dependency/config/IaC/permission tests, graceful-shutdown checks, and recovery/restore exercises. Calibrate severity using reachability, exploitability, impact, existing controls, and evidence.
+8. Close every candidate as reportable/open, suppressed with rationale, not applicable, deferred with owner, fixed, or accepted by an authorized owner. Specify remediation invariant, regression/sibling checks, rollback, residual risk, and release-blocking decision.
 
 ## Outputs and handoff
 

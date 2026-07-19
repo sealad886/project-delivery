@@ -23,7 +23,7 @@ Inspect project brief/success measures, requirements/design/plan/RAID/status his
 4. Capture what should continue, stop, or change; prefer one or a few measurable experiments over a large wish list.
 5. Record technical debt and follow-ups with rationale, impact, priority, owner or `unassigned`, target/revisit trigger, dependencies, and acceptance/evidence. Do not use vague TODOs.
 6. Update canonical ADRs, runbooks, tests, templates, instructions, roadmap/issues, and decision/assumption logs. Link to source evidence; do not create a parallel memory store.
-7. Close or explicitly carry forward RAID items, deprecated paths, flags, temporary compatibility, and migration cleanup.
+7. Close or explicitly carry forward RAID items, deprecated paths, flags, temporary compatibility, and migration cleanup. Reconcile external tasks, decisions, meeting actions, status pages, and cross-system divergence; retire temporary coordination artifacts when safe.
 8. Protect privacy: persist durable project learning, not psychographic profiles, hidden telemetry, or unnecessary personal data.
 
 ## Outputs and handoff

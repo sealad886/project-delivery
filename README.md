@@ -4,7 +4,7 @@ Project Delivery is a self-contained Codex plugin for taking software work from 
 
 ## Canonical lifecycle
 
-`Context → Requirements → Solution Design → Delivery Plan → Implementation → Quality → Documentation → Review and Operational Audit → Release → Retrospective`
+`Context → Requirements → Solution Design → Delivery Plan ↔ Coordination → Implementation → Quality → Documentation → Review and Operational Audit → Release → Retrospective`
 
 Start with `delivery-orchestrator` for end-to-end work or invoke a lifecycle skill directly for a bounded request. The plugin has no MCP server, app, hook, external CLI, telemetry, or dependency on another plugin.
 
@@ -15,6 +15,7 @@ Start with `delivery-orchestrator` for end-to-end work or invoke a lifecycle ski
 - `requirements-acceptance`: define traceable requirements and acceptance criteria.
 - `solution-design`: design production-ready changes and ADRs.
 - `delivery-planning`: build scalable WBS, RAID, milestone, and multi-PR plans.
+- `delivery-coordination`: reconcile systems of record, meetings, status, and authorized external updates.
 - `implementation-execution`: implement approved work safely and incrementally.
 - `testing-quality`: select and run risk-based verification with real results.
 - `documentation-knowledge`: update canonical user, developer, operator, and release knowledge.
@@ -29,4 +30,4 @@ The audit, capability-parity map, safe uninstall sequence, and verification evid
 
 ## Safety and dependencies
 
-Repository instructions and user authority always win. External issue trackers, source hosts, CI systems, deployment platforms, and memory tools are optional surfaces used only when present and authorized. Publishing, merging, deploying, destructive operations, and external writes require the authority appropriate to their impact.
+Repository instructions and user authority always win. External issue trackers, source hosts, knowledge stores, communication tools, calendars, CI systems, deployment platforms, and memory tools are optional adapters used only when present and authorized. The plugin remains useful without them by producing drafts, mappings, and receipts locally. Publishing, merging, deploying, destructive operations, and external writes require the authority appropriate to their impact.

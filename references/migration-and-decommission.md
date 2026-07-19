@@ -4,7 +4,7 @@
 
 Project Delivery is designed to remain fully useful after Boss, Epic, Superpowers, and overlapping generic delivery/workflow packs are uninstalled. Coexistence is temporary for comparison and rollback. It does not call or reference their runtime state.
 
-Do not automatically uninstall specialist integrations such as GitHub, Codex Security, CodeRabbit, Cloudflare/build-platform plugins, document tools, or business connectors merely because this plugin can route related work. They may provide live tools or domain depth rather than a competing lifecycle. Decide their status explicitly.
+Do not equate workflow replacement with live access. Project Delivery fully replaces generic PM/delivery methodology, including workflow ideas synthesized from connectors, but cannot reproduce authenticated service access without an adapter. GitHub, security scanners, deployment/platform tools, documents, and business connectors may therefore remain optional access/depth adapters; uninstalling one removes its live surface unless equivalent access remains. Decide adapter status explicitly and never copy app IDs, MCP declarations, credentials, or provider contracts into core.
 
 ## Migration map
 
@@ -34,6 +34,8 @@ Do not automatically uninstall specialist integrations such as GitHub, Codex Sec
 | Everything Claude Code plan/orchestrate/TDD/review/verify/docs | corresponding canonical lifecycle skills | Generic delivery overlap replaced; language/framework pattern skills remain separate if desired |
 | Standalone create-plan/ADR/quality/adversarial/security/commit skills | planning/design/review/security/implementation | Canonical lifecycle absorbs general behavior; retain specialist skills only if deeper scope is still wanted |
 | Marketplace PASS/LIGHT/FULL, acceptance receipts, fresh-eyes review, roadmaps/waves | orchestrator/planning/quality/review/release | Attribution-free synthesis; no executable/runtime dependency imported |
+| Curated trackers/docs/meetings/messages/calendars | `delivery-coordination`, context/planning/docs | Absorb source-of-truth, mapping, meeting/status, exact-target, authority, and receipt method; provider access remains optional |
+| Curated CI/security/deployment/observability/flags | quality/review/security/release | Absorb evidence contracts and gates; provider commands/runtimes remain optional |
 
 ## Intentionally excluded legacy behavior
 
@@ -48,7 +50,7 @@ Exclusion means the unsafe/unavailable mechanism is not reproduced; the user out
 ## Decommission readiness gates
 
 1. Manifest, skill, and link validators pass at the release revision.
-2. All 12 skills are discoverable in a fresh task after installation.
+2. All 13 skills are discoverable in a fresh task after installation.
 3. The smoke scenarios in `smoke-tests.md` produce expected artifacts and routing without invoking legacy plugins.
 4. At least one real small change and one medium or multi-PR dry run complete with requirement-to-evidence traceability.
 5. Review/security/release flows work with legacy plugins disabled in a canary task.

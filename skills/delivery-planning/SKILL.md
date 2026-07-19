@@ -25,12 +25,12 @@ Expect approved requirements/design or explicitly record what is provisional. In
 6. Create/update the RAID log with probability/impact, response, trigger, owner, due/review point, and state.
 7. Decompose PRs so each is coherent, independently reviewable, integration-safe, and either value-delivering or a clear enabling slice. Specify base dependencies, contract/compatibility strategy, feature flags, evidence gates, merge order, and rollback boundaries.
 8. For multi-release work, define incremental value, migration/coexistence/deprecation phases, release train/cutover gates, and follow-up removal.
-9. Define communication/status cadence, stakeholder decisions, escalation triggers, scope baseline, and change-control process proportional to risk.
+9. Define communication/status cadence, stakeholder decisions, escalation triggers, scope baseline, and change-control process proportional to risk. When external systems are involved, map internal IDs to provider IDs, retain native status mappings, name sync ownership/cadence and exact destinations, define update triggers/reconciliation checkpoints/write authority, and escalate stale state.
 10. Check DoR/DoD, requirement coverage, resource/conflict constraints, and stop conditions.
 
 ## Outputs and handoff
 
-Ordered WBS, dependency/critical-path view, milestones, ownership, estimates/confidence, RAID, PR/release map, evidence waves, communication/change-control plan, and readiness status. Handoff to `implementation-execution` one ready slice at a time.
+Ordered WBS, dependency/critical-path view, milestones, ownership, estimates/confidence, RAID, PR/release map, evidence waves, communication/change-control plan, external mapping/sync plan when applicable, and readiness status. Handoff to `delivery-coordination` for synchronization and `implementation-execution` one ready slice at a time.
 
 ## Completion evidence
 
