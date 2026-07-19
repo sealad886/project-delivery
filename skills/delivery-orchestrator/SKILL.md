@@ -23,7 +23,7 @@ Read `../.shared/operating-model.md` before routing. Use `../.shared/artifact-te
 
 ## Inputs and evidence
 
-Inspect the user request; applicable `AGENTS.md`; repository status/history/branches/tags; README/contributing/architecture/security docs; code/tests; issue/PR templates; CI/release config; prior plans/ADRs/decisions; authorized external systems and local memory when accessible. Treat marketplace/plugin capabilities as optional adapters, never assumed facts.
+Inspect the user request; applicable `AGENTS.md`; repository status/history/branches/tags; README/contributing/architecture/security docs; code/tests; issue/PR templates; CI/release config; prior plans/ADRs/decisions; authorized external systems and local memory when accessible. Treat plugin and connector capabilities as optional adapters, never assumed facts.
 
 ## Workflow
 

@@ -132,7 +132,7 @@ Write receipt: provider | target | actor | timestamp | changed fields | prior/ne
 ```markdown
 Scenario/prompt:
 Plugin source version and commit:
-Installed marketplace/cache identity:
+Installed plugin/cache identity:
 Task/model identity and timestamp:
 Repository revision and relevant instructions:
 Expected route / actual route:

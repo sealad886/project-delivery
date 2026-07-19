@@ -35,11 +35,11 @@ Run from the repository root:
 ```bash
 python3 scripts/check_plugin.py .
 python3 scripts/check_routes.py .
-python3 scripts/check_marketplace_bundle.py .
+python3 scripts/check_distribution_bundle.py .
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
-When the Codex Plugin Creator skill is available, also run its manifest validator and validate every changed skill with Skill Creator. Marketplace submissions must pass the pinned HOL scanner workflow with no high or critical finding.
+When the Codex Plugin Creator skill is available, also run its manifest validator and validate every changed skill with Skill Creator. Release candidates must pass the pinned HOL scanner workflow with no high or critical finding.
 
 Record exact commands, results, revision, and any checks not run. Static route-contract validation must never be described as proof of interactive agent behavior.
 

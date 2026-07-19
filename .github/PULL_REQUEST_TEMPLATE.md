@@ -12,7 +12,7 @@ Describe the problem, intended outcome, and user or maintainer impact.
 
 - [ ] `python3 scripts/check_plugin.py .`
 - [ ] `python3 scripts/check_routes.py .`
-- [ ] `python3 scripts/check_marketplace_bundle.py .`
+- [ ] `python3 scripts/check_distribution_bundle.py .`
 - [ ] `python3 -m unittest discover -s tests -p 'test_*.py' -v`
 - [ ] Plugin Creator validation when available
 - [ ] Changed skills validated when available
