@@ -1,6 +1,7 @@
 ---
 name: release-change
 description: Prepare, validate, and—when explicitly authorized—execute integration, CI/CD, versioning, deployment, rollback, monitoring, post-release verification, and hotfix/change-management work.
+license: MIT
 ---
 
 # Release, CI/CD, and Change Management

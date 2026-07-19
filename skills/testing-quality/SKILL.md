@@ -1,6 +1,7 @@
 ---
 name: testing-quality
 description: Select, execute, and report risk-based validation for a change or release candidate. Use for unit, integration, end-to-end, contract, regression, invariant, static, performance, security, CI-parity, and failure-triage evidence.
+license: MIT
 ---
 
 # Testing and Quality Engineering

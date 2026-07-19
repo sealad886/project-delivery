@@ -1,6 +1,7 @@
 ---
 name: delivery-orchestrator
 description: Route an idea, change, review, or release through the minimum sufficient project-delivery lifecycle. Use for end-to-end delivery, ambiguous requests, multi-PR initiatives, or when the correct workflow depth is unclear.
+license: MIT
 ---
 
 # Delivery Orchestrator

@@ -6,6 +6,12 @@ This file records user-visible changes to Project Delivery. Dates use ISO 8601 a
 
 No unreleased changes.
 
+## 1.3.1 - 2026-07-19
+
+### Changed
+
+- Added explicit MIT metadata to all 13 skill manifests so hosted skill scanners can resolve each skill's license without inferring it from the plugin root.
+
 ## 1.3.0 - 2026-07-19
 
 ### Added

@@ -1,6 +1,7 @@
 ---
 name: delivery-coordination
 description: Coordinate delivery across authorized trackers, documents, meetings, calendars, messages, and operational systems while preserving canonical sources, exact targets, write authority, traceability, and read-after-write evidence.
+license: MIT
 ---
 
 # Delivery Coordination

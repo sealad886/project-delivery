@@ -1,6 +1,7 @@
 ---
 name: project-context
 description: Refine an idea, request, problem, or change into an evidence-backed project brief. Use when purpose, value, scope, constraints, stakeholders, success, readiness, or existing repository context is incomplete.
+license: MIT
 ---
 
 # Project Context and Idea Refinement

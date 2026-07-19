@@ -1,6 +1,7 @@
 ---
 name: solution-design
 description: Design a production-ready solution from repository evidence and accepted requirements. Use for architecture, interfaces, data contracts, compatibility, migrations, rollback, observability, security, testability, release effects, or ADR decisions.
+license: MIT
 ---
 
 # Solution Design and Architecture

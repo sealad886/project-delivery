@@ -1,6 +1,7 @@
 ---
 name: implementation-execution
 description: Implement an approved delivery-plan slice safely in the existing repository. Use for features, fixes, refactors, infrastructure, configuration, migrations, or documentation changes that require edits and incremental verification.
+license: MIT
 ---
 
 # Implementation and Execution

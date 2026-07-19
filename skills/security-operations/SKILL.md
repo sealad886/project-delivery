@@ -1,6 +1,7 @@
 ---
 name: security-operations
 description: Assess and improve security, privacy, risk, reliability, observability, supportability, and operational readiness across requirements, design, implementation, review, or release.
+license: MIT
 ---
 
 # Security, Risk, and Operational Readiness

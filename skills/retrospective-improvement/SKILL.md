@@ -1,6 +1,7 @@
 ---
 name: retrospective-improvement
 description: Close delivery by capturing outcomes, learning, technical debt, follow-up work, reusable decisions, and measurable process improvements in canonical project knowledge.
+license: MIT
 ---
 
 # Retrospective and Continuous Improvement

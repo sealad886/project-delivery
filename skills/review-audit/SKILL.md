@@ -1,6 +1,7 @@
 ---
 name: review-audit
 description: Independently review a design, plan, diff, PR, repository slice, or release candidate against requirements, architecture, conventions, tests, security, operations, and release criteria with exact evidence-backed findings.
+license: MIT
 ---
 
 # Code Review and Audit

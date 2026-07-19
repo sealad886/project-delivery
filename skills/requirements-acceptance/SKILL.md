@@ -1,6 +1,7 @@
 ---
 name: requirements-acceptance
 description: Convert an approved project brief or request into testable requirements, work items, acceptance criteria, edge cases, non-functional requirements, and traceability. Use before design or implementation when expected behavior is not fully verifiable.
+license: MIT
 ---
 
 # Requirements and Acceptance Criteria

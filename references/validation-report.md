@@ -2,13 +2,13 @@
 
 Validation date: 2026-07-19
 
-Release target: `v1.3.0`
+Release target: `v1.3.1`
 
 Evidence scope: source candidate and deterministic mirror simulation; installed-cache and hosted-CI receipts are recorded after publication
 
 ## Decision
 
-The `1.3.0` source candidate passes the local structural, route-contract, marketplace-mirror, regression, Plugin Creator, Skill Creator, and HOL scanner gates listed below. This supports publication as a marketplace candidate. It does not by itself establish fresh-task routing, successful delivery in every downstream repository, production deployment readiness, or legacy-plugin uninstall readiness.
+The `1.3.1` source candidate passes the local structural, route-contract, marketplace-mirror, regression, Plugin Creator, Skill Creator, and HOL scanner gates listed below. This supports publication as a marketplace candidate. It does not by itself establish fresh-task routing, successful delivery in every downstream repository, production deployment readiness, or legacy-plugin uninstall readiness.
 
 Resolve the exact source and installed identities from the release tag, `.codex-plugin/plugin.json`, Codex plugin registry, and cache path. Do not use an embedded Git `HEAD` inside an installed cache as payload provenance; compare the selected source and cache payloads directly.
 
@@ -77,12 +77,13 @@ The runtime is independently implemented and contains no imported executable, ho
 
 ## Residual limitations
 
-- Fresh-task live route receipts for the 1.3.0 installed cache remain distinct post-install evidence.
+- Fresh-task live route receipts for the 1.3.1 installed cache remain distinct post-install evidence.
 - Real small-change and medium/multi-PR canaries remain required before uninstalling superseded generic workflow plugins.
 - Active legacy instructions and historical imperative calls must be neutralized in each consumer environment before disabling those plugins.
 - Specialist tools remain necessary where actual provider access, platform measurement, security scanning, signing/notarization, deployment, observability, or communication is required.
 - Marketplace inclusion depends on upstream review and automation; a submitted PR is not acceptance.
 - Hosted CI/scanner success must be read from the exact release commit after push and must not be inferred from this local report.
+- Hosted Cisco scanning treats the required PNG interface icons as informational binary assets. Optional privacy, terms, and screenshot metadata also remains absent rather than linking to inapplicable or fabricated policies; neither class is a high/critical finding.
 
 ## Release status
 

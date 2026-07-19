@@ -1,6 +1,7 @@
 ---
 name: delivery-planning
 description: Turn accepted requirements and design into a risk-scaled delivery plan with WBS, milestones, dependencies, critical path, ownership, estimates, RAID, communication, change control, and multi-PR/release slicing.
+license: MIT
 ---
 
 # Project Planning and Delivery Management

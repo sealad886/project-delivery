@@ -1,6 +1,7 @@
 ---
 name: documentation-knowledge
 description: Update canonical project knowledge for users, developers, operators, reviewers, releases, and future agents. Use for docs-only work or whenever a change affects behavior, interfaces, configuration, architecture, operations, migration, status, or release communication.
+license: MIT
 ---
 
 # Documentation and Knowledge Management
