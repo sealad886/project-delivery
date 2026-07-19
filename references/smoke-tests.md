@@ -1,6 +1,8 @@
 # Orchestrator smoke tests
 
-These are static routing simulations for authoring validation and live prompts for post-install/decommission validation.
+The canonical authored cases are machine-readable in [`../tests/route-contracts.json`](../tests/route-contracts.json) and validated by `python3 scripts/check_routes.py .`. That check proves contract completeness, valid skill names, taxonomy coverage, and forbidden-runtime declarations. It is static evidence only; it does not execute Codex or prove fresh-task routing.
+
+Use the prompts below for post-install and decommission smoke tests. Record fresh behavior with the Live route receipt in [`../skills/.shared/artifact-templates.md`](../skills/.shared/artifact-templates.md).
 
 | Scenario | Expected routing | Required artifacts/evidence |
 |---|---|---|
@@ -24,4 +26,22 @@ These are static routing simulations for authoring validation and live prompts f
 
 ## Post-uninstall assertions
 
-For each live smoke test, record the selected skills and verify that no output asks for `boss`, `epic`, `epic-harness`, Superpowers, `.boss/`, `.harness/`, `.superpowers/`, legacy hooks, or legacy MCP servers. Verify external connectors are treated as optional. A pass requires the expected artifacts, explicit actual/not-run evidence, and no fabricated project history.
+Before disabling a legacy workflow, inspect active `AGENTS.md` and repository instructions, prompt templates, hooks/configuration, historical plans with imperative calls, and plugin-specific state. Mark archival provenance as non-operative and capture the installed ID/version/configuration/reinstall rollback inventory without secret values.
+
+For each live smoke test, record:
+
+- exact prompt, repository revision, relevant instructions, task/model identity, timestamp, plugin source version, marketplace, and installed cache identity;
+- expected and actual route, scale/risk rationale, authority classification, artifacts expected/produced, commands/evidence, result, and residual gaps;
+- whether any output requested `boss`, `epic`, `epic-harness`, Superpowers, `.boss/`, `.harness/`, `.superpowers/`, legacy hooks, or legacy MCP servers; and
+- whether connectors remained optional and unavailable operations were truthfully reported.
+
+A behavioral pass requires the expected artifacts, explicit actual/not-run evidence, no fabricated project history, and no legacy runtime request. A blocked result is not a pass. Re-enable the disabled plugin immediately if parity or routing fails.
+
+## Evidence classes
+
+- **Static contract pass:** `check_routes.py` validates authored scenario data. It does not establish agent behavior.
+- **Fresh-task route pass:** a new task using the installed cache produces a complete route receipt for the prompt.
+- **Real-repository canary pass:** authorized work produces repository-native artifacts and actual validation evidence at a pinned revision.
+- **Decommission pass:** affected fresh-task and real-repository cases still pass after one legacy workflow is disabled, with rollback captured.
+
+Never collapse these evidence classes into a single `17/17` behavioral claim.

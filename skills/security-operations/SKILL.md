@@ -5,7 +5,7 @@ description: Assess and improve security, privacy, risk, reliability, observabil
 
 # Security, Risk, and Operational Readiness
 
-Read `../../references/operating-model.md`.
+Read `../.shared/operating-model.md`.
 
 ## When to invoke
 
@@ -24,7 +24,7 @@ Inspect repository/security/privacy policies, data flows/classification/retentio
 5. Analyze failure modes and reliability: dependency/timeouts/retries/backoff/circuit breaking, idempotency, consistency, capacity, graceful degradation, readiness versus liveness behavior, request/worker/queue/connection drain, backups and tested restore, DR, partial rollout, config skew, one-way data changes, and human error.
 6. Define operational readiness: classified/redacted/access-controlled telemetry, secret-free logs, authenticated ingestion, actionable alerts/dashboards, ownership/on-call/support, runbooks, preview data/secrets isolation and teardown, incident/hotfix path, cost/capacity signals, and post-release verification.
 7. Validate with appropriate static/dynamic/dependency/config/IaC/permission tests, graceful-shutdown checks, and recovery/restore exercises. Calibrate severity using reachability, exploitability, impact, existing controls, and evidence.
-8. Close every candidate as reportable/open, suppressed with rationale, not applicable, deferred with owner, fixed, or accepted by an authorized owner. Specify remediation invariant, regression/sibling checks, rollback, residual risk, and release-blocking decision.
+8. Close every candidate under the shared finding lifecycle. Suppression is evidence-based closure of a false positive, duplicate, or invalidated candidate—not risk acceptance—and requires closure category, exact rationale/counterevidence, affected sibling/variant checks, qualified reviewer/date, expiry or revalidation trigger, release treatment, residual uncertainty, and a canonical finding link for duplicates. Material uncertainty stays open or becomes deferred/blocked with an owner and next proof action. Specify remediation invariant, regression evidence, rollback, residual risk authority, and release-blocking decision.
 
 ## Outputs and handoff
 

@@ -5,7 +5,7 @@ description: Convert an approved project brief or request into testable requirem
 
 # Requirements and Acceptance Criteria
 
-Read `../../references/operating-model.md` and use the requirements template in `../../assets/artifact-templates.md`.
+Read `../.shared/operating-model.md` and use the requirements template in `../.shared/artifact-templates.md`.
 
 ## When to invoke
 

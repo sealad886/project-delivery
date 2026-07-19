@@ -5,7 +5,7 @@ description: Coordinate delivery across authorized trackers, documents, meetings
 
 # Delivery Coordination
 
-Read `../../references/operating-model.md` and `../../references/external-systems.md`; use the coordination templates in `../../assets/artifact-templates.md`.
+Read `../.shared/operating-model.md` and `../.shared/external-systems.md`; use the coordination templates in `../.shared/artifact-templates.md`.
 
 ## When to invoke
 

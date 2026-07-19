@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "evidence_class": "static authored-route contract",
+  "limitations": "These contracts validate authored routing data and skill references. They do not prove which skills a fresh Codex task actually invokes.",
+  "forbidden_runtime_dependencies": [
+    "boss",
+    "epic",
+    "epic-harness",
+    "superpowers"
+  ],
+  "scenarios": [
+    {
+      "id": "ROUTE-001",
+      "prompt": "Clarify and plan this small bug fix.",
+      "scale": "small",
+      "risk": "risk-dependent",
+      "authority": "planning-only",
+      "expected_route": ["delivery-orchestrator", "project-context", "requirements-acceptance", "solution-design", "delivery-planning"],
+      "expected_artifacts": ["compact project brief", "acceptance criteria", "root-cause evidence or labeled hypothesis", "ordered plan", "regression-test plan", "rollback note"],
+      "required_evidence": ["repository instructions and status", "current behavior", "related tests and history"],
+      "stop_conditions": ["do not edit files", "do not claim an unverified root cause"]
+    },
+    {
+      "id": "ROUTE-002",
+      "prompt": "Design and implement this medium-sized feature.",
+      "scale": "medium",
+      "risk": "risk-dependent",
+      "authority": "change",
+      "expected_route": ["delivery-orchestrator", "project-context", "requirements-acceptance", "solution-design", "delivery-planning", "implementation-execution", "testing-quality", "documentation-knowledge", "review-audit", "security-operations", "release-change", "retrospective-improvement"],
+      "expected_artifacts": ["brief", "requirements and acceptance", "design", "WBS", "changes", "actual test evidence", "documentation", "review findings", "release gate"],
+      "required_evidence": ["repository conventions", "exact changed revision", "actual command results"],
+      "stop_conditions": ["implementation waits for Ready and Design gates", "publishing requires separate authority"]
+    },
+    {
+      "id": "ROUTE-003",
+      "prompt": "Break this large initiative into a series of PRs.",
+      "scale": "large",
+      "risk": "high",
+      "authority": "planning-only",
+      "expected_route": ["delivery-orchestrator", "project-context", "requirements-acceptance", "solution-design", "security-operations", "delivery-planning", "delivery-coordination"],
+      "expected_artifacts": ["project brief", "requirements", "ADRs", "RAID", "milestones", "critical path", "PR and release slices", "evidence waves"],
+      "required_evidence": ["repository boundaries", "dependencies", "release constraints", "known ownership and capacity"],
+      "stop_conditions": ["do not invent owners or dates", "do not implement under planning authority"]
+    },
+    {
+      "id": "ROUTE-004",
+      "prompt": "Review this existing PR for release readiness.",
+      "scale": "risk-dependent",
+      "risk": "risk-dependent",
+      "authority": "review-only",
+      "expected_route": ["review-audit", "testing-quality", "security-operations", "release-change"],
+      "expected_artifacts": ["pinned review scope", "requirement coverage", "located findings", "test and CI evidence", "release decision", "residual risk"],
+      "required_evidence": ["exact base and head", "supporting code", "actual checks and release configuration"],
+      "stop_conditions": ["do not implement fixes", "do not self-approve missing evidence"]
+    },
+    {
+      "id": "ROUTE-005",
+      "prompt": "Prepare this completed change for production release.",
+      "scale": "risk-dependent",
+      "risk": "high",
+      "authority": "release-preparation",
+      "expected_route": ["release-change", "testing-quality", "documentation-knowledge", "review-audit", "security-operations", "delivery-coordination"],
+      "expected_artifacts": ["immutable release unit", "gate evidence", "version and notes", "migration and flag plan", "rollout", "rollback", "post-release verification"],
+      "required_evidence": ["exact revision and artifact", "actual checks and approvals", "environment and provider capabilities"],
+      "stop_conditions": ["preparation does not authorize merge, tag, publish, deploy, flag change, or communication"]
+    },
+    {
+      "id": "ROUTE-006",
+      "prompt": "Document and hand off this operational change.",
+      "scale": "small-or-medium",
+      "risk": "medium-or-high",
+      "authority": "documentation-change",
+      "expected_route": ["delivery-orchestrator", "project-context", "requirements-acceptance", "documentation-knowledge", "security-operations", "release-change", "delivery-coordination"],
+      "expected_artifacts": ["canonical operational documentation", "validation evidence", "ownership and support handoff", "monitoring and rollback notes"],
+      "required_evidence": ["current behavior and configuration", "canonical documentation location", "operational constraints"],
+      "stop_conditions": ["external document mutation routes through delivery coordination", "do not invent support commitments"]
+    },
+    {
+      "id": "ROUTE-007",
+      "prompt": "Design this change but do not implement it.",
+      "scale": "risk-dependent",
+      "risk": "risk-dependent",
+      "authority": "design-only",
+      "expected_route": ["delivery-orchestrator", "project-context", "requirements-acceptance", "solution-design", "security-operations"],
+      "expected_artifacts": ["current and proposed design", "alternatives and tradeoffs", "contracts", "compatibility", "ADR or decision record", "open questions"],
+      "required_evidence": ["accepted requirements", "current architecture", "authoritative external documentation when applicable"],
+      "stop_conditions": ["stop before planning and implementation"]
+    },
+    {
+      "id": "ROUTE-008",
+      "prompt": "Review this change without modifying it.",
+      "scale": "risk-dependent",
+      "risk": "risk-dependent",
+      "authority": "review-only",
+      "expected_route": ["review-audit", "testing-quality", "security-operations"],
+      "expected_artifacts": ["pinned scope", "finding ledger", "evidence gaps", "decision", "residual risks"],
+      "required_evidence": ["diff or deterministic snapshot", "requirements", "supporting tests and conventions"],
+      "stop_conditions": ["do not edit", "do not suppress uncertain material candidates"]
+    },
+    {
+      "id": "ROUTE-009",
+      "prompt": "Make this documentation-only change.",
+      "scale": "small",
+      "risk": "low-or-risk-dependent",
+      "authority": "documentation-change",
+      "expected_route": ["delivery-orchestrator", "project-context", "requirements-acceptance", "documentation-knowledge", "testing-quality"],
+      "expected_artifacts": ["canonical documentation update", "link, example, or build evidence", "documentation impact handoff"],
+      "required_evidence": ["documentation conventions", "canonical source", "related behavior and version"],
+      "stop_conditions": ["do not invent code test results", "do not create duplicate documentation"]
+    },
+    {
+      "id": "ROUTE-010",
+      "prompt": "Handle this production incident and hotfix.",
+      "scale": "small-or-medium",
+      "risk": "critical",
+      "authority": "incident",
+      "expected_route": ["delivery-orchestrator", "release-change", "project-context", "requirements-acceptance", "solution-design", "implementation-execution", "testing-quality", "security-operations", "delivery-coordination", "retrospective-improvement"],
+      "expected_artifacts": ["incident timeline", "containment", "minimal repair", "regression evidence", "recovery verification", "deferred gates", "follow-up"],
+      "required_evidence": ["explicit incident authority", "preserved failure evidence", "actual recovery signal"],
+      "stop_conditions": ["production action stays within incident authority", "communication requires separate authority"]
+    },
+    {
+      "id": "ROUTE-011",
+      "prompt": "Turn these meeting notes into tracked follow-up.",
+      "scale": "small-or-medium",
+      "risk": "medium",
+      "authority": "coordination-only",
+      "expected_route": ["delivery-coordination", "requirements-acceptance", "delivery-planning", "documentation-knowledge"],
+      "expected_artifacts": ["source and freshness", "confirmed decisions", "action candidates with provenance", "target mappings", "draft payloads or receipts"],
+      "required_evidence": ["meeting source", "exact tracker targets", "write authority"],
+      "stop_conditions": ["notes do not silently create work", "draft authority does not authorize send or write"]
+    },
+    {
+      "id": "ROUTE-012",
+      "prompt": "Reconcile the tracker, specification, and repository status.",
+      "scale": "medium",
+      "risk": "medium",
+      "authority": "coordination-only",
+      "expected_route": ["delivery-coordination", "project-context", "documentation-knowledge", "delivery-planning"],
+      "expected_artifacts": ["source-of-truth map", "native and normalized states", "freshness", "conflicts", "reconciliation actions and receipts"],
+      "required_evidence": ["authorized system reads", "native IDs and statuses", "repository revision"],
+      "stop_conditions": ["do not silently choose between contradictory sources", "no write without exact target and authority"]
+    },
+    {
+      "id": "ROUTE-013",
+      "prompt": "Review this security-sensitive diff, including suppressed and deferred candidates.",
+      "scale": "risk-dependent",
+      "risk": "high",
+      "authority": "review-only",
+      "expected_route": ["review-audit", "security-operations", "testing-quality"],
+      "expected_artifacts": ["pinned coverage", "candidate proof and counterevidence", "closure records", "stable findings", "validation and release treatment"],
+      "required_evidence": ["source-control-sink reachability", "sibling analysis", "qualified closure and risk authority"],
+      "stop_conditions": ["uncertain material candidates remain open or deferred", "suppression is not risk acceptance"]
+    },
+    {
+      "id": "ROUTE-014",
+      "prompt": "Triage this flaky CI failure when some provider logs are unavailable.",
+      "scale": "small-or-medium",
+      "risk": "medium-or-high",
+      "authority": "review-only",
+      "expected_route": ["testing-quality", "release-change", "delivery-coordination"],
+      "expected_artifacts": ["first causal failure", "classification", "fanout", "same-revision reproduction", "retry rationale or evidence gap"],
+      "required_evidence": ["exact revision, job, and step", "available logs and artifacts", "provider capability"],
+      "stop_conditions": ["no blind retry", "do not claim CI parity without provider evidence"]
+    },
+    {
+      "id": "ROUTE-015",
+      "prompt": "Assess a failed staged deployment controlled by a feature flag.",
+      "scale": "medium-or-large",
+      "risk": "critical",
+      "authority": "incident",
+      "expected_route": ["release-change", "security-operations", "testing-quality", "delivery-coordination", "retrospective-improvement"],
+      "expected_artifacts": ["immutable release unit", "flag lifecycle", "deployment timeline", "telemetry baseline", "stop or rollback decision", "recovery and follow-up"],
+      "required_evidence": ["exact environment and artifact", "flag state and authority", "actual observation source"],
+      "stop_conditions": ["no flag or deployment mutation without authority", "pipeline success is not user recovery"]
+    },
+    {
+      "id": "ROUTE-016",
+      "prompt": "Plan and deliver a preview environment with a data migration.",
+      "scale": "large",
+      "risk": "high",
+      "authority": "change",
+      "expected_route": ["delivery-orchestrator", "project-context", "requirements-acceptance", "solution-design", "delivery-planning", "security-operations", "implementation-execution", "testing-quality", "release-change", "delivery-coordination"],
+      "expected_artifacts": ["isolation and parity design", "migration phases", "compatibility window", "restore evidence", "TTL and teardown", "artifact-bound release evidence"],
+      "required_evidence": ["actual provider capabilities", "data classification", "backup and restore path"],
+      "stop_conditions": ["do not invent an environment", "code rollback does not imply data rollback"]
+    },
+    {
+      "id": "ROUTE-017",
+      "prompt": "Validate this platform performance, packaging, signing, or distribution claim.",
+      "scale": "risk-dependent",
+      "risk": "high",
+      "authority": "review-only",
+      "expected_route": ["testing-quality", "review-audit", "security-operations", "release-change", "documentation-knowledge"],
+      "expected_artifacts": ["focused scenario", "exact platform and build identity", "fresh comparable measurements", "artifact provenance", "signing and distribution evidence", "limitations"],
+      "required_evidence": ["exact revision, device, runtime, build, data, and run count", "platform-native evidence"],
+      "stop_conditions": ["packaging is not signing, notarization, deployment, or distribution", "do not generalize from a noisy sample"]
+    }
+  ]
+}

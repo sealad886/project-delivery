@@ -5,7 +5,7 @@ description: Close delivery by capturing outcomes, learning, technical debt, fol
 
 # Retrospective and Continuous Improvement
 
-Read `../../references/operating-model.md`; use the retrospective template in `../../assets/artifact-templates.md`.
+Read `../.shared/operating-model.md`; use the retrospective template in `../.shared/artifact-templates.md`.
 
 ## When to invoke
 

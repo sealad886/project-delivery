@@ -5,7 +5,7 @@ description: Refine an idea, request, problem, or change into an evidence-backed
 
 # Project Context and Idea Refinement
 
-Read `../../references/operating-model.md`. Produce or update the Project Brief template in `../../assets/artifact-templates.md`.
+Read `../.shared/operating-model.md`. Produce or update the Project Brief template in `../.shared/artifact-templates.md`.
 
 ## When to invoke
 

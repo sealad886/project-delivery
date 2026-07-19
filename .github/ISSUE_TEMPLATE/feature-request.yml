@@ -1,0 +1,36 @@
+name: Feature request
+description: Propose a coherent improvement to the canonical delivery lifecycle
+title: "[Enhancement]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or outcome
+      description: What delivery problem is not adequately handled today, and who is affected?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and examples
+      description: Provide repository-neutral examples or safely shareable receipts. Do not copy another plugin's text or assets.
+    validations:
+      required: true
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Likely canonical owner
+      options:
+        - Existing lifecycle skill
+        - Shared operating model or template
+        - Validation and evidence
+        - Public documentation
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Safety, compatibility, and non-scope
+      description: Note authority, provider, migration, or duplication risks.

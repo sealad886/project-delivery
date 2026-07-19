@@ -5,7 +5,7 @@ description: Prepare, validate, and—when explicitly authorized—execute integ
 
 # Release, CI/CD, and Change Management
 
-Read `../../references/operating-model.md`; use the release template in `../../assets/artifact-templates.md`.
+Read `../.shared/operating-model.md`; use the release template in `../.shared/artifact-templates.md`.
 
 ## When to invoke
 
@@ -17,7 +17,7 @@ Resolve exact change set/revision, host/provider and available read/write capabi
 
 ## Workflow
 
-1. Recover traceability: requirements, accepted design, work/PRs, actual tests, docs, review/security findings, and unresolved risks. Missing proof remains a blocker/gap, not a retrospective assertion.
+1. Recover traceability: requirements, accepted design and decisions, work/PRs, actual tests, docs, review/security findings, and unresolved risks. Confirm every material `RISK-*` and `DEC-*`/ADR has an affected requirement/work/test mapping and explicit release disposition. Missing proof remains a blocker/gap, not a retrospective assertion.
 2. Declare the release unit: commit, artifact/deployment ID or digest, provenance/build result, promotion history, and target account/project/service/region/environment/configuration identity. Prefer build-once/promotion of the exact validated artifact when the platform supports it; record exceptions.
 3. Define branch/PR/merge strategy, exact base/head, dependency order, required approvals/checks, native versus external check providers, missing/pending-log gaps, merge queue/rebase policy, and integration test point from repository rules.
 4. Diagnose the first causal CI failure from actual logs/config using the quality failure taxonomy. Use same-revision reproduction and narrow evidence-backed retry; never repeatedly retry or redeploy unchanged work. Fix only within authority and rerun required checks.

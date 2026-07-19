@@ -5,7 +5,7 @@ description: Turn accepted requirements and design into a risk-scaled delivery p
 
 # Project Planning and Delivery Management
 
-Read `../../references/operating-model.md`; use the plan/RAID/status templates in `../../assets/artifact-templates.md`.
+Read `../.shared/operating-model.md`; use the plan/RAID/status templates in `../.shared/artifact-templates.md`.
 
 ## When to invoke
 
@@ -22,7 +22,7 @@ Expect approved requirements/design or explicitly record what is provisional. In
 3. Define `MS-*` milestones by demonstrable outcomes, not activity completion.
 4. Assign confirmed owners or mark `unassigned`; distinguish accountable decision owner, implementer, reviewer, release/operator roles where relevant.
 5. Estimate using the repository/team convention. State range/unit and confidence plus uncertainty drivers; do not present agent guesses as commitments.
-6. Create/update the RAID log with probability/impact, response, trigger, owner, due/review point, and state.
+6. Create/update the RAID log with probability/impact, response, trigger, owner, due/review point, state, and trace links. Connect each material `RISK-*` to its originating requirement or decision, mitigation/contingency work, verification or finding, and release disposition. Connect each `DEC-*`/ADR to affected requirements, work, tests, and release effects.
 7. Decompose PRs so each is coherent, independently reviewable, integration-safe, and either value-delivering or a clear enabling slice. Specify base dependencies, contract/compatibility strategy, feature flags, evidence gates, merge order, and rollback boundaries.
 8. For multi-release work, define incremental value, migration/coexistence/deprecation phases, release train/cutover gates, and follow-up removal.
 9. Define communication/status cadence, stakeholder decisions, escalation triggers, scope baseline, and change-control process proportional to risk. When external systems are involved, map internal IDs to provider IDs, retain native status mappings, name sync ownership/cadence and exact destinations, define update triggers/reconciliation checkpoints/write authority, and escalate stale state.

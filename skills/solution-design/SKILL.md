@@ -5,7 +5,7 @@ description: Design a production-ready solution from repository evidence and acc
 
 # Solution Design and Architecture
 
-Read `../../references/operating-model.md`; use the design/ADR template in `../../assets/artifact-templates.md`.
+Read `../.shared/operating-model.md`; use the design/ADR template in `../.shared/artifact-templates.md`.
 
 ## When to invoke
 

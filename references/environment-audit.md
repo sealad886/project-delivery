@@ -4,7 +4,7 @@ Audit date: 2026-07-19. Sources were inspected statically; downloaded installati
 
 ## Environment facts
 
-- Workspace `/Users/andrew/.codex/skills` is a small Git repository with three commits and extensive pre-existing untracked skill directories. It has no remote, tags, README, CI, issue/PR templates, changelog, or release configuration. Those unrelated changes were preserved.
+- The audited Codex skills workspace was a small Git repository with three commits and extensive pre-existing untracked skill directories. It had no remote, tags, README, CI, issue/PR templates, changelog, or release configuration. Those unrelated changes were preserved.
 - Applicable instructions require repository-first reuse, evidence-based verification, current authoritative docs for third-party APIs, visible progress, project `.venv` use, Conventional Commits, and safe handling of unrelated changes.
 - Codex config explicitly lists five marketplaces with 182 total entries. The official `openai-curated` marketplace is a complete local Git snapshot with 180 entries; sibling `openai-api-curated` has 29 overlapping API-oriented entries and is not double-counted.
 - The personal marketplace did not exist before Plugin Creator created it for this plugin.
@@ -13,12 +13,12 @@ Audit date: 2026-07-19. Sources were inspected statically; downloaded installati
 
 | Marketplace | Status/source | Revision/update | Entries | Confidence |
 |---|---|---|---:|---|
-| openai-bundled | configured local `/Users/andrew/.codex/.tmp/bundled-marketplaces/openai-bundled` | updated 2026-07-18 | 5 | High |
-| openai-primary-runtime | configured local `/Users/andrew/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime` | updated 2026-07-16 | 5 | High |
+| openai-bundled | configured local bundled marketplace snapshot | updated 2026-07-18 | 5 | High |
+| openai-primary-runtime | configured local primary-runtime marketplace snapshot | updated 2026-07-16 | 5 | High |
 | mlx-optimizer-local | configured Git `https://github.com/sealad886/mlx-optimizer-plugin.git` | `7762ed1c…` | 1 | High |
 | everything-claude-code | configured Git `https://github.com/WorldFlowAI/everything-claude-code.git` | `432485ba…` | 1 | High |
 | awesome-codex-plugins | configured Git `https://github.com/hashgraph-online/awesome-codex-plugins.git`, sparse main | `fa1d122e…` | 170 | High |
-| openai-curated | official local Git snapshot `/Users/andrew/.codex/.tmp/plugins`; manifest `.agents/plugins/marketplace.json` | `11c74d6ba24d3a6d48f54a194cd00ef3beea18f9`, 2026-07-13 | 180 | High exact contents/medium upstream transport (checkout has no remote) |
+| openai-curated | official local Git snapshot; manifest `.agents/plugins/marketplace.json` | Git snapshot `11c74d6ba24d`, 2026-07-13 | 180 | High exact local contents/medium upstream transport (checkout had no remote) |
 
 Every marketplace manifest was parsed and searched across names, descriptions, categories, skills, and source paths. Shortlisted sources already existed in pinned local snapshots, so no temporary downloads were needed.
 
@@ -38,7 +38,7 @@ Relevant source trees were inspected statically at the exact snapshot above; no 
 | Datadog 0.1.2; Statsig 2.0.3; Asana/ClickUp/Monday/Teamwork | app declarations/marketplace prompts only | advertised optional operational/work surfaces | Metadata-only optional adapters; Medium; no behavior inferred |
 | build iOS/macOS/web and test Android | platform skills/references | focused scenario, fresh artifact identity, comparable measurement, packaging/distribution gates | Adapt generic evidence contract; High static |
 | Plugin Eval 0.1.2 | skill/package/benchmark references | fresh-task scenario benchmarking and comparison | Optional authoring validation only; High static |
-| CodeRabbit 1.1.4 | skill source | specialized review | Exclude dependency/installer; unsafe remote-pipe install guidance conflicts with policy; High |
+| CodeRabbit 1.1.4 | skill source | specialized review | Exclude dependency/installer; remote-pipe installation guidance does not meet the local policy; High |
 
 All ten user-visible recommended connectors (Atlassian Rovo, Box, Google Calendar, Google Drive, Notion, Outlook Calendar, Outlook Email, SharePoint, Slack, Teams) had locally inspectable implementations in this snapshot. They are available but not installed and remain optional adapters, not dependencies.
 
@@ -61,7 +61,7 @@ All ten user-visible recommended connectors (Atlassian Rovo, Box, Google Calenda
 
 ## Available marketplace matrix
 
-Marketplace entries prove advertised intent, not runtime safety. Awesome paths are relative to `/Users/andrew/.codex/.tmp/marketplaces/awesome-codex-plugins`.
+Marketplace entries prove advertised intent, not runtime safety. Awesome paths below are relative to the configured `awesome-codex-plugins` marketplace root.
 
 | Source | Status/location | Capability/pattern | Strength/gap | Disposition → destination | Confidence |
 |---|---|---|---|---|---|
@@ -96,7 +96,7 @@ Marketplace entries prove advertised intent, not runtime safety. Awesome paths a
 | Workflow Kit | Available `plugins/Le-Xuan-Thang/workflow-kit` | vision→maintenance advertised | no standard SKILL.md found | Leave partially unverified/excluded | Low implementation |
 | Zagrosi Forge | Available `plugins/zagrosi-code/zagrosi-forge` | brief/research/TDD/gates | broad traceability | Adapt → planning/execution/quality | Medium |
 | OpenProject Codex | Available `plugins/varaprasadreddy9676/openproject-codex-plugin` | work packages/boards/wiki/reporting | external PM integration | Exclude core dependency; optional ecosystem | Medium |
-| Task Scheduler | Available `plugins/6Delta9/task-scheduler-codex-plugin` | capacity/block dates | scheduling depth; MCP | Adapt estimation only | Medium |
+| Task Scheduler | Available marketplace entry by `6Delta9` | capacity/block dates | scheduling depth; MCP | Adapt estimation only | Medium |
 | Costguard | Available `plugins/mbanderas/costguard` | CI/cloud cost audit | operational cost lens | Adapt → release/operations | Medium |
 | HOL Guard | Available `plugins/hashgraph-online/hol-guard-plugin` | plugin/release security receipts | trust/release checks; runtime | Adapt concepts → security/release | Medium |
 | Linear/Asana/ClickUp/Monday/Teamwork | Official available, not installed | external issue/project systems | useful live coordination | Optional surfaces; no dependency | High metadata |
@@ -113,5 +113,5 @@ All ten user-visible recommendations exist in the official catalog and were not 
 
 - Epic inspected: manifest, hooks, MCP config, package/README/security, all 27 skills. Superpowers inspected: manifest, all 14 skills, agents, prompts, scripts/references. Boss inspected: 94 files covering manifest, marketplace metadata, root/nested skills, agents, commands, prompts, hooks, references, templates, package/README/security.
 - Exact upstream commits for installed Epic/Superpowers/Boss caches were not recorded; versions and repository URLs come from local manifests. Confidence is high for installed snapshots, medium for upstream identity beyond those declarations.
-- Official catalog exact snapshot commit is unavailable. Awesome configured source is pinned, and all candidates were already local; no downloads or temporary evidence records were necessary.
+- The exact local official-catalog snapshot commit is recorded above; correspondence to an authoritative upstream transport revision remains unverified because that checkout had no configured remote. The Awesome configured source was pinned, and all candidates were already local, so no downloads were necessary.
 - No plugin installer, hook, lifecycle script, binary, MCP server, or downloaded executable was run.

@@ -5,7 +5,7 @@ description: Update canonical project knowledge for users, developers, operators
 
 # Documentation and Knowledge Management
 
-Read `../../references/operating-model.md`.
+Read `../.shared/operating-model.md`.
 
 ## When to invoke
 
@@ -23,7 +23,7 @@ Inspect repository documentation conventions, README/contributing, docs site/con
 4. Keep claims aligned with implementation and actual test/release evidence. Distinguish planned from released behavior and commands run from illustrative commands.
 5. Use repository terminology and navigation. Avoid plugin-branded project folders or private session details.
 6. Validate links, examples, generated docs, CLI help, docs builds, and version references using repository tools.
-7. For external documents, choose update versus append versus new artifact deliberately, verify by readback, and record knowledge ownership/follow-up for intentionally deferred docs.
+7. Own the content, canonical-location choice, and validation for external documents, but route live external mutation through `delivery-coordination` for exact target resolution, capability discovery, authority, execution, and readback receipt. When live access is absent, produce the exact proposed update and record the operation not performed.
 
 ## Outputs and handoff
 

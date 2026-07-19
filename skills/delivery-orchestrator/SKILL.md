@@ -9,7 +9,7 @@ description: Route an idea, change, review, or release through the minimum suffi
 
 Own lifecycle routing and truthful state. Do not replace specialist work; invoke or apply the relevant skills and carry their artifacts forward.
 
-Read `../../references/operating-model.md` before routing. Use `../../assets/artifact-templates.md` when the repository has no canonical format.
+Read `../.shared/operating-model.md` before routing. Use `../.shared/artifact-templates.md` when the repository has no canonical format.
 
 ## When to invoke
 
@@ -18,6 +18,7 @@ Read `../../references/operating-model.md` before routing. Use `../../assets/art
 - Work spans multiple PRs, releases, systems, or teams.
 - A design-only, review-only, documentation-only, or release-only request needs bounded routing.
 - Risk/scale is unclear or the current lifecycle state must be recovered.
+- A legacy workflow is being replaced, disabled, or decommissioned.
 
 ## Inputs and evidence
 
@@ -39,12 +40,17 @@ Inspect the user request; applicable `AGENTS.md`; repository status/history/bran
    - Coordination/tracker/status/meeting/communication-only: recover canonical sources and authority → `delivery-coordination` → documentation or planning only when durable state changes; do not turn analysis or drafts into external writes.
    - Documentation-only: compact context/AC → documentation-knowledge → appropriate link/build checks. Add security-operations and release-change checks when the documentation concerns operations, configuration, migration, deployment, rollback, or production support.
    - Hotfix/incident: detect/contain and preserve timeline/evidence → mitigate or rollback under explicit incident authority → diagnose and repair → targeted regression plus the broadest time-feasible quality gate → verify recovery and communicate when separately authorized → retrospective/follow-up. Production restoration may precede normal completeness only under incident authority; record every deferred gate and owner.
+   - Migration/decommission: inventory active instructions, prompt templates, hooks/configuration, plugin-specific state, prior plans with imperative legacy calls, installed IDs/versions/enabled state, and supported reinstall sources → distinguish active directives from archival provenance → map durable requirements/decisions to canonical current artifacts → capture rollback → disable one candidate at a time → start a fresh task and run affected static and live smoke cases → re-enable on any routing or parity failure → uninstall only after the observation gate and user-confirmed scope. Do not edit consumer repositories or plugin configuration without corresponding authority.
 5. Invoke `delivery-coordination` when external sources may contain requirements/decisions, after plans need synchronization, before status or meetings, after review findings need tracking, and during release communication/handoff. Detect provider/tool capability; core execution must still work without it.
 6. Apply gates. Implementation may begin only when the Ready and necessary Design gates are satisfied. For low-risk work these may be concise and implicit in inspected evidence, but state that evidence.
 7. Maintain a visible checklist/status for multi-stage work. Report blockers, decisions, evidence, and next transition.
 8. End with the handoff contract and residual risk.
 
-## Outputs
+## Bounded delegation
+
+For large or independently reviewable work, delegation is optional and evidence-driven, never a mandatory swarm. Give each subagent one bounded outcome, exact inputs and repository revision, authority limits, expected artifact, and completion evidence. Use dependency waves and single-writer ownership for overlapping files. A fresh-context agent is preferred for independent review or security assessment when proportionate. Delegation never expands user authority; the primary agent remains accountable for reconciling conflicts, validating evidence, applying gates, and producing the final handoff.
+
+## Outputs and handoff
 
 A routing decision, scale/risk rationale, lifecycle checklist, artifact/evidence index, gate status, next skill(s), and blockers or authority needs.
 

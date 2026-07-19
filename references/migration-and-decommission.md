@@ -18,9 +18,9 @@ Do not equate workflow replacement with live access. Project Delivery fully repl
 | Epic discover/spec | `project-context`, `requirements-acceptance` | Keep problem/requirement/AC traceability; no harness state or auto-approval |
 | Epic go/tdd/debug/perf | `implementation-execution`, `testing-quality` | Merge implementation/debug/performance paths; remove arbitrary thresholds |
 | Epic audit/eval/verify | `review-audit`, `testing-quality` | Keep exact evidence, dedup, independent review, acceptance coverage |
-| Epic secure/threat-model/vuln/triage | `security-operations`, `review-audit` | Keep threat/validation chain; no unavailable CLI/MCP or contradictory paths |
+| Epic secure/threat-model/vuln/triage | `security-operations`, `review-audit` | Keep the evidence chain; omit runtime-specific CLI/MCP paths |
 | Epic commit/ship | `implementation-execution`, `release-change` | Keep Conventional Commits/CI evidence; detect host and require authority |
-| Epic context/orchestrate/team/council | `delivery-orchestrator`, shared handoff | Keep lifecycle state/dependency/independent decision concepts; exclude proprietary protocol |
+| Epic context/orchestrate/team/council | `delivery-orchestrator`, shared handoff | Keep lifecycle state, dependency, delegation, and independent-decision concepts; exclude plugin-specific protocols |
 | Epic document/reflect/evolve | `documentation-knowledge`, `retrospective-improvement` | Keep canonical docs/learning; exclude self-modification, telemetry, profiling |
 | Boss lifecycle DAG/commands | `delivery-orchestrator` | Keep phases and slice entry points; no missing CLI/hook enforcement |
 | Boss brainstorming/PM/PRD | `project-context`, `requirements-acceptance` | Keep product rigor optionally; add traceability/NFR/privacy/accessibility |
@@ -45,28 +45,30 @@ Do not equate workflow replacement with live access. Project Delivery fully repl
 - Universal TDD/E2E/coverage/performance thresholds, auto-approved specs, mandatory agent swarms, forced squashing/rebasing, and hard-coded GitHub/Node/framework workflows.
 - Plugin installation/update commands that mutate global environments.
 
-Exclusion means the unsafe/unavailable mechanism is not reproduced; the user outcome is covered through skills, canonical artifacts, explicit evidence, and repository-native tools.
+Exclusion means the inspected mechanism is not reproduced; the user outcome is covered through independently implemented skills, canonical artifacts, explicit evidence, and repository-native tools.
 
 ## Decommission readiness gates
 
 1. Manifest, skill, and link validators pass at the release revision.
 2. All 13 skills are discoverable in a fresh task after installation.
-3. The smoke scenarios in `smoke-tests.md` produce expected artifacts and routing without invoking legacy plugins.
-4. At least one real small change and one medium or multi-PR dry run complete with requirement-to-evidence traceability.
-5. Review/security/release flows work with legacy plugins disabled in a canary task.
-6. Canonical repository artifacts are used; no new `.boss`, `.harness`, or `.superpowers` state appears.
-7. Optional specialist-plugin decisions are recorded individually.
-8. A rollback exists: preserve the pre-uninstall plugin list/config and reinstall source/version information without retaining secrets.
-9. User confirms the superseded plugin list and accepts any explicitly documented parity exclusions.
+3. Active repository instructions, prompt templates, hooks/configuration, and prior plans have been checked for imperative legacy calls; archival provenance is clearly non-operative.
+4. The smoke scenarios in `smoke-tests.md` produce expected artifacts and routing without invoking legacy plugins.
+5. At least one real small change and one medium or multi-PR dry run complete with requirement-to-evidence traceability.
+6. Review/security/release flows work with legacy plugins disabled in a canary task.
+7. Canonical repository artifacts are used; no new `.boss`, `.harness`, or `.superpowers` state appears.
+8. Optional specialist-plugin decisions are recorded individually.
+9. A rollback exists: preserve the pre-uninstall plugin list/config and reinstall source/version information without retaining secrets.
+10. User confirms the superseded plugin list and accepts any explicitly documented parity exclusions.
 
 ## Safe decommission sequence
 
 1. Install/refresh Project Delivery through the personal marketplace and start a new task.
-2. Run the smoke suite with all plugins still installed; correct gaps using Plugin Creator’s cachebuster/update flow.
-3. Disable (do not immediately delete) one superseded generic lifecycle plugin at a time, beginning with the most redundant.
-4. Start a fresh task and rerun affected smoke scenarios after each change.
-5. If parity holds, uninstall that plugin using Codex’s supported plugin workflow; do not hand-edit global configuration.
-6. Retain specialist plugins unless explicitly classified as superseded.
-7. After the observation window, record final plugin set, versions, smoke evidence, residual gaps, and rollback status.
+2. Inspect active instructions, prompt templates, hooks/configuration, historical plans, and branded state. Convert imperative legacy calls to non-operative provenance and move durable decisions into canonical current artifacts.
+3. Capture the installed plugin/configuration rollback inventory, then run the smoke suite with all plugins still installed; correct gaps using Plugin Creator's cachebuster/update flow.
+4. Disable (do not immediately delete) one superseded generic lifecycle plugin at a time, beginning with the most redundant.
+5. Start a fresh task and rerun affected smoke scenarios after each change.
+6. If parity holds, uninstall that plugin using Codex's supported plugin workflow; do not hand-edit global configuration.
+7. Retain specialist plugins unless explicitly classified as superseded.
+8. After the observation window, record final plugin set, versions, smoke evidence, residual gaps, and rollback status.
 
 This document is guidance; the plugin does not uninstall or modify any existing plugin.

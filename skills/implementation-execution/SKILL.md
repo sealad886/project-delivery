@@ -5,7 +5,7 @@ description: Implement an approved delivery-plan slice safely in the existing re
 
 # Implementation and Execution
 
-Read `../../references/operating-model.md` before editing.
+Read `../.shared/operating-model.md` before editing.
 
 ## When to invoke
 

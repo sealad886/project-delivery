@@ -5,7 +5,7 @@ description: Select, execute, and report risk-based validation for a change or r
 
 # Testing and Quality Engineering
 
-Read `../../references/operating-model.md`; use the test evidence template in `../../assets/artifact-templates.md`.
+Read `../.shared/operating-model.md`; use the test evidence template in `../.shared/artifact-templates.md`.
 
 ## When to invoke
 
