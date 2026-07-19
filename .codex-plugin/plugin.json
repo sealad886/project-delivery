@@ -1,6 +1,6 @@
 {
   "name": "project-delivery",
-  "version": "1.1.0+codex.20260719071949",
+  "version": "1.2.0+codex.20260719074155",
   "description": "A repository-grounded, risk-scaled workflow for coordinating, planning, implementing, verifying, reviewing, releasing, and improving software changes.",
   "author": {
     "name": "Local developer"
@@ -22,6 +22,8 @@
       "Deliver this feature with evidence and review gates.",
       "Audit this change and prepare it for release."
     ],
-    "brandColor": "#245B4A"
+    "brandColor": "#163F38",
+    "composerIcon": "./assets/project-delivery-icon.png",
+    "logo": "./assets/project-delivery-logo.png"
   }
 }

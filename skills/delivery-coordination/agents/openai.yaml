@@ -1,0 +1,7 @@
+interface:
+  display_name: "Delivery Coordination"
+  short_description: "Synchronize delivery state across project systems"
+  icon_small: "./assets/icon-small.png"
+  icon_large: "./assets/icon-large.png"
+  brand_color: "#163F38"
+  default_prompt: "Use $delivery-coordination to reconcile project state and prepare any authorized external updates."

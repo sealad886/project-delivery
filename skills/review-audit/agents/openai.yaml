@@ -1,0 +1,7 @@
+interface:
+  display_name: "Review and Audit"
+  short_description: "Review designs and changes with exact findings"
+  icon_small: "./assets/icon-small.png"
+  icon_large: "./assets/icon-large.png"
+  brand_color: "#163F38"
+  default_prompt: "Use $review-audit to independently review this work and report evidence-backed findings."

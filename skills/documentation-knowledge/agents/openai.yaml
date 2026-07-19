@@ -1,0 +1,7 @@
+interface:
+  display_name: "Documentation and Knowledge"
+  short_description: "Maintain canonical delivery and operational knowledge"
+  icon_small: "./assets/icon-small.png"
+  icon_large: "./assets/icon-large.png"
+  brand_color: "#163F38"
+  default_prompt: "Use $documentation-knowledge to update the canonical documentation and delivery knowledge."

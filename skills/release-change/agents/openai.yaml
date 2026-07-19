@@ -1,0 +1,7 @@
+interface:
+  display_name: "Release and Change"
+  short_description: "Prepare and verify safe releases and rollouts"
+  icon_small: "./assets/icon-small.png"
+  icon_large: "./assets/icon-large.png"
+  brand_color: "#163F38"
+  default_prompt: "Use $release-change to prepare and verify this change for a safe release."

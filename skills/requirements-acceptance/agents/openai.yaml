@@ -1,0 +1,7 @@
+interface:
+  display_name: "Requirements and Acceptance"
+  short_description: "Turn requests into testable acceptance criteria"
+  icon_small: "./assets/icon-small.png"
+  icon_large: "./assets/icon-large.png"
+  brand_color: "#163F38"
+  default_prompt: "Use $requirements-acceptance to turn this request into testable requirements and acceptance criteria."

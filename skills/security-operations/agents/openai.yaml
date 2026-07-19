@@ -1,0 +1,7 @@
+interface:
+  display_name: "Security and Operations"
+  short_description: "Assess security, reliability, and operational readiness"
+  icon_small: "./assets/icon-small.png"
+  icon_large: "./assets/icon-large.png"
+  brand_color: "#163F38"
+  default_prompt: "Use $security-operations to assess security, reliability, and operational readiness."

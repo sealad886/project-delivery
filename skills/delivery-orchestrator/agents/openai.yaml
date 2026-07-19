@@ -1,0 +1,7 @@
+interface:
+  display_name: "Delivery Orchestrator"
+  short_description: "Route work through the right delivery lifecycle"
+  icon_small: "./assets/icon-small.png"
+  icon_large: "./assets/icon-large.png"
+  brand_color: "#163F38"
+  default_prompt: "Use $delivery-orchestrator to route this request through the appropriate delivery lifecycle."

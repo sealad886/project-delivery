@@ -1,0 +1,7 @@
+interface:
+  display_name: "Implementation and Execution"
+  short_description: "Implement approved plans safely in the repository"
+  icon_small: "./assets/icon-small.png"
+  icon_large: "./assets/icon-large.png"
+  brand_color: "#163F38"
+  default_prompt: "Use $implementation-execution to implement the approved plan safely in this repository."

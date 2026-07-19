@@ -1,0 +1,7 @@
+interface:
+  display_name: "Testing and Quality"
+  short_description: "Run risk-based tests and record concrete evidence"
+  icon_small: "./assets/icon-small.png"
+  icon_large: "./assets/icon-large.png"
+  brand_color: "#163F38"
+  default_prompt: "Use $testing-quality to select and run risk-based verification with concrete results."

@@ -26,6 +26,10 @@ Start with `delivery-orchestrator` for end-to-end work or invoke a lifecycle ski
 
 Shared conventions are in `references/operating-model.md`; reusable templates are in `assets/artifact-templates.md`.
 
+## Visual identity
+
+The plugin card uses a delivery-compass mark, and every lifecycle skill has a distinct icon plus human-facing Codex metadata in its local `agents/openai.yaml`. The family uses a deep-teal field, amber delivery signals, mint evidence lines, and simple no-text symbols that remain recognizable at compact UI sizes.
+
 The audit, capability-parity map, safe uninstall sequence, and verification evidence are in `references/environment-audit.md`, `references/migration-and-decommission.md`, and `references/validation-report.md`. Coexistence with legacy plugins is a validation phase, not an ongoing dependency model.
 
 ## Safety and dependencies

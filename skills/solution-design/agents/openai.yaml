@@ -1,0 +1,7 @@
+interface:
+  display_name: "Solution Design"
+  short_description: "Design production-ready solutions and decisions"
+  icon_small: "./assets/icon-small.png"
+  icon_large: "./assets/icon-large.png"
+  brand_color: "#163F38"
+  default_prompt: "Use $solution-design to design a production-ready solution and record its tradeoffs."

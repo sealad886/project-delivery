@@ -13,6 +13,13 @@ Date: 2026-07-19
 - Installed-cache/source comparison after the first 1.1.0 refresh: no differences except excluded source `.git` metadata; the final report update is followed by a second cachebuster/reinstall below.
 - Legacy runtime audit: no operational call or dependency on Boss, Epic/Epic Harness, Superpowers, their CLIs/hooks/MCP servers, or branded project state. Legacy names occur only in audit/migration/negative assertions.
 
+## Icon and skill presentation results
+
+- Plugin manifest declares existing in-archive `composerIcon` and `logo` PNG assets; brand color is valid.
+- All 13 skills declare supported `agents/openai.yaml` interface metadata with display name, 25–64 character summary, local 128px/512px icons, brand color, and a default prompt naming the skill.
+- Generated icon family was visually inspected as a single contact sheet and at full plugin-logo size: symbols are distinct, centered, text-free, consistently padded, and use one cohesive delivery-compass palette.
+- Plugin Creator validation confirms every icon path remains inside the plugin and resolves to an existing file. Skill Creator validation remains 13/13.
+
 ## Independent static smoke simulation
 
 An independent read-only reviewer simulated ten routes against the authored instructions. Initial review found ambiguous planning-only/hotfix/release-evidence/operational-documentation routes. Those findings were fixed and the reviewer reran the current files.

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Retrospective and Improvement"
+  short_description: "Capture delivery learning and actionable improvements"
+  icon_small: "./assets/icon-small.png"
+  icon_large: "./assets/icon-large.png"
+  brand_color: "#163F38"
+  default_prompt: "Use $retrospective-improvement to capture delivery learning and actionable follow-up work."
