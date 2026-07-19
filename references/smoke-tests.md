@@ -30,7 +30,7 @@ Before disabling a legacy workflow, inspect active `AGENTS.md` and repository in
 
 For each live smoke test, record:
 
-- exact prompt, repository revision, relevant instructions, task/model identity, timestamp, plugin source version, marketplace, and installed cache identity;
+- exact prompt, repository revision, relevant instructions, task/model identity, timestamp, plugin source version, installation source, and installed cache identity;
 - expected and actual route, scale/risk rationale, authority classification, artifacts expected/produced, commands/evidence, result, and residual gaps;
 - whether any output requested `boss`, `epic`, `epic-harness`, Superpowers, `.boss/`, `.harness/`, `.superpowers/`, legacy hooks, or legacy MCP servers; and
 - whether connectors remained optional and unavailable operations were truthfully reported.

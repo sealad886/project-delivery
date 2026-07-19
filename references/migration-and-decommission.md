@@ -33,9 +33,9 @@ Do not equate workflow replacement with live access. Project Delivery fully repl
 | Boss artifact/memory layer | shared operating model and canonical repo docs | Preserve artifact semantics; exclude missing renderer/memory runtime and `.boss` tree |
 | Everything Claude Code plan/orchestrate/TDD/review/verify/docs | corresponding canonical lifecycle skills | Generic delivery overlap replaced; language/framework pattern skills remain separate if desired |
 | Standalone create-plan/ADR/quality/adversarial/security/commit skills | planning/design/review/security/implementation | Canonical lifecycle absorbs general behavior; retain specialist skills only if deeper scope is still wanted |
-| Marketplace PASS/LIGHT/FULL, acceptance receipts, fresh-eyes review, roadmaps/waves | orchestrator/planning/quality/review/release | Attribution-free synthesis; no executable/runtime dependency imported |
-| Curated trackers/docs/meetings/messages/calendars | `delivery-coordination`, context/planning/docs | Absorb source-of-truth, mapping, meeting/status, exact-target, authority, and receipt method; provider access remains optional |
-| Curated CI/security/deployment/observability/flags | quality/review/security/release | Absorb evidence contracts and gates; provider commands/runtimes remain optional |
+| Risk-scaled PASS/LIGHT/FULL modes, acceptance receipts, fresh-eyes review, roadmaps/waves | orchestrator/planning/quality/review/release | Attribution-free synthesis; no executable/runtime dependency imported |
+| Inspected tracker/document/meeting/message/calendar patterns | `delivery-coordination`, context/planning/docs | Absorb source-of-truth, mapping, meeting/status, exact-target, authority, and receipt method; provider access remains optional |
+| Inspected CI/security/deployment/observability/flag patterns | quality/review/security/release | Absorb evidence contracts and gates; provider commands/runtimes remain optional |
 
 ## Intentionally excluded legacy behavior
 
@@ -62,7 +62,7 @@ Exclusion means the inspected mechanism is not reproduced; the user outcome is c
 
 ## Safe decommission sequence
 
-1. Install/refresh Project Delivery through the personal marketplace and start a new task.
+1. Install or refresh the standalone Project Delivery source with Plugin Creator's supported local-source workflow, then start a new task.
 2. Inspect active instructions, prompt templates, hooks/configuration, historical plans, and branded state. Convert imperative legacy calls to non-operative provenance and move durable decisions into canonical current artifacts.
 3. Capture the installed plugin/configuration rollback inventory, then run the smoke suite with all plugins still installed; correct gaps using Plugin Creator's cachebuster/update flow.
 4. Disable (do not immediately delete) one superseded generic lifecycle plugin at a time, beginning with the most redundant.

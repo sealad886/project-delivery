@@ -6,6 +6,18 @@ This file records user-visible changes to Project Delivery. Dates use ISO 8601 a
 
 No unreleased changes.
 
+## 1.3.2 - 2026-07-19
+
+### Changed
+
+- Rewrote installation and usage guidance for Project Delivery as a standalone source plugin, with Plugin Creator handling supported local registration, cache refresh, and reinstall steps.
+- Renamed the installable-bundle validator to `scripts/check_distribution_bundle.py` and aligned contributor, CI, template, audit, and validation terminology.
+
+### Fixed
+
+- Replaced environment-dependent installation guidance with a source-first standalone workflow.
+- Updated quick-start examples to use the installed plugin's fully qualified skill names.
+
 ## 1.3.1 - 2026-07-19
 
 ### Changed

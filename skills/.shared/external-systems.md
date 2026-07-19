@@ -4,7 +4,7 @@ Project Delivery owns method and evidence, not provider access. Installed connec
 
 ## Source and capability registry
 
-For each system record provider, purpose, canonical artifacts/fields, account/workspace/project, capability (`read`, `draft`, `write`, `send`, `share`, `delete`), authorization basis, freshness, and limitations. Never infer implementation behavior from a connector ID or marketplace description.
+For each system record provider, purpose, canonical artifacts/fields, account/workspace/project, capability (`read`, `draft`, `write`, `send`, `share`, `delete`), authorization basis, freshness, and limitations. Never infer implementation behavior from a connector ID, plugin description, or other presentation metadata.
 
 ## Provider-neutral rules
 

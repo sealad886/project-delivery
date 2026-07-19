@@ -30,7 +30,7 @@ Context → Requirements → Solution Design → Delivery Plan ↔ Coordination
         → Release → Retrospective
 ```
 
-Start with `delivery-orchestrator` for end-to-end, incomplete, or mixed requests. Invoke a lifecycle skill directly when the target and authority are already bounded.
+Start with `project-delivery:delivery-orchestrator` for end-to-end, incomplete, or mixed requests. Invoke a lifecycle skill directly when the target and authority are already bounded.
 
 | Work shape | Default depth | Typical result |
 |---|---|---|
@@ -45,7 +45,7 @@ Start with `delivery-orchestrator` for end-to-end, incomplete, or mixed requests
 Use the orchestrator for a full lifecycle:
 
 ```text
-Use $delivery-orchestrator to deliver this request end to end. Inspect the current
+Use $project-delivery:delivery-orchestrator to deliver this request end to end. Inspect the current
 repository, recover existing decisions and conventions, classify scale and risk,
 use only the minimum sufficient lifecycle, keep facts/requirements/assumptions/
 decisions/questions separate, and report actual evidence plus residual risk.
@@ -56,18 +56,18 @@ Request: <describe the outcome>
 Use a bounded skill directly:
 
 ```text
-Use $requirements-acceptance to turn this brief into testable requirements,
+Use $project-delivery:requirements-acceptance to turn this brief into testable requirements,
 acceptance criteria, edge cases, non-functional requirements, and traceability.
 ```
 
 ```text
-Use $review-audit to review this exact diff without modifying it. Pin the base and
+Use $project-delivery:review-audit to review this exact diff without modifying it. Pin the base and
 head, report located evidence-backed findings, and state release blockers and
 residual risk.
 ```
 
 ```text
-Use $release-change to prepare this completed change for release. Recover missing
+Use $project-delivery:release-change to prepare this completed change for release. Recover missing
 test, documentation, review, and security evidence; do not merge, tag, publish, or
 deploy unless that action is separately authorized.
 ```
@@ -90,7 +90,7 @@ deploy unless that action is separately authorized.
 | `release-change` | Prepare and, only when authorized, execute integration, CI/CD, version, rollout, rollback, and post-release verification |
 | `retrospective-improvement` | Capture outcomes, root causes, debt, decisions, bounded follow-up, and measurable process improvements |
 
-Installable shared conventions and templates live under [`skills/.shared/`](skills/.shared/). Keeping runtime references inside the manifest-declared skill tree preserves them when a marketplace mirrors the plugin without exposing a fourteenth skill.
+Installable shared conventions and templates live under [`skills/.shared/`](skills/.shared/). Keeping runtime references inside the manifest-declared skill tree makes the standalone plugin self-contained without exposing a fourteenth skill.
 
 ## Artifact and evidence model
 
@@ -111,27 +111,28 @@ REQ/AC → RISK → mitigation WI → TEST/FIND → RELEASE disposition
 DEC/ADR → affected REQ/WI/TEST → RELEASE disposition
 ```
 
-## Installation
+## Install from source
 
-### From Awesome Codex Plugins
-
-After the marketplace contribution is accepted, configure the marketplace once and install Project Delivery:
+Project Delivery is a standalone plugin. Clone the source repository into a stable local directory:
 
 ```bash
-codex plugin marketplace add \
-  'https://github.com/hashgraph-online/awesome-codex-plugins.git' \
-  --ref 'main' \
-  --sparse '.agents/plugins' \
-  --sparse 'plugins'
-
-codex plugin add project-delivery@awesome-codex-plugins
+git clone https://github.com/sealad886/project-delivery.git ~/plugins/project-delivery
 ```
 
-Start a new Codex task after installation so skill discovery and presentation metadata are loaded from the new plugin cache.
+Then ask Codex's system Plugin Creator skill to validate and install that existing source:
 
-### Local development
+```text
+Use $plugin-creator to validate and install the existing local plugin at
+~/plugins/project-delivery. Follow the supported local-source registration and
+cache-refresh workflow, do not hand-edit Codex configuration, and report the
+installed plugin version and cache identity.
+```
 
-Clone the repository to `~/plugins/project-delivery`, then ask Codex's system `$plugin-creator` skill to register the existing source in the default personal marketplace. Use Plugin Creator's cachebuster/reinstall workflow for every local update; do not hand-edit Codex marketplace configuration.
+Start a new Codex task after installation so all 13 skills and the plugin presentation metadata are loaded. Invoke the orchestrator explicitly as `$project-delivery:delivery-orchestrator`.
+
+For local development, edit the cloned source and ask `$plugin-creator` to run its supported cachebuster and reinstall workflow after each change. Keep the source directory stable and do not edit product-managed installation state by hand.
+
+See OpenAI's [Build plugins](https://learn.chatgpt.com/docs/build-plugins) guide for the current Codex manifest, component, and local testing contract.
 
 ## Validation
 
@@ -140,15 +141,15 @@ From a source checkout, the repository's dependency-free checks use only Python'
 ```bash
 python3 scripts/check_plugin.py . --layout source
 python3 scripts/check_routes.py .
-python3 scripts/check_marketplace_bundle.py .
+python3 scripts/check_distribution_bundle.py .
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
 `tests/route-contracts.json` contains 17 machine-readable authored-route contracts. Passing them proves that scenario data is complete, references real skills, covers the taxonomy, and forbids legacy runtime dependencies. It does **not** prove which skills a fresh agent actually selected. Behavioral claims require a new-task route receipt using the template in [`skills/.shared/artifact-templates.md`](skills/.shared/artifact-templates.md).
 
-Generated marketplace bundles intentionally carry the complete runtime skill tree, shared operating model, templates, and icons while leaving maintainer-only audit and test material in the public source repository.
+The installable distribution bundle carries the complete runtime skill tree, shared operating model, templates, and icons while leaving maintainer-only audit and test material in the source repository.
 
-Release validation also includes Plugin Creator validation, Skill Creator validation for all 13 skills, source/cache comparison, an exact upstream-mirror simulation, the pinned HOL scanner, and independent review. Current evidence and limitations are recorded in the [validation report](https://github.com/sealad886/project-delivery/blob/main/references/validation-report.md).
+Release validation also includes Plugin Creator validation, Skill Creator validation for all 13 skills, source/cache comparison, a deterministic installable-bundle simulation, the pinned HOL scanner, and independent review. Current evidence and limitations are recorded in the [validation report](https://github.com/sealad886/project-delivery/blob/main/references/validation-report.md).
 
 ## Trust, privacy, and dependencies
 
@@ -170,7 +171,7 @@ Project Delivery is intended to replace generic project-management and software-
 6. confirm skill discovery, routing, artifacts, and absence of legacy runtime requests; and
 7. uninstall only after an observation period and explicit user confirmation.
 
-Specialist platform, provider, security, CI, deployment, and observability tools may remain because they supply access or evidence rather than competing lifecycle authority. The [detailed migration map](https://github.com/sealad886/project-delivery/blob/main/references/migration-and-decommission.md) remains in the public source repository.
+Specialist platform, provider, security, CI, deployment, and observability tools may remain because they supply access or evidence rather than competing lifecycle authority. The [detailed migration map](https://github.com/sealad886/project-delivery/blob/main/references/migration-and-decommission.md) remains with the standalone plugin source.
 
 ## Project governance
 
@@ -179,7 +180,7 @@ Specialist platform, provider, security, CI, deployment, and observability tools
 - [Support](https://github.com/sealad886/project-delivery/blob/main/SUPPORT.md)
 - [Changelog](https://github.com/sealad886/project-delivery/blob/main/CHANGELOG.md)
 - [Design brief](https://github.com/sealad886/project-delivery/blob/main/references/design-brief.md)
-- [Environment and marketplace audit](https://github.com/sealad886/project-delivery/blob/main/references/environment-audit.md)
+- [Environment and capability audit](https://github.com/sealad886/project-delivery/blob/main/references/environment-audit.md)
 - [Research sources](https://github.com/sealad886/project-delivery/blob/main/references/research-sources.md)
 - [Validation report](https://github.com/sealad886/project-delivery/blob/main/references/validation-report.md)
 

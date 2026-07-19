@@ -22,8 +22,8 @@ jobs:
       - name: Validate route contracts
         run: python3 scripts/check_routes.py .
 
-      - name: Simulate marketplace mirror
-        run: python3 scripts/check_marketplace_bundle.py .
+      - name: Validate installable distribution bundle
+        run: python3 scripts/check_distribution_bundle.py .
 
       - name: Run validator regression tests
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
