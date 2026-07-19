@@ -1,5 +1,7 @@
 # Project Delivery
 
+Repository: [sealad886/project-delivery](https://github.com/sealad886/project-delivery)
+
 Project Delivery is a self-contained Codex plugin for taking software work from an incomplete idea to a maintained production change. It is intended to replace fragmented project-management and software-delivery workflow plugins after its decommission gates pass. It uses repository evidence and existing project conventions, scales ceremony to risk, and keeps requirements, design, implementation, verification, documentation, review, security, release, and follow-up traceable.
 
 ## Canonical lifecycle

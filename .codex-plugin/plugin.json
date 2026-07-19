@@ -1,16 +1,19 @@
 {
   "name": "project-delivery",
-  "version": "1.2.0+codex.20260719074155",
+  "version": "1.2.1+codex.20260719080205",
   "description": "A repository-grounded, risk-scaled workflow for coordinating, planning, implementing, verifying, reviewing, releasing, and improving software changes.",
   "author": {
-    "name": "Local developer"
+    "name": "sealad886",
+    "url": "https://github.com/sealad886"
   },
+  "homepage": "https://github.com/sealad886/project-delivery",
+  "repository": "https://github.com/sealad886/project-delivery",
   "skills": "./skills/",
   "interface": {
     "displayName": "Project Delivery",
     "shortDescription": "Take software work from idea to safe release",
     "longDescription": "Project Delivery provides one coherent, repository-grounded lifecycle for clarifying requests, defining requirements, designing solutions, coordinating systems of record, planning delivery, implementing changes, producing test evidence, updating canonical documentation, reviewing risk, preparing releases, and capturing improvements. It scales from documentation and small fixes to multi-PR, multi-release initiatives without requiring any provider integration.",
-    "developerName": "Local developer",
+    "developerName": "sealad886",
     "category": "Developer Tools",
     "capabilities": [
       "Interactive",
