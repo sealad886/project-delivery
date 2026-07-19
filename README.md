@@ -37,3 +37,7 @@ The audit, capability-parity map, safe uninstall sequence, and verification evid
 ## Safety and dependencies
 
 Repository instructions and user authority always win. External issue trackers, source hosts, knowledge stores, communication tools, calendars, CI systems, deployment platforms, and memory tools are optional adapters used only when present and authorized. The plugin remains useful without them by producing drafts, mappings, and receipts locally. Publishing, merging, deploying, destructive operations, and external writes require the authority appropriate to their impact.
+
+## License
+
+Project Delivery is licensed under the [MIT License](LICENSE). Copyright © 2026 Andrew Cox.

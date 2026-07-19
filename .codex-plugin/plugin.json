@@ -1,6 +1,6 @@
 {
   "name": "project-delivery",
-  "version": "1.2.1+codex.20260719080205",
+  "version": "1.2.2+codex.20260719080445",
   "description": "A repository-grounded, risk-scaled workflow for coordinating, planning, implementing, verifying, reviewing, releasing, and improving software changes.",
   "author": {
     "name": "sealad886",
@@ -8,6 +8,7 @@
   },
   "homepage": "https://github.com/sealad886/project-delivery",
   "repository": "https://github.com/sealad886/project-delivery",
+  "license": "MIT",
   "skills": "./skills/",
   "interface": {
     "displayName": "Project Delivery",
