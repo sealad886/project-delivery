@@ -1,6 +1,6 @@
 {
   "name": "project-delivery",
-  "version": "1.0.0+codex.20260719065947",
+  "version": "1.0.0+codex.20260719070136",
   "description": "A repository-grounded, risk-scaled workflow for planning, implementing, verifying, reviewing, releasing, and improving software changes.",
   "author": {
     "name": "Local developer"

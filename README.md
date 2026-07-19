@@ -25,7 +25,7 @@ Start with `delivery-orchestrator` for end-to-end work or invoke a lifecycle ski
 
 Shared conventions are in `references/operating-model.md`; reusable templates are in `assets/artifact-templates.md`.
 
-The audit, capability-parity map, and safe uninstall sequence are in `references/environment-audit.md` and `references/migration-and-decommission.md`. Coexistence with legacy plugins is a validation phase, not an ongoing dependency model.
+The audit, capability-parity map, safe uninstall sequence, and verification evidence are in `references/environment-audit.md`, `references/migration-and-decommission.md`, and `references/validation-report.md`. Coexistence with legacy plugins is a validation phase, not an ongoing dependency model.
 
 ## Safety and dependencies
 
