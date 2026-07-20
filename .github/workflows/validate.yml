@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Validate plugin structure
-        run: python3 scripts/check_plugin.py .
+        run: python3 scripts/check_plugin.py plugins/project-delivery --layout source
 
       - name: Validate route contracts
         run: python3 scripts/check_routes.py .
@@ -25,8 +25,11 @@ jobs:
       - name: Validate historical route-shape compatibility
         run: python3 scripts/check_route_receipts.py tests/fixtures/blind-route-observations-v1.3.1.json --root . --allow-subset --allow-historical-annotations
 
-      - name: Validate minimum runtime closure
-        run: python3 scripts/check_distribution_bundle.py .
+      - name: Validate exact distribution payload
+        run: python3 scripts/check_distribution_bundle.py plugins/project-delivery
+
+      - name: Validate repository marketplace and license parity
+        run: python3 scripts/check_marketplace.py .
 
       - name: Run validator regression tests
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v

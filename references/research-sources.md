@@ -1,11 +1,12 @@
 # Research sources
 
-Accessed 2026-07-19. Principles were synthesized; no source text is copied as a plugin dependency.
+Accessed 2026-07-19 through 2026-07-20. Principles were synthesized; no source text is copied as a plugin dependency.
 
 ## Codex and local conventions
 
 - Current Codex manual, fetched with the local `openai-docs` helper: plugin manifests live at `.codex-plugin/plugin.json`; skills use progressive disclosure and concise trigger descriptions; installed local copies require an explicit refresh and a new task before changed components are available. Source pages: [Build plugins](https://learn.chatgpt.com/docs/build-plugins) and [Build skills](https://learn.chatgpt.com/docs/build-skills).
 - Local Plugin Creator: `<codex-home>/skills/.system/plugin-creator/SKILL.md`, `references/plugin-json-spec.md`, and `references/installing-and-updating.md`. These define the scaffold, manifest validation, supported local-source registration, cachebuster, reinstall, and handoff flow used here.
+- Codex CLI `0.144.6` installer implementation at official tag commit [`5d1fbf26c43abc65a203928b2e31561cb039e06d`](https://github.com/openai/codex/blob/5d1fbf26c43abc65a203928b2e31561cb039e06d/codex-rs/core-plugins/src/store.rs#L520-L682): `copy_dir_recursive` traverses every source directory and copies every regular file without consulting `.codexignore` or a manifest allowlist. Current upstream `main` at inspected commit [`bf3c1972b7d045c0a3a48dff91f381070f8f69e1`](https://github.com/openai/codex/blob/bf3c1972b7d045c0a3a48dff91f381070f8f69e1/codex-rs/core-plugins/src/store.rs#L662-L685) retained the same behavior on 2026-07-20. This evidence drove the strict nested package boundary and `git-subdir` policy.
 - Statically inspected official and third-party plugin snapshots supplied capability-level comparison evidence. Relevant manifests, skills, references, and scripts were read without executing apps, MCP servers, hooks, installers, or downloaded binaries. Project Delivery reimplements only provider-neutral patterns and retains no runtime dependency on those sources.
 - [HOL AI Plugin Scanner action](https://github.com/hashgraph-online/ai-plugin-scanner-action) and [HOL Guard](https://github.com/hashgraph-online/hol-guard): the public workflow pins the action to commit `8f0a503ca2a7`; local inspection used `plugin-scanner==2.0.1015` after verifying the reviewed wheel's published SHA-256 digest.
 

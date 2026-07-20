@@ -33,9 +33,10 @@ Prefer a small number of substantial, non-overlapping skills. Update the operati
 Run from the repository root:
 
 ```bash
-python3 scripts/check_plugin.py .
+python3 scripts/check_plugin.py plugins/project-delivery --layout source
 python3 scripts/check_routes.py .
-python3 scripts/check_distribution_bundle.py .
+python3 scripts/check_distribution_bundle.py plugins/project-delivery
+python3 scripts/check_installed_parity.py <prepared-plugin-source> <installed-cache-version-dir>
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 

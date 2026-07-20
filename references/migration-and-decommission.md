@@ -6,6 +6,19 @@ Project Delivery is designed to remain fully useful after Boss, Epic, Superpower
 
 Do not equate workflow replacement with live access. Project Delivery fully replaces generic PM/delivery methodology, including workflow ideas synthesized from connectors, but cannot reproduce authenticated service access without an adapter. GitHub, security scanners, deployment/platform tools, documents, and business connectors may therefore remain optional access/depth adapters; uninstalling one removes its live surface unless equivalent access remains. Decide adapter status explicitly and never copy app IDs, MCP declarations, credentials, or provider contracts into core.
 
+## Source-layout migration from 1.3.x
+
+The released 1.3.x instructions placed a full Git checkout at the default personal source path `~/plugins/project-delivery`. The 1.4 candidate deliberately separates the development checkout from the exact installable subtree. Treat this as a control-plane migration, not an in-place file rewrite:
+
+1. Capture the installed selector, owning marketplace/control plane, enabled state, source path, source commit/tag, Git status, manifest and payload hashes, configuration locations without values, and supported reinstall command.
+2. Move the complete 1.3.x checkout to a separate rollback/source location and verify the same revision and local status there. Never invoke the distribution materializer with `--replace` against a checkout or environment.
+3. Keep the candidate checkout in another development path. Validate its `plugins/project-delivery/` subtree, then materialize that subtree to the vacant personal source path.
+4. Use Plugin Creator's supported cachebuster and reinstall flow. Read back marketplace name, selector, source path, installed version, and cache identity; compare every source/cache file and directory.
+5. Start a fresh task for selector/icon/routing and bounded repository canaries. Record absent capabilities or legacy invocation as failures rather than assuming a product refresh.
+6. Rehearse backward recovery through the same personal control plane using the captured 1.3.x source and reinstall mechanism, verify from a fresh task, then return forward to the exact candidate and repeat readback. Preserve both sources until this cycle succeeds.
+
+If any move, reinstall, parity check, or fresh-task observation fails, stop with both sources preserved and record the exact state. Do not delete a checkout, edit a managed cache, or treat a retained cache as an install or rollback mechanism.
+
 ## Migration map
 
 | Legacy source/capability | Canonical destination | Migration treatment |

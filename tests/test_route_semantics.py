@@ -10,6 +10,7 @@ from pathlib import Path
 
 
 REPOSITORY_ROOT = Path(__file__).parents[1]
+PLUGIN_ROOT = REPOSITORY_ROOT / "plugins" / "project-delivery"
 CONTRACT_CHECKER = REPOSITORY_ROOT / "scripts" / "check_routes.py"
 RECEIPT_CHECKER = REPOSITORY_ROOT / "scripts" / "check_route_receipts.py"
 BLIND_FIXTURE = (
@@ -35,7 +36,7 @@ def run_contract_checker_with_contract(
         (root / "tests" / "route-contracts.json").write_text(
             json.dumps(contract), encoding="utf-8"
         )
-        for skill_file in (REPOSITORY_ROOT / "skills").glob("*/SKILL.md"):
+        for skill_file in (PLUGIN_ROOT / "skills").glob("*/SKILL.md"):
             target = root / "skills" / skill_file.parent.name
             target.mkdir(parents=True)
             (target / "SKILL.md").write_text("fixture\n", encoding="utf-8")

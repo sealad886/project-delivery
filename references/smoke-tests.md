@@ -4,7 +4,7 @@ The canonical authored cases are machine-readable in [`../tests/route-contracts.
 
 Compare a fresh frozen blind route-only receipt set with `python3 scripts/check_route_receipts.py <receipts.json> --root .`. Before the expected contracts are revealed, freeze the route, scale/risk/authority taxonomy and rationale, conditional dispositions, extra-capability decisions, evidence, and gaps; record the complete freeze scope and evidence. The observation must load every selected specialist, perform no effects, start no legacy runtime, and mark delivery not run. Required capabilities and safety edges must pass; conditional omissions require evidence and a disposition; extras require evidence and justification. Equivalent unconstrained specialist order and declared two-sided controller entry/return are allowed. Never grade a risk-scaled route by exact total-array equality. The separate `--allow-historical-annotations` option exists only to regression-check preserved historical route shapes whose semantic annotations were added later; it cannot establish current-policy conformance, candidate behavior, or delivery/authority execution evidence.
 
-Use the prompts below for post-install and decommission smoke tests. Record fresh behavior with the Live route receipt in [`../skills/.shared/artifact-templates.md`](../skills/.shared/artifact-templates.md).
+Use the prompts below for post-install and decommission smoke tests. Record fresh behavior with the Live route receipt in [`../plugins/project-delivery/skills/.shared/artifact-templates.md`](../plugins/project-delivery/skills/.shared/artifact-templates.md).
 
 | Scenario | Semantic routing policy | Required artifacts/evidence |
 |---|---|---|

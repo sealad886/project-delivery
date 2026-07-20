@@ -85,6 +85,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 def validate(root: Path) -> tuple[list[str], int, set[str]]:
     errors: list[str] = []
     contract_path = root / "tests" / "route-contracts.json"
+    plugin_root = root / "plugins" / "project-delivery"
+    if not plugin_root.is_dir():
+        plugin_root = root
     try:
         contract = json.loads(contract_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
@@ -119,7 +122,7 @@ def validate(root: Path) -> tuple[list[str], int, set[str]]:
         errors.append("forbidden_runtime_dependencies must not contain duplicates")
 
     available_skills = {
-        path.parent.name for path in (root / "skills").glob("*/SKILL.md")
+        path.parent.name for path in (plugin_root / "skills").glob("*/SKILL.md")
     }
     scenarios = contract.get("scenarios")
     if not isinstance(scenarios, list):

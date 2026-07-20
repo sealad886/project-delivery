@@ -50,7 +50,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "root",
         nargs="?",
-        default=str(Path(__file__).parents[1]),
+        default=str(Path(__file__).parents[1] / "plugins" / "project-delivery"),
         help="plugin source root or installed version-directory root",
     )
     parser.add_argument(

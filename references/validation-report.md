@@ -1,36 +1,40 @@
 # Validation report
 
-Validation date: 2026-07-19
+Validation date: 2026-07-20
 
 Release candidate: `v1.4.0-rc.1`
 
-Evidence scope: standalone source working tree on `codex/remediate-canary-findings`, a deterministic minimum runtime-closure simulation, historical contract-blind route observations from the installed `1.3.1` canary, and local validators/scanners. Candidate commit identity, installed-cache parity, fresh-task `1.4.0-rc.1` behavior, hosted CI, release-tag identity, and rollback drills remain separate evidence gates.
+Evidence scope: source working tree on `codex/remediate-canary-findings`, the exact canonical package at `plugins/project-delivery/`, Plugin Creator-generated repository marketplace metadata, local validators/scanners, historical contract-blind route observations from the installed `1.3.1` canary, one pre-hardening isolated nested-package install/removal rehearsal, and one pre-boundary recovery drill. The isolated/recovery observations are retained as historical evidence only; final-package forward/back recovery, active personal replacement, fresh-task `1.4.0-rc.1` behavior, final commit identity, refreshed hosted CI, merged-main identity, Git transport, and release-tag identity remain separate gates.
 
 ## Decision
 
-The in-progress `1.4.0-rc.1` source candidate passes the local structural, authored semantic route-contract, historical route-shape compatibility, minimum runtime-closure, regression, Plugin Creator, Skill Creator, scanner-policy, and scanner-verification gates listed below.
+The in-progress `1.4.0-rc.1` candidate passes the local structural, authored semantic route-contract, historical route-shape compatibility, exact package-boundary, regression, marketplace/legal-parity, Plugin Creator, Skill Creator, scanner-policy, and scanner-verification gates listed below. Final install, recovery, fresh-task, repository-canary, hosted, merge, Git-transport, tag, and publication gates remain pending.
 
-This supports freezing the immutable source candidate. Three independent stabilized-tree reviews found no remaining P1/P2 blocker after the adversarial findings were corrected. It is not yet sufficient to update the active personal installation: exact `1.3.1 → candidate → 1.3.1` recovery must first pass in an isolated Codex home. It is not evidence for a final `1.4.0` release, successful delivery in every consumer repository, production deployment readiness, or legacy-plugin uninstall readiness.
+The first active local install exposed an unacceptable packaging defect: Codex copied the development checkout's `.git`, `.venv`, CI, tests, audit records, validators, and bytecode because `.codexignore` is not an installer filter. That installed payload is rejected as candidate evidence. The repository now makes `plugins/project-delivery/` the canonical 62-file package boundary and keeps all maintainer-only material outside it. A pre-hardening working-tree snapshot installed cleanly in an isolated repository marketplace and was removed through supported commands, but later safety and trust-boundary changes changed the payload; it is not final-candidate parity evidence.
 
 ## Reproducible local results
 
 | Gate | Command or method | Result |
 |---|---|---|
-| Source structure, links, inline runtime references, naming, placeholders | `.venv/bin/python scripts/check_plugin.py . --layout source` | Pass: 90 files, 13 skills |
+| Canonical package structure, links, inline runtime references, naming, placeholders | `.venv/bin/python scripts/check_plugin.py plugins/project-delivery --layout source` | Pass: 62 files, 13 skills |
 | Semantic authored route contracts | `.venv/bin/python scripts/check_routes.py .` | Pass: 21 scenarios, all 13 skills referenced, evidence class `semantic-contracts` |
 | Historical blind route shapes with post-hoc annotations | `.venv/bin/python scripts/check_route_receipts.py tests/fixtures/blind-route-observations-v1.3.1.json --root . --allow-subset --allow-historical-annotations` | Pass: 17 preserved route shapes remain structurally compatible; current-policy and candidate-behavior conformance are explicitly not established |
-| Minimum runtime-closure simulation | `.venv/bin/python scripts/check_distribution_bundle.py .` | Pass: 63 selected files, 13 skills, all three shared runtime documents; not an installer/marketplace artifact claim |
-| Validator regressions | `.venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v` | Pass: 47/47, including a 21-contract fresh synthetic policy matrix and adversarial two-sided controller, incident-planning, semantic-freeze, evidence, authority, metadata, privacy, and dependency cases |
-| Plugin Creator | system `plugin-creator/scripts/validate_plugin.py` in the project `.venv` | Pass |
+| Exact package boundary and deterministic payload | `.venv/bin/python scripts/check_distribution_bundle.py plugins/project-delivery` | Pass: exactly 62 declared regular files with their exact parent-directory set, 13 skills, three shared runtime documents, zero symlinks/executables/source-only or undeclared entries; working-tree payload SHA-256 `c4ca4e628a7786141a90b767707198c3a7f05d411444395a9d6097a85a8016f9` |
+| Validator regressions | `.venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v` | Pass: 67/67, including exact materialization/parity positives and adversarial extra-file/directory, forbidden empty-directory, symlink, executable, unsafe-replacement, swap-recovery, marketplace-containment, semantic-freeze, evidence, authority, controller, privacy, and dependency cases |
+| Repository marketplace and legal parity | `.venv/bin/python scripts/check_marketplace.py .` | Pass: sole entry resolves inside the repository to `plugins/project-delivery`, identity/category/policies match, and root/package MIT text is byte-identical to the approved Andrew Cox license |
+| Plugin Creator | system `plugin-creator/scripts/validate_plugin.py plugins/project-delivery` in the project `.venv` | Pass |
 | Skill Creator | system `skill-creator/scripts/quick_validate.py` over every skill with visible 13-item progress | Pass: 13/13 |
-| HOL scanner lint | `.venv/bin/plugin-scanner lint . --format text` | Policy pass; effective score 94; no critical, high, or medium finding |
-| HOL scanner full scan | `.venv/bin/plugin-scanner scan . --profile default --format text --min-score 80 --fail-on-severity high` | Pass: 94/100, grade A; 0 critical/high/medium, 1 low, 3 informational findings |
-| HOL scanner runtime verification | `.venv/bin/plugin-scanner verify . --format text` | Pass: manifest, capability enumeration, interface assets, 13 skill manifests/frontmatter/references, and asset-size checks |
-| Independent stabilized-tree review | Three bounded reviewers covering route/evidence adversarial cases, release/source integrity, and Plugin Creator recovery/decommission controls | Pass: no remaining P1/P2 blocker to source commit, branch push, or candidate PR; installation/tag/decommission/publication gates remain separate |
+| HOL scanner lint | `.venv/bin/plugin-scanner lint plugins/project-delivery --format text` | Policy pass; effective score 92; no critical, high, or medium finding |
+| HOL scanner full scan | `.venv/bin/plugin-scanner scan plugins/project-delivery --profile default --format text --min-score 80 --fail-on-severity high` | Pass: 92/100, grade A; 0 critical/high/medium, 1 low, 3 informational findings |
+| HOL scanner runtime verification | `.venv/bin/plugin-scanner verify plugins/project-delivery --format text` | Pass: manifest, capability enumeration, interface assets, 13 skill manifests/frontmatter/references, and asset-size checks |
+| Pre-hardening isolated repository-marketplace install | `CODEX_HOME=<isolated> codex plugin marketplace add <repo>` then `codex plugin add project-delivery@project-delivery` | Historical pass: repository marketplace resolved `./plugins/project-delivery`, installed a 62-file `1.4.0-rc.1` working-tree payload, and supported removal; later candidate bytes differ |
+| Pre-hardening isolated source/cache parity | `.venv/bin/python scripts/check_installed_parity.py plugins/project-delivery <isolated-cache-version-dir>` | Historical pass at payload SHA-256 `e5f66a442bc7815a7199a28cf24b3da5e6a0bf0dc95e34ba92d23cd915bb8a1b`; does not establish parity for the final package |
+| Supported pre-hardening isolated cleanup | `codex plugin remove project-delivery@project-delivery` then `codex plugin marketplace remove project-delivery` under the isolated home | Historical pass: plugin and marketplace removed before the temporary home was deleted |
+| Independent packaging/security/release review | Three bounded read-only reviewers over the package-boundary working tree | Review found unsafe replace/empty-directory coverage gaps, missing 1.3.x migration, external-content authority gaps, marketplace regression gaps, and evidence overclaims. Fixes were incorporated; a final independent review after install/canary stabilization remains pending |
 | JSON syntax | `python -m json.tool` over the manifest, route contracts, and frozen receipt fixture | Pass |
 | Patch whitespace | `git diff --check` | Pass |
 
-The local scanner is `plugin-scanner==2.0.1015` inside the project `.venv`. Its low finding rejects the prerelease-form candidate version `1.4.0-rc.1`; Plugin Creator validation accepts the manifest. The candidate retains an explicit prerelease identity rather than presenting uncanaried work as `1.4.0`. The three informational findings concern absent optional `privacyPolicyURL`, `termsOfServiceURL`, and screenshots. This plugin has no hosted service and does not fabricate inapplicable URLs.
+The local scanner is `plugin-scanner==2.0.1015` inside the project `.venv`. Its low finding rejects the prerelease-form candidate version `1.4.0-rc.1`; Plugin Creator validation accepts that Semantic Versioning value. The candidate retains an explicit prerelease identity rather than presenting uncanaried work as `1.4.0`. The three informational findings concern absent optional `privacyPolicyURL`, `termsOfServiceURL`, and screenshots. This local, service-free plugin does not fabricate inapplicable legal endpoints or claim UI screenshots that have not yet been captured.
 
 Cisco skill-scanner evidence remains unavailable under the inspection host's Python 3.14 because that optional integration requires an older Python range. HOL Guard continued without that integration. Hosted scanner evidence must be read from the exact pushed candidate or release commit and is not inferred from this local result.
 
@@ -44,7 +48,7 @@ The canonical suite now contains 21 cases: the original 17 plus distinct perform
 
 ## Skill discovery and progressive loading
 
-The source and minimum runtime closure contain 13 structurally valid Project Delivery skills, 13 agent manifests, and 26 skill icons. The three skills absent from the crowded desktop task's initial model-visible list—`solution-design`, `testing-quality`, and `security-operations`—were present in source and installed payloads.
+The source and exact distribution payload contain 13 structurally valid Project Delivery skills, 13 agent manifests, and 26 skill icons. The three skills absent from the crowded desktop task's initial model-visible list—`solution-design`, `testing-quality`, and `security-operations`—were present in source and installed payloads.
 
 OpenAI's Build Skills documentation states that Codex applies a global initial skill-metadata budget and may shorten or omit entries while loading a selected skill's full instructions later. The candidate therefore:
 
@@ -64,18 +68,20 @@ Technical success and authority compliance are separate gates. A wrapper that si
 
 No `1.4.0-rc.1` wrapper canary has run yet. The earlier `199` passing tests remain technical evidence from the old canary, not authority-compliant completion evidence.
 
-## Minimum runtime-closure integrity
+## Exact package-boundary integrity
 
-The distribution check copies the standalone manifest, selected root documents and assets, manifest-declared component trees, and interface assets into a temporary `project-delivery` root, then reruns structural and internal-reference validation. This proves a minimum self-contained runtime closure. It does not invoke a Codex or marketplace packager, parse `.codexignore`, emit an archive, or prove what a local installed cache contains.
+Codex CLI `0.144.6` and current inspected upstream source recursively copy every regular file under the selected local plugin source. `.codexignore` is ordinary copied content, not a packaging filter. Project Delivery therefore treats the nested plugin subtree itself as the complete package and rejects any file not in the manifest-derived allowlist.
+
+The distribution check inventories every package file and directory with progress/ETA, rejects symlinks, unsupported file types, executable files, undeclared entries, source-only path components, and missing declared content, materializes the exact payload in a fresh staging directory, reruns structural/internal-reference validation, and emits a deterministic length-prefixed path/content SHA-256. Replacement additionally requires an exact clean destination outside checkout/environment ancestry and retains recoverable prior state across the atomic swap. The independent parity checker compares every prepared-source and installed-cache file and directory and rejects any missing, extra, changed, forbidden, executable, or symlink entry.
 
 The validated bundle contains:
 
-- `.codex-plugin/plugin.json`, README, SECURITY, LICENSE, `.codexignore`, and Dependabot metadata;
+- `.codex-plugin/plugin.json`, README, SECURITY, LICENSE, and the explicitly advisory `.codexignore`;
 - plugin composer and logo assets;
 - all 13 skills, 13 agent manifests, and 26 skill icons; and
 - the shared operating model, artifact templates, and external-systems contract.
 
-No manifest field was invented to force packaging. No source-only audit, test fixture, validation script, MCP server, hook, app, executable binary, credential, or legacy plugin is a runtime dependency.
+No manifest field was invented to force packaging. The canonical subtree contains exactly 62 regular non-executable files and no symlink. No source-only audit, CI file, test fixture, validation script, MCP server, hook, app, executable binary, credential, or legacy plugin is a runtime dependency.
 
 ## Decommission and rollback disposition
 
@@ -85,7 +91,7 @@ An exact rollback record requires selector, owning control plane, enabled state,
 
 These requirements are now documented, but exact rollback has not yet been proven for every superseded plugin. The available evidence also does not establish a supported disable/uninstall control for every product-managed or remote-synced source. Therefore:
 
-- Project Delivery may be installed as a controlled RC alongside existing plugins only after the isolated recovery drill and stabilized independent review pass; until then the active personal installation stays unchanged.
+- The polluted active personal installation must be replaced through the supported Plugin Creator cachebuster/reinstall flow before any fresh-task candidate claim. Its cache is not release evidence.
 - Superseded plugins may be disabled one at a time only in reversible canaries after exact state capture.
 - Permanent uninstall remains blocked.
 - The withdrawn external `awesome-codex-plugins` publication must remain closed; no resubmission is part of this candidate.
@@ -94,21 +100,21 @@ These requirements are now documented, but exact rollback has not yet been prove
 
 Before promoting to `1.4.0`:
 
-1. Freeze an exact RC commit; record its clean state, manifest hash, and deterministic source-payload hash.
-2. Rehearse exact `1.3.1 → candidate → 1.3.1` recovery in an isolated Codex home before changing the active personal installation.
-3. For the forward update, record the Plugin Creator cachebuster's before/after manifest versions and hashes, install through the supported personal-marketplace workflow, and verify payload parity against the committed RC while allowing only that recorded version delta.
-4. Restore the source manifest to the committed RC bytes and confirm a clean source tree.
-5. Start genuinely fresh Codex tasks under catalog pressure.
-6. Record blind semantic receipts for the 21 scenarios, including taxonomy rationale and the complete semantic freeze declaration/evidence, before comparing them with the authored contracts.
-7. Verify 13/13 Skills UI cards where expected, 13/13 fully qualified selectors, and orchestrated loading of `solution-design`, `testing-quality`, and `security-operations` even if absent from the initial list.
-8. Run bounded repository canaries without unauthorized signing, publishing, deployment, provider mutation, or destructive action.
-9. Obtain a refreshed independent diff/release review over the installed-canary and recovery evidence.
-10. Push the exact candidate, require hosted validation/scanner success, and only then decide whether to promote to `1.4.0`.
+1. Freeze an exact RC commit; record its clean state, manifest hash, deterministic package hash, and tag-eligible marketplace path. **Pending after package remediation.**
+2. Rehearse exact `1.3.1 → final nested-package candidate → 1.3.1 → candidate` recovery through the same isolated personal marketplace/control plane. **Pending; earlier drills are pre-boundary/pre-hardening evidence only.**
+3. Materialize the committed nested package into the personal source path, apply Plugin Creator's cachebuster there, reinstall `project-delivery@personal`, and verify exact prepared-source/cache parity. **Pending.**
+4. Confirm the development source manifest retains the committed RC bytes and the source tree is clean. **Pending commit.**
+5. Start genuinely fresh Codex tasks under catalog pressure. **Pending.**
+6. Record blind semantic receipts for the 21 scenarios, including taxonomy rationale and the complete semantic freeze declaration/evidence, before comparing them with the authored contracts. **Pending.**
+7. Verify 13/13 Skills UI cards where expected, 13/13 fully qualified selectors, and orchestrated loading of `solution-design`, `testing-quality`, and `security-operations` even if absent from the initial list. **Pending.**
+8. Run bounded repository canaries without unauthorized signing, publishing, deployment, provider mutation, or destructive action. **Pending.**
+9. Obtain a refreshed independent diff/release review over package, installed-canary, and recovery evidence. **Pending.**
+10. Push the exact candidate, update and merge the PR, require hosted validation/scanner success on the exact merged `main` revision, verify immutable Git/tag transport, and only then create the authorized `v1.4.0-rc.1` tag and GitHub release. **Pending.**
 
 ## Release status
 
-Local source-candidate status: **cleared for immutable commit, branch push, and candidate PR; active personal installation remains blocked pending the isolated exact-recovery rehearsal**.
+Local package-candidate status: **structural and isolated-install gates pass; exact commit and active personal replacement remain pending**.
 
-Final `v1.4.0` release status: **blocked pending installed-cache parity, fresh-task candidate behavior, repository canaries, independent review, and exact-commit hosted CI/scanner evidence**.
+`v1.4.0-rc.1` tag/release status: **blocked pending exact commit, active installed-cache parity, fresh-task candidate behavior, repository canary, refreshed independent review, and exact-commit hosted CI/scanner evidence**.
 
 Legacy-plugin uninstall status: **blocked pending exact per-control-plane rollback, disable-one-at-a-time observations, stable post-observation state, and explicit user confirmation of the final superseded set**.

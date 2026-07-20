@@ -10,9 +10,9 @@ Describe the problem, intended outcome, and user or maintainer impact.
 
 ## Evidence
 
-- [ ] `python3 scripts/check_plugin.py .`
+- [ ] `python3 scripts/check_plugin.py plugins/project-delivery --layout source`
 - [ ] `python3 scripts/check_routes.py .`
-- [ ] `python3 scripts/check_distribution_bundle.py .`
+- [ ] `python3 scripts/check_distribution_bundle.py plugins/project-delivery`
 - [ ] `python3 -m unittest discover -s tests -p 'test_*.py' -v`
 - [ ] Plugin Creator validation when available
 - [ ] Changed skills validated when available

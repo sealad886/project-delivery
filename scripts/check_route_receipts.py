@@ -115,6 +115,9 @@ def validate(
     allow_historical_annotations: bool = False,
 ) -> tuple[list[str], int, str]:
     errors: list[str] = []
+    plugin_root = root / "plugins" / "project-delivery"
+    if not plugin_root.is_dir():
+        plugin_root = root
     contracts, contract_errors = read_json(
         root / "tests" / "route-contracts.json", "route contracts"
     )
@@ -302,7 +305,7 @@ def validate(
         return errors, 0, str(evidence_class)
 
     available_skills = {
-        path.parent.name for path in (root / "skills").glob("*/SKILL.md")
+        path.parent.name for path in (plugin_root / "skills").glob("*/SKILL.md")
     }
     loaded_items = receipts.get("loaded_specialists")
     loaded_skills: set[str] = set()
