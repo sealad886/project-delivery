@@ -1,0 +1,844 @@
+{
+  "schema_version": 2,
+  "contract_schema_version": 2,
+  "evidence_class": "historical contract-blind route with post-hoc semantic annotation",
+  "semantic_fields_were_frozen_before_contract_comparison": false,
+  "semantic_freeze_scope": ["actual_route", "evidence", "gaps"],
+  "semantic_freeze_evidence": [
+    "The private source-observation digest identifies the preserved pre-comparison route record; schema-v2 taxonomy and conditional annotations were added later."
+  ],
+  "annotation_provenance": "Actual routes and core observation evidence derive from the preserved contract-blind v1.3.1 observation. Taxonomy fields and conditional dispositions were added later to compare those frozen routes with schema-v2 policy; they are interpretation, not contemporaneous blind evidence.",
+  "plugin_identity": {
+    "name": "project-delivery",
+    "installed_version": "1.3.1",
+    "source_revision": "fe3919407339ca973454bd7ff0e2afde3cd0a812",
+    "manifest_sha256": "71d46999c58f5e9ccedcd201eafc9f99ee3f48da4e2696f7c6eccf41cbf6b6a2",
+    "payload_sha256": "80528b156dc2c45bcfc5fb86a9977d96862955ef18c3f05e97d2b93419f363a3",
+    "payload_hash_method": "SHA-256 over lexical non-.git/non-__pycache__/non-pyc files using length-prefixed relative POSIX path and length-prefixed bytes",
+    "cache_relative_path": "plugins/cache/personal/project-delivery/1.3.1"
+  },
+  "task_identity": {
+    "public_receipt_id": "project-delivery-v1.3.1-blind-route-observation-20260719",
+    "selected_at": "2026-07-19T12:37:56Z",
+    "source_observation_sha256": "9fe55cccff59b40fd0e38b8f0769540967aaaf41510426d24dc23ac1627a375f",
+    "comparison_receipt_sha256": "eda897c0a6f3cc80a72bde5479142f0b1a23a332ca38b19dcd9e33c81f4cae2e",
+    "model_identity": "not exposed"
+  },
+  "repository_identity": {
+    "name": "iOS-backup-viewer",
+    "revision": "fe899035ae9974b0787eff1d43568784d1e090d0",
+    "working_tree_state": "dirty: three modified tracked documentation paths; content and diff not inspected by the blind task",
+    "instructions_evidence": "Repository AGENTS.md identified Project Delivery as canonical and excluded competing generic workflows."
+  },
+  "observation_scope": "route-only-no-effects",
+  "effects_performed": [],
+  "legacy_runtime_events": [],
+  "legacy_administrative_visibility": [],
+  "loaded_specialists": [
+    {
+      "skill": "delivery-coordination",
+      "relative_path": "skills/delivery-coordination/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "delivery-orchestrator",
+      "relative_path": "skills/delivery-orchestrator/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "delivery-planning",
+      "relative_path": "skills/delivery-planning/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "documentation-knowledge",
+      "relative_path": "skills/documentation-knowledge/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "implementation-execution",
+      "relative_path": "skills/implementation-execution/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "project-context",
+      "relative_path": "skills/project-context/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "release-change",
+      "relative_path": "skills/release-change/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "requirements-acceptance",
+      "relative_path": "skills/requirements-acceptance/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "retrospective-improvement",
+      "relative_path": "skills/retrospective-improvement/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "review-audit",
+      "relative_path": "skills/review-audit/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "security-operations",
+      "relative_path": "skills/security-operations/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "solution-design",
+      "relative_path": "skills/solution-design/SKILL.md",
+      "state": "loaded"
+    },
+    {
+      "skill": "testing-quality",
+      "relative_path": "skills/testing-quality/SKILL.md",
+      "state": "loaded"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "ROUTE-001",
+      "scale": "small",
+      "risk": "risk-dependent",
+      "authority": "planning-only",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: the prompt requested a small planning-only bug route, while concrete repository evidence was absent so risk remained evidence-dependent.",
+      "taxonomy_evidence": ["Authored ROUTE-001 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design",
+        "delivery-planning"
+      ],
+      "conditional_dispositions": {
+        "solution-design": {
+          "state": "activated",
+          "rationale": "Root cause and regression surface were unknown, so a design delta was retained.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "testing-quality": {
+          "state": "deferred",
+          "rationale": "The route-only prompt supplied no bug or repository evidence from which to design specialist tests.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Blind selection receipt fixed before expected contracts were revealed."
+      ],
+      "gaps": [
+        "No bug identity, reproduction, or affected surface was supplied."
+      ]
+    },
+    {
+      "id": "ROUTE-002",
+      "scale": "medium",
+      "risk": "risk-dependent",
+      "authority": "change",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: the prompt authorized implementation of a medium feature, while its unspecified surface left risk evidence-dependent.",
+      "taxonomy_evidence": ["Authored ROUTE-002 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design",
+        "delivery-planning",
+        "implementation-execution",
+        "testing-quality",
+        "documentation-knowledge",
+        "review-audit",
+        "security-operations",
+        "release-change",
+        "retrospective-improvement"
+      ],
+      "conditional_dispositions": {
+        "security-operations": {
+          "state": "activated",
+          "rationale": "Medium feature risk was retained for explicit security and operational assessment.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "delivery-coordination": {
+          "state": "deferred",
+          "rationale": "No external source, tracker, provider, or communication target was supplied.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "retrospective-improvement": {
+          "state": "planned-future",
+          "rationale": "The frozen route named post-delivery learning as a future branch contingent on a meaningful outcome; no retrospective was presently activated.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Blind route selected the complete medium-change lifecycle."
+      ],
+      "gaps": [
+        "No feature scope, modules, or release context was supplied."
+      ]
+    },
+    {
+      "id": "ROUTE-003",
+      "scale": "large",
+      "risk": "high",
+      "authority": "planning-only",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: multi-PR initiative decomposition is large and high-risk planning work, with no authority to implement.",
+      "taxonomy_evidence": ["Authored ROUTE-003 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design",
+        "delivery-planning"
+      ],
+      "conditional_dispositions": {
+        "security-operations": {
+          "state": "deferred",
+          "rationale": "Large scale alone did not identify a specific sensitive, privileged, migration, or operational boundary.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "delivery-coordination": {
+          "state": "deferred",
+          "rationale": "No teams, systems of record, or external dependencies were supplied.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Planning-only route stopped before implementation."
+      ],
+      "gaps": [
+        "Initiative scope, ownership, and dependencies were absent."
+      ]
+    },
+    {
+      "id": "ROUTE-004",
+      "scale": "risk-dependent",
+      "risk": "risk-dependent",
+      "authority": "review-only",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: release-readiness review scope and risk depend on the absent PR, and the prompt grants review-only authority.",
+      "taxonomy_evidence": ["Authored ROUTE-004 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "review-audit",
+        "release-change"
+      ],
+      "conditional_dispositions": {
+        "testing-quality": {
+          "state": "deferred",
+          "rationale": "Testing becomes an owning branch after the PR reveals missing, failing, stale, disputed, or executable evidence.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "security-operations": {
+          "state": "deferred",
+          "rationale": "No PR surface existed to classify security or operational materiality.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "documentation-knowledge": {
+          "state": "deferred",
+          "rationale": "No documentation gap could be established without the PR.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Review owned scope and release-change owned the gate."
+      ],
+      "gaps": [
+        "No PR, base, head, checks, or provider was supplied."
+      ]
+    },
+    {
+      "id": "ROUTE-005",
+      "scale": "risk-dependent",
+      "risk": "high",
+      "authority": "release-preparation",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: production release preparation is high risk, its scale depends on the missing change, and no release execution was authorized.",
+      "taxonomy_evidence": ["Authored ROUTE-005 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "release-change",
+        "testing-quality",
+        "documentation-knowledge",
+        "review-audit",
+        "security-operations",
+        "release-change"
+      ],
+      "conditional_dispositions": {
+        "testing-quality": {
+          "state": "activated",
+          "rationale": "The preserved blind route selected this evidence owner.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "documentation-knowledge": {
+          "state": "activated",
+          "rationale": "The preserved blind route selected this evidence owner.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "review-audit": {
+          "state": "activated",
+          "rationale": "The preserved blind route selected this evidence owner.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "security-operations": {
+          "state": "activated",
+          "rationale": "The preserved blind route selected this evidence owner.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "delivery-coordination": {
+          "state": "deferred",
+          "rationale": "No external status, handoff, communication, or provider mutation target was supplied.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Release-change re-entered after recovering every mandatory evidence owner."
+      ],
+      "gaps": [
+        "No completed-change revision, artifact, approvals, or environment was supplied."
+      ]
+    },
+    {
+      "id": "ROUTE-006",
+      "scale": "small-or-medium",
+      "risk": "medium-or-high",
+      "authority": "documentation-change",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: an operational documentation handoff can span small or medium scope with elevated operational risk and document-change authority only.",
+      "taxonomy_evidence": ["Authored ROUTE-006 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "documentation-knowledge",
+        "security-operations",
+        "release-change",
+        "delivery-coordination"
+      ],
+      "conditional_dispositions": {
+        "testing-quality": {
+          "state": "deferred",
+          "rationale": "The route-only prompt did not provide runbook steps, configuration, or recovery procedures to execute.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Operational documentation, readiness, release, and handoff owners were present."
+      ],
+      "gaps": [
+        "Change, audience, canonical document, recipient, and authority were unspecified."
+      ]
+    },
+    {
+      "id": "ROUTE-007",
+      "scale": "risk-dependent",
+      "risk": "risk-dependent",
+      "authority": "design-only",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: an unspecified design request has evidence-dependent scale and risk and grants no implementation authority.",
+      "taxonomy_evidence": ["Authored ROUTE-007 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design"
+      ],
+      "conditional_dispositions": {
+        "security-operations": {
+          "state": "deferred",
+          "rationale": "No change surface existed to establish a separate high-risk security or operations branch.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Design-only route stopped before planning and implementation."
+      ],
+      "gaps": [
+        "The requested change and affected architecture were absent."
+      ]
+    },
+    {
+      "id": "ROUTE-008",
+      "scale": "risk-dependent",
+      "risk": "risk-dependent",
+      "authority": "review-only",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: an unspecified change review has evidence-dependent scale and risk and remains non-mutating.",
+      "taxonomy_evidence": ["Authored ROUTE-008 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "review-audit"
+      ],
+      "conditional_dispositions": {
+        "testing-quality": {
+          "state": "deferred",
+          "rationale": "No target existed to determine whether checks needed execution or triage.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "security-operations": {
+          "state": "deferred",
+          "rationale": "No reviewed surface existed to classify security or operational depth.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "release-change": {
+          "state": "not-applicable",
+          "rationale": "The prompt requested review without a release-readiness decision.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Review-audit retained exact scope and no-edit authority."
+      ],
+      "gaps": [
+        "No change identifier, revision, or review mode was supplied."
+      ]
+    },
+    {
+      "id": "ROUTE-009",
+      "scale": "small",
+      "risk": "low-or-risk-dependent",
+      "authority": "documentation-change",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: the prompt names a small documentation change, while operational or contract content could raise otherwise low risk.",
+      "taxonomy_evidence": ["Authored ROUTE-009 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "documentation-knowledge",
+        "testing-quality"
+      ],
+      "conditional_dispositions": {
+        "security-operations": {
+          "state": "not-applicable",
+          "rationale": "The generic documentation prompt disclosed no security, privacy, permission, migration, or operational content.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "release-change": {
+          "state": "not-applicable",
+          "rationale": "The generic documentation prompt disclosed no versioned or release contract.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Documentation validation remained an explicit quality responsibility."
+      ],
+      "gaps": [
+        "No target document, audience, content, or validation command was supplied."
+      ]
+    },
+    {
+      "id": "ROUTE-010",
+      "scale": "small-or-medium",
+      "risk": "critical",
+      "authority": "incident",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: a production hotfix is a bounded small-or-medium incident path with critical risk and explicit incident authority.",
+      "taxonomy_evidence": ["Authored ROUTE-010 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "security-operations",
+        "release-change",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design",
+        "delivery-planning",
+        "implementation-execution",
+        "testing-quality",
+        "documentation-knowledge",
+        "review-audit",
+        "security-operations",
+        "release-change",
+        "delivery-coordination",
+        "retrospective-improvement"
+      ],
+      "conditional_dispositions": {
+        "delivery-planning": {
+          "state": "activated",
+          "rationale": "The route retained dependency and deferred-gate planning for critical incident work.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "documentation-knowledge": {
+          "state": "activated",
+          "rationale": "Incident and recovery knowledge was expected to update durable documentation.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "review-audit": {
+          "state": "activated",
+          "rationale": "Independent hotfix review was retained when time and blast radius permit.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "delivery-coordination": {
+          "state": "activated",
+          "rationale": "The preserved blind route selected this evidence owner.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "retrospective-improvement": {
+          "state": "planned-future",
+          "rationale": "The frozen incident route named retrospective follow-up only as a future branch after a meaningful recovery, failure, or cancellation outcome.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Incident containment controllers preceded the repair lifecycle and re-entered for the final gate."
+      ],
+      "gaps": [
+        "No incident identity, environment, symptoms, authority, or telemetry was supplied."
+      ]
+    },
+    {
+      "id": "ROUTE-011",
+      "scale": "small-or-medium",
+      "risk": "medium",
+      "authority": "coordination-only",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: converting meeting notes into follow-up is small-or-medium coordination work with no implied repository or external-write authority.",
+      "taxonomy_evidence": ["Authored ROUTE-011 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "delivery-coordination"
+      ],
+      "conditional_dispositions": {
+        "requirements-acceptance": {
+          "state": "deferred",
+          "rationale": "No notes existed from which to identify ambiguous proposed requirements.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "delivery-planning": {
+          "state": "deferred",
+          "rationale": "No confirmed actions existed to structure.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "documentation-knowledge": {
+          "state": "deferred",
+          "rationale": "No confirmed durable decision or canonical knowledge update existed.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Coordination owned provenance, target resolution, and write authority."
+      ],
+      "gaps": [
+        "Meeting notes, tracker, owners, dates, and write authority were absent."
+      ]
+    },
+    {
+      "id": "ROUTE-012",
+      "scale": "medium",
+      "risk": "medium",
+      "authority": "coordination-only",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: reconciling three sources of truth is medium coordination work and does not itself authorize edits.",
+      "taxonomy_evidence": ["Authored ROUTE-012 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "delivery-coordination"
+      ],
+      "conditional_dispositions": {
+        "project-context": {
+          "state": "deferred",
+          "rationale": "No repository or project state was supplied to expose a context conflict.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "documentation-knowledge": {
+          "state": "deferred",
+          "rationale": "No specification or status divergence was available to update.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "delivery-planning": {
+          "state": "deferred",
+          "rationale": "No reconciliation result identified a plan, milestone, dependency, or ownership change.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Coordination owned source-of-truth mapping and conflict reconciliation."
+      ],
+      "gaps": [
+        "Tracker, specification, repository revision, conflicts, and authority were unspecified."
+      ]
+    },
+    {
+      "id": "ROUTE-013",
+      "scale": "risk-dependent",
+      "risk": "high",
+      "authority": "review-only",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: security-sensitive diff review is high risk, its breadth depends on the missing diff, and it remains review-only.",
+      "taxonomy_evidence": ["Authored ROUTE-013 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "review-audit",
+        "security-operations",
+        "review-audit"
+      ],
+      "conditional_dispositions": {
+        "testing-quality": {
+          "state": "deferred",
+          "rationale": "No candidate or diff existed to determine whether executable validation or scanner triage was needed.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "release-change": {
+          "state": "deferred",
+          "rationale": "No release target existed for a release-blocking disposition.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Review re-entered after specialist security candidate analysis."
+      ],
+      "gaps": [
+        "No diff, revision, candidates, or qualified reviewer identity was supplied."
+      ]
+    },
+    {
+      "id": "ROUTE-014",
+      "scale": "small-or-medium",
+      "risk": "medium-or-high",
+      "authority": "review-only",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: flaky CI triage is bounded review work whose provider and release impact can raise risk.",
+      "taxonomy_evidence": ["Authored ROUTE-014 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "testing-quality",
+        "release-change"
+      ],
+      "conditional_dispositions": {
+        "delivery-coordination": {
+          "state": "deferred",
+          "rationale": "The route recorded unavailable provider logs as an evidence gap; no escalation, status, or communication target was supplied.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Quality owned causal triage and release-change owned release impact."
+      ],
+      "gaps": [
+        "No CI run, revision, provider, logs, or failure signature was supplied."
+      ]
+    },
+    {
+      "id": "ROUTE-015",
+      "scale": "medium-or-large",
+      "risk": "critical",
+      "authority": "incident",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: failed staged deployment assessment is a critical incident whose release surface may be medium or large.",
+      "taxonomy_evidence": ["Authored ROUTE-015 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "release-change",
+        "security-operations",
+        "release-change"
+      ],
+      "conditional_dispositions": {
+        "testing-quality": {
+          "state": "deferred",
+          "rationale": "No deployment or telemetry artifact existed to execute reproduction or recovery validation.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "delivery-coordination": {
+          "state": "deferred",
+          "rationale": "No provider mutation, incident status, escalation, or communication target was supplied.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "retrospective-improvement": {
+          "state": "deferred",
+          "rationale": "Assessment had not reached a recovered, failed, or cancelled outcome boundary.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Release-change re-entered after security and operational failure-mode assessment."
+      ],
+      "gaps": [
+        "No release, environment, flag, metrics, logs, or mutation authority was supplied."
+      ]
+    },
+    {
+      "id": "ROUTE-016",
+      "scale": "large",
+      "risk": "high",
+      "authority": "change",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: delivering a preview environment with data migration is a large, high-risk authorized change.",
+      "taxonomy_evidence": ["Authored ROUTE-016 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design",
+        "security-operations",
+        "delivery-planning",
+        "implementation-execution",
+        "testing-quality",
+        "documentation-knowledge",
+        "review-audit",
+        "security-operations",
+        "release-change",
+        "retrospective-improvement"
+      ],
+      "conditional_dispositions": {
+        "delivery-coordination": {
+          "state": "deferred",
+          "rationale": "No provider, shared owner, status destination, handoff, or teardown target was supplied.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "retrospective-improvement": {
+          "state": "planned-future",
+          "rationale": "The frozen preview route named learning as a future branch contingent on a meaningful delivery outcome; no retrospective was presently activated.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "High-risk preview and migration route covered every mandatory capability and allowed security re-entry."
+      ],
+      "gaps": [
+        "No provider, data classification, budget, TTL, or migration and restore requirements were supplied."
+      ]
+    },
+    {
+      "id": "ROUTE-017",
+      "scale": "risk-dependent",
+      "risk": "high",
+      "authority": "review-only",
+      "taxonomy_rationale": "Post-hoc schema-v2 classification: the combined platform claim is high risk, its exact scope is predicate-dependent, and validation is read-only.",
+      "taxonomy_evidence": ["Authored ROUTE-017 taxonomy compared after the blind route was frozen; this is compatibility metadata, not blind evidence."],
+      "actual_route": [
+        "delivery-orchestrator",
+        "testing-quality",
+        "security-operations",
+        "release-change"
+      ],
+      "conditional_dispositions": {
+        "review-audit": {
+          "state": "deferred",
+          "rationale": "No claim or release candidate existed to require independent adjudication.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        },
+        "documentation-knowledge": {
+          "state": "deferred",
+          "rationale": "No validated result existed to change canonical platform or distribution guidance.",
+          "evidence": [
+            "Post-hoc schema-v2 annotation grounded in the preserved blind route, rationale, and gap linked by the source-observation digest."
+          ]
+        }
+      },
+      "extra_capability_justifications": {},
+      "delivery_result": "not-run",
+      "evidence": [
+        "Quality owned measurement, security owned supply-chain and signing scope, and release-change owned disposition."
+      ],
+      "gaps": [
+        "No exact claim, threshold, revision, artifact, platform, baseline, or distribution target was supplied."
+      ]
+    }
+  ]
+}

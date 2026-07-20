@@ -4,7 +4,43 @@ This file records user-visible changes to Project Delivery. Dates use ISO 8601 a
 
 ## Unreleased
 
-No unreleased changes.
+No changes yet.
+
+## 1.4.0-rc.1 - 2026-07-20
+
+### Added
+
+- Semantic route-contract schema v3 plus an installed canonical route-profile schema v1, with required and conditional capabilities, evidence-resolved runtime scale/risk ranges, narrower blind-canary tolerances, partial-order safety edges, two-sided controller entry and return contracts, and 24 canonical scenarios including separate performance, packaging, signing/notarization, distribution, direct-retrospective, release-execution, and workflow-decommission variants.
+- Dependency-free validation for no-effect contract-blind route receipts, including a closed schema-v3 observation, structured trigger/outcome/effect/gap records, complete installed-instruction closure, deterministic semantic and raw-byte digests, installed-plugin identity and skill-byte binding, public receipt identities, an all-semantic-field freeze declaration, evidence-bearing taxonomy rationale, explicit separation of fresh observations from post-hoc historical annotations, and adversarial tests for missing ownership/loading/evidence, route-only authority effects, unexplained conditional omissions, invalid controller entry/return/final disposition, cyclic precedence, contradictory policy, unjustified extras, and legacy dependencies.
+- A prompt-only export command that derives blind canary inputs from the canonical route contracts without disclosing expected owners, ordering, or artifacts.
+- A sealed three-record live-canary protocol: coordinator-generated canonical task prompt and private task binding, publishable byte/launch attestation, and independent digest-linked route grade.
+- Plugin Creator-generated repository marketplace metadata for the canonical `plugins/project-delivery/` package subtree, plus hosted validation of marketplace containment, identity, policy, category, and exact MIT-license parity.
+- Guarded distribution materialization with deterministic payload hashing; exact file-and-directory inventories; symlink, executable, forbidden, unsupported, and undeclared-entry rejection; clean-destination proof; checkout/environment ancestry protection; recoverable atomic replacement; installed-cache parity; progress/ETA reporting; and adversarial regression tests.
+
+### Changed
+
+- Bound ordinary fresh-task smoke callbacks to the exact expected installed cachebuster version, while keeping sealed JSON route receipts schema-valid through `plugin_identity.installed_version`.
+- Instructed the orchestrator to load selected sibling specialists directly from the installed plugin bundle when Codex's global initial skill-metadata budget omits their catalog entries, with unreadable specialists blocking the route.
+- Replaced exact total-array route grading with semantic capability, gate, authority, and evidence comparison.
+- Strengthened implementation and testing preflight for wrapper side effects such as signing, fixed temporary paths, deletion, credentials, network/provider access, packaging, publication, and deployment.
+- Split structural skill completeness, Skills UI presentation, initial-list visibility, explicit invocation, orchestrated loading, and runtime behavior into distinct evidence classes.
+- Added a reusable recovery-record template and expanded decommission rollback guidance to distinguish CLI, remote-synced, direct-registration, symlink, standalone-source, and cache identities.
+- Reclassified preserved `1.3.1` receipts as historical route-shape compatibility evidence rather than current-policy or candidate-behavior proof, including explicit future-only retrospective branches.
+- Normalized route vocabulary for scale, risk, authority, and conditional state; future-triggered retrospectives are now dispositions only and are omitted from the present route and load claims.
+- Made quality, security, release, documentation, and coordination ownership explicit for flaky CI, operational handoff, documentation validation, preview migration, combined-platform, performance, package, signing/notarization, and distribution routes.
+- Made installed `route-profiles-v1.json` the runtime semantic source for common intent profiles and required validator parity with maintainer-only route contracts, preventing runtime instructions and canary expectations from drifting independently.
+- Required the declared lead to open fresh routes after the optional orchestrator, exact loaded-skill records for present routes, and final release dispositions after all selected decision-bearing evidence.
+- Moved the canonical installable plugin into `plugins/project-delivery/` so local and Git `git-subdir` marketplace sources exclude repository metadata, CI, tests, audit evidence, validator tooling, and development environments.
+- Added an explicit, non-destructive 1.3.x checkout-layout migration and forward/back recovery sequence.
+- Required authorization, minimum necessary scope, and untrusted-content handling when project context uses external systems or private records.
+
+### Fixed
+
+- Clarified direct-retrospective intake when outcome evidence is unavailable, exact unknown-branch gap citation, and the distinction between missing delivery inputs and route-selection blockers.
+- Made sealed grader tests independent of developer-specific global Git ignore configuration.
+- Prevented Codex's unfiltered local-source cache copy from installing `.git`, `.venv`, bytecode, repository workflows, tests, and maintainer-only evidence with Project Delivery.
+- Prevented an unsafe distribution refresh from erasing unrelated destination content or ignoring empty forbidden/undeclared directories.
+- Corrected missing coordination ownership for operational handoff, missing quality ownership for documentation validation, missing security ownership for distribution validation, premature release ordering, stale candidate-identity acceptance, blanket specialist-load claims, and prospective retrospective activation found by fresh-task and adversarial RC canaries.
 
 ## 1.3.2 - 2026-07-19
 

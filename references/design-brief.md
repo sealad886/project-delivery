@@ -10,7 +10,7 @@ Repository evidence and user requirements drive a single risk-scaled lifecycle:
 
 `Context → Requirements → Solution Design → Delivery Plan ↔ Coordination → Implementation → Quality → Documentation → Review/Security/Operational Audit → Release → Retrospective`
 
-One router owns scale and phase selection. Gates are always present but compress for low-risk changes. Existing repository artifacts and conventions outrank plugin templates.
+One router owns scale, authority, lifecycle state, and capability selection. Gates are always present but compress for low-risk changes. Routes are conditional capability graphs with partial-order safety constraints and explicit controller entry/return boundaries—not unconditional exact skill-call arrays. Existing repository artifacts and conventions outrank plugin templates.
 
 ## Skill taxonomy
 
@@ -35,4 +35,4 @@ Run a temporary coexistence/canary phase, execute representative smoke tests, cl
 
 ## Maintainability
 
-All skills share one operating model and template set. Descriptions are concise routing contracts. A standard-library checker validates metadata, internal links, names, and placeholders. Audit, research, smoke, and decommission records are versioned with the plugin.
+All skills share one operating model and template set. The orchestrator is instructed to resolve selected sibling skills from the installed bundle so global initial-list budgeting cannot silently erase required lifecycle ownership. The canonical plugin lives at `plugins/project-delivery/`, while audit, tests, CI, and release tooling remain at repository root. Standard-library checkers validate metadata, internal links, semantic route policy, frozen blind receipts, names, placeholders, and the exact package boundary; they reject undeclared files, symlinks, unsupported file types, and source-only paths before materialization or installation.

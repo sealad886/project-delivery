@@ -38,6 +38,11 @@ REQUIRED_SKILL_SECTIONS = (
     "## Must not",
 )
 REQUIRED_ROOT_FILES = (".codexignore", "LICENSE", "README.md", "SECURITY.md")
+PUBLIC_FIXTURE_HOME_PATH = re.compile(r"(?:/Users|/home)/[^/\s]+/")
+PUBLIC_FIXTURE_TASK_ID = re.compile(
+    r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
+)
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -45,7 +50,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "root",
         nargs="?",
-        default=str(Path(__file__).parents[1]),
+        default=str(Path(__file__).parents[1] / "plugins" / "project-delivery"),
         help="plugin source root or installed version-directory root",
     )
     parser.add_argument(
@@ -131,6 +136,12 @@ def validate(root: Path, layout: str = "auto") -> tuple[list[str], int, int]:
         placeholder_marker = "[" + "TODO:"
         if placeholder_marker in text:
             errors.append(f"placeholder: {path}")
+        relative_parts = path.relative_to(root).parts
+        if len(relative_parts) >= 2 and relative_parts[:2] == ("tests", "fixtures"):
+            if PUBLIC_FIXTURE_HOME_PATH.search(text):
+                errors.append(f"public fixture contains an absolute user-home path: {path}")
+            if PUBLIC_FIXTURE_TASK_ID.search(text):
+                errors.append(f"public fixture contains a raw task identifier: {path}")
         if path.name == "SKILL.md":
             if not text.startswith("---\n") or not re.search(
                 r"^name: [a-z0-9]+(?:-[a-z0-9]+)*$", text, re.MULTILINE

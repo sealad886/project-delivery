@@ -1,0 +1,20 @@
+{
+  "name": "project-delivery",
+  "interface": {
+    "displayName": "Project Delivery"
+  },
+  "plugins": [
+    {
+      "name": "project-delivery",
+      "source": {
+        "source": "local",
+        "path": "./plugins/project-delivery"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

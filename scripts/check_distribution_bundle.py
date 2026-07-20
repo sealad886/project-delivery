@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-"""Build and validate the standalone plugin's installable distribution bundle."""
+"""Build and validate the exact self-contained plugin distribution payload."""
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import shutil
 import sys
 import tempfile
 import time
+import uuid
 from pathlib import Path
 
 from check_plugin import validate
@@ -16,7 +19,6 @@ from check_plugin import validate
 
 OPTIONAL_ROOT_FILES = {
     ".codexignore",
-    ".github/dependabot.yml",
     "LICENSE",
     "LICENSE.md",
     "LICENSE.txt",
@@ -30,6 +32,23 @@ OPTIONAL_ROOT_FILES = {
     "yarn.lock",
 }
 COMPONENT_FIELDS = ("skills", "scripts", "mcpServers", "apps", "app", "appConfig", "hooks")
+SHARED_RUNTIME_PATHS = (
+    "skills/.shared/operating-model.md",
+    "skills/.shared/artifact-templates.md",
+    "skills/.shared/external-systems.md",
+    "skills/.shared/live-route-receipt-v3.schema.json",
+    "skills/.shared/route-profiles-v1.json",
+)
+FORBIDDEN_DISTRIBUTION_PARTS = {
+    ".git",
+    ".github",
+    ".venv",
+    "__pycache__",
+    "node_modules",
+    "references",
+    "scripts",
+    "tests",
+}
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -37,8 +56,17 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "root",
         nargs="?",
-        default=str(Path(__file__).parents[1]),
+        default=str(Path(__file__).parents[1] / "plugins" / "project-delivery"),
         help="plugin source root",
+    )
+    parser.add_argument(
+        "--output",
+        help="materialize the validated runtime closure at this exact plugin directory",
+    )
+    parser.add_argument(
+        "--replace",
+        action="store_true",
+        help="replace an existing clean distribution directory after identity and safety checks",
     )
     return parser.parse_args(argv)
 
@@ -89,47 +117,311 @@ def select_paths(root: Path) -> set[Path]:
     return selected
 
 
-def validate_bundle(root: Path) -> tuple[list[str], int]:
+def payload_sha256(root: Path, relative_paths: list[Path]) -> str:
+    digest = hashlib.sha256()
+    for relative in relative_paths:
+        encoded_path = relative.as_posix().encode("utf-8")
+        contents = (root / relative).read_bytes()
+        digest.update(len(encoded_path).to_bytes(8, "big"))
+        digest.update(encoded_path)
+        digest.update(len(contents).to_bytes(8, "big"))
+        digest.update(contents)
+    return digest.hexdigest()
+
+
+def copy_selected(root: Path, destination: Path, selected: list[Path]) -> None:
+    started = time.monotonic()
+    for index, relative in enumerate(selected, 1):
+        elapsed = time.monotonic() - started
+        eta = (elapsed / index) * (len(selected) - index)
+        print(f"CLOSURE [{index}/{len(selected)}] file={relative} eta={eta:.1f}s", flush=True)
+        source = root / relative
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+
+
+def expected_directories(relative_paths: list[Path] | set[Path]) -> set[Path]:
+    expected: set[Path] = set()
+    for relative in relative_paths:
+        parent = relative.parent
+        while parent != Path("."):
+            expected.add(parent)
+            parent = parent.parent
+    return expected
+
+
+def inventory_tree(
+    root: Path,
+    label: str,
+    phase: str,
+) -> tuple[set[Path], set[Path], list[str]]:
+    files: set[Path] = set()
+    directories: set[Path] = set()
+    errors: list[str] = []
+    entries = sorted(root.rglob("*"))
+    started = time.monotonic()
+    for index, path in enumerate(entries, 1):
+        elapsed = time.monotonic() - started
+        eta = (elapsed / index) * (len(entries) - index)
+        relative = path.relative_to(root)
+        print(
+            f"{phase} [{index}/{len(entries)}] side={label} path={relative} eta={eta:.1f}s",
+            flush=True,
+        )
+        if path.is_symlink():
+            errors.append(f"{label} contains unsupported symlink: {relative}")
+            continue
+        if path.is_file():
+            files.add(relative)
+            if path.stat().st_mode & 0o111:
+                errors.append(f"{label} contains executable file: {relative}")
+        elif path.is_dir():
+            directories.add(relative)
+        else:
+            errors.append(f"{label} contains unsupported file type: {relative}")
+
+        forbidden = FORBIDDEN_DISTRIBUTION_PARTS.intersection(relative.parts)
+        if forbidden:
+            errors.append(
+                f"{label} contains forbidden path: {relative} "
+                f"({', '.join(sorted(forbidden))})"
+            )
+    return files, directories, errors
+
+
+def validate_source_boundary(root: Path, selected: list[Path]) -> list[str]:
+    actual_files, actual_directories, errors = inventory_tree(
+        root,
+        "plugin package boundary",
+        "BOUNDARY",
+    )
+    expected_files = set(selected)
+    expected_directory_set = expected_directories(expected_files)
+    for missing in sorted(expected_files - actual_files):
+        errors.append(f"plugin package boundary is missing selected file: {missing}")
+    for extra in sorted(actual_files - expected_files):
+        errors.append(f"plugin package boundary contains undeclared file: {extra}")
+    for missing in sorted(expected_directory_set - actual_directories):
+        errors.append(f"plugin package boundary is missing selected directory: {missing}")
+    for extra in sorted(actual_directories - expected_directory_set):
+        errors.append(f"plugin package boundary contains undeclared directory: {extra}")
+    return errors
+
+
+def validate_distribution_tree(
+    destination: Path,
+    selected: list[Path],
+) -> list[str]:
+    errors, skill_count, _ = validate(destination, "source")
+    if skill_count != 13:
+        errors.append(f"runtime closure must contain 13 skills, found {skill_count}")
+    for required in SHARED_RUNTIME_PATHS:
+        if not (destination / required).is_file():
+            errors.append(f"runtime closure is missing dependency: {required}")
+
+    actual_files, actual_directories, inventory_errors = inventory_tree(
+        destination,
+        "runtime closure",
+        "RUNTIME",
+    )
+    errors.extend(inventory_errors)
+    expected_files = set(selected)
+    expected_directory_set = expected_directories(expected_files)
+    for missing in sorted(expected_files - actual_files):
+        errors.append(f"runtime closure is missing selected file: {missing}")
+    for extra in sorted(actual_files - expected_files):
+        errors.append(f"runtime closure contains unselected file: {extra}")
+    for missing in sorted(expected_directory_set - actual_directories):
+        errors.append(f"runtime closure is missing selected directory: {missing}")
+    for extra in sorted(actual_directories - expected_directory_set):
+        errors.append(f"runtime closure contains unselected directory: {extra}")
+    return errors
+
+
+def build_runtime_closure(root: Path, destination: Path) -> tuple[list[str], list[Path], str]:
     errors: list[str] = []
     try:
         selected = sorted(select_paths(root))
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
-        return [str(error)], 0
+        return [str(error)], [], ""
 
-    with tempfile.TemporaryDirectory(prefix="project-delivery-distribution-") as temporary:
+    errors.extend(validate_source_boundary(root, selected))
+    if errors:
+        return errors, selected, ""
+    copy_selected(root, destination, selected)
+    errors.extend(validate_distribution_tree(destination, selected))
+    digest = payload_sha256(destination, selected) if not errors else ""
+    return errors, selected, digest
+
+
+def control_plane_owner(output: Path) -> Path | None:
+    for candidate in (output, *output.parents):
+        markers = [
+            marker
+            for marker in (candidate / ".git", candidate / ".venv")
+            if marker.exists() or marker.is_symlink()
+        ]
+        if markers:
+            return candidate
+    return None
+
+
+def validate_existing_output(output: Path, plugin_name: str) -> list[str]:
+    errors: list[str] = []
+    if output.name != plugin_name:
+        errors.append(f"output directory must be named {plugin_name}: {output}")
+    if not output.is_dir():
+        errors.append(f"refusing to replace a non-directory output: {output}")
+
+    control_plane = control_plane_owner(output)
+    if control_plane is not None:
+        errors.append(
+            "refusing to replace a distribution inside a source checkout or "
+            f"Python environment: {output} (control plane: {control_plane})"
+        )
+
+    manifest_path = output / ".codex-plugin" / "plugin.json"
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        errors.append(f"refusing to replace output with unreadable identity: {error}")
+    else:
+        if manifest.get("name") != plugin_name:
+            errors.append(
+                f"refusing to replace output for plugin {manifest.get('name')!r}; "
+                f"expected {plugin_name!r}"
+            )
+    if errors:
+        return errors
+
+    try:
+        selected = sorted(select_paths(output))
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
+        return [f"refusing to replace output with invalid package boundary: {error}"]
+
+    boundary_errors = validate_source_boundary(output, selected)
+    structural_errors, _, _ = validate(output, "source")
+    errors.extend(f"refusing to replace unclean output: {error}" for error in boundary_errors)
+    errors.extend(f"refusing to replace invalid output: {error}" for error in structural_errors)
+    return errors
+
+
+def materialize_runtime_closure(
+    root: Path,
+    output: Path,
+    replace: bool,
+) -> tuple[list[str], int, str]:
+    manifest_path = root / ".codex-plugin" / "plugin.json"
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        plugin_name = manifest["name"]
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError) as error:
+        return [f"cannot resolve plugin identity: {error}"], 0, ""
+
+    lexical_output = Path(os.path.abspath(os.fspath(output.expanduser())))
+    if lexical_output.is_symlink():
+        return [f"refusing to materialize through an output symlink: {lexical_output}"], 0, ""
+    resolved_output = lexical_output.resolve()
+    if (
+        resolved_output == root
+        or resolved_output.is_relative_to(root)
+        or root.is_relative_to(resolved_output)
+    ):
+        return [f"output must be separate from the source checkout: {lexical_output}"], 0, ""
+    if lexical_output.name != plugin_name:
+        return [f"output directory must be named {plugin_name}: {lexical_output}"], 0, ""
+    control_plane = control_plane_owner(lexical_output)
+    if control_plane is not None:
+        return [
+            "refusing to materialize a distribution inside a source checkout or "
+            f"Python environment: {lexical_output} (control plane: {control_plane})"
+        ], 0, ""
+    if lexical_output.exists() and not replace:
+        return [
+            f"output already exists; rerun with --replace after inspection: {lexical_output}"
+        ], 0, ""
+    if lexical_output.exists():
+        existing_errors = validate_existing_output(lexical_output, plugin_name)
+        if existing_errors:
+            return existing_errors, 0, ""
+    output = lexical_output
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(
+        prefix=f".{plugin_name}-distribution-",
+        dir=output.parent,
+    ) as temporary:
+        staging_parent = Path(temporary)
+        staging = staging_parent / plugin_name
+        errors, selected, digest = build_runtime_closure(root, staging)
+        if errors:
+            return errors, len(selected), ""
+
+        previous: Path | None = None
+        if output.exists():
+            previous = output.parent / f".{plugin_name}-previous-{uuid.uuid4().hex}"
+        try:
+            if previous is not None:
+                os.replace(output, previous)
+            os.replace(staging, output)
+        except OSError as error:
+            if previous is not None and previous.exists() and not output.exists():
+                try:
+                    os.replace(previous, output)
+                except OSError as restore_error:
+                    return [
+                        f"distribution swap failed: {error}; rollback also failed: "
+                        f"{restore_error}; prior output retained at {previous}"
+                    ], len(selected), ""
+            if previous is None:
+                return [
+                    f"distribution staging swap failed before an output was created: {error}"
+                ], len(selected), ""
+            return [
+                f"distribution swap failed and the prior output was preserved: {error}"
+            ], len(selected), ""
+        if previous is not None:
+            try:
+                shutil.rmtree(previous)
+            except OSError as error:
+                return [
+                    "new distribution was installed, but the prior clean distribution "
+                    f"could not be removed and remains at {previous}: {error}"
+                ], len(selected), ""
+    return [], len(selected), digest
+
+
+def validate_runtime_closure(root: Path) -> tuple[list[str], int, str]:
+    with tempfile.TemporaryDirectory(prefix="project-delivery-runtime-closure-") as temporary:
         destination = Path(temporary) / "project-delivery"
-        started = time.monotonic()
-        for index, relative in enumerate(selected, 1):
-            elapsed = time.monotonic() - started
-            eta = (elapsed / index) * (len(selected) - index)
-            print(f"BUNDLE [{index}/{len(selected)}] file={relative} eta={eta:.1f}s", flush=True)
-            source = root / relative
-            target = destination / relative
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, target)
-
-        bundle_errors, skill_count, _ = validate(destination, "source")
-        errors.extend(bundle_errors)
-        if skill_count != 13:
-            errors.append(f"distribution bundle must contain 13 skills, found {skill_count}")
-        for required in (
-            "skills/.shared/operating-model.md",
-            "skills/.shared/artifact-templates.md",
-            "skills/.shared/external-systems.md",
-        ):
-            if not (destination / required).is_file():
-                errors.append(f"distribution bundle is missing runtime dependency: {required}")
-    return errors, len(selected)
+        errors, selected, digest = build_runtime_closure(root, destination)
+    return errors, len(selected), digest
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
     root = Path(args.root).expanduser().resolve()
-    errors, selected_count = validate_bundle(root)
+    if args.replace and not args.output:
+        print("ERROR --replace requires --output")
+        return 1
+    if args.output:
+        errors, selected_count, digest = materialize_runtime_closure(
+            root,
+            Path(args.output),
+            args.replace,
+        )
+    else:
+        errors, selected_count, digest = validate_runtime_closure(root)
     if errors:
         print("\n".join(f"ERROR {error}" for error in errors))
         return 1
-    print(f"PASS selected_files={selected_count} skills=13 shared_runtime=3")
+    action = "materialized" if args.output else "validated"
+    output = f" output={Path(args.output).expanduser().resolve()}" if args.output else ""
+    print(
+        f"PASS action={action} selected_files={selected_count} skills=13 "
+        f"shared_runtime={len(SHARED_RUNTIME_PATHS)} payload_sha256={digest}{output}"
+    )
     return 0
 
 

@@ -1,14 +1,15 @@
 # Environment and capability audit
 
-Audit date: 2026-07-19. Sources were inspected statically; downloaded installers, hooks, MCP servers, apps, and provider operations were not executed. This document records capability evidence used to design the standalone Project Delivery plugin.
+Audit date: 2026-07-19 through 2026-07-20. Sources were inspected statically; downloaded installers, hooks, MCP servers, apps, and provider operations were not executed. This document records capability evidence used to design the standalone Project Delivery plugin.
 
 ## Standalone plugin contract
 
-- The source repository contains one `.codex-plugin/plugin.json` manifest, 13 lifecycle skills, 13 agent manifests, 26 skill icons, two plugin icons, and three shared runtime documents under `skills/.shared/`.
+- The canonical package at `plugins/project-delivery/` contains one `.codex-plugin/plugin.json` manifest, 13 lifecycle skills, 13 agent manifests, 26 skill icons, two plugin icons, and five shared runtime resources under `skills/.shared/`: the operating model, artifact templates, external-systems contract, closed live-route schema, and canonical route profiles.
 - Project Delivery bundles no MCP server, app, hook, telemetry client, credential, binary, package dependency, or automatic external write.
 - Its validation scripts use Python's standard library. Development-only scanner tooling lives in the project `.venv` and is not required by the installed plugin.
 - External issue trackers, source hosts, document stores, communication tools, calendars, CI systems, deployment platforms, security tools, and memory systems are optional adapters. The core workflow remains useful when none is available.
-- The supported local workflow is to clone the repository into a stable directory, use Plugin Creator to validate and register that existing source, refresh its installed copy after changes, and start a new task before testing updated skills.
+- Codex `0.144.6` recursively copies every regular file under a local plugin source and does not treat `.codexignore` as an installation filter. Repository-only CI, tests, audit evidence, tools, and environments therefore remain outside the canonical plugin subtree.
+- The supported local workflow is to clone the repository outside the personal-plugin destination, materialize the exact validated package into `~/plugins/project-delivery`, use Plugin Creator to validate/cachebust/install that prepared source, and start a new task before testing updated skills. Git-backed marketplaces use `git-subdir` with the canonical package path.
 
 ## Repository and process facts
 

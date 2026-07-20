@@ -1,0 +1,614 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/sealad886/project-delivery/blob/main/plugins/project-delivery/skills/.shared/live-route-receipt-v3.schema.json",
+  "title": "Project Delivery sealed semantic route observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_schema_version",
+    "evidence_class",
+    "semantic_fields_were_frozen_before_contract_comparison",
+    "semantic_freeze_scope",
+    "semantic_freeze_evidence",
+    "annotation_provenance",
+    "plugin_identity",
+    "task_identity",
+    "repository_identity",
+    "observation_scope",
+    "effects_performed",
+    "legacy_administrative_visibility",
+    "legacy_invocations",
+    "legacy_runtime_events",
+    "legacy_branded_state_created",
+    "loaded_specialists",
+    "scenarios"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 3
+    },
+    "contract_schema_version": {
+      "const": 3
+    },
+    "evidence_class": {
+      "const": "fresh-task semantic route observation"
+    },
+    "semantic_fields_were_frozen_before_contract_comparison": {
+      "const": true
+    },
+    "semantic_freeze_scope": {
+      "const": [
+        "actual_route",
+        "authority",
+        "conditional_dispositions",
+        "evidence",
+        "extra_capability_justifications",
+        "gaps",
+        "outcome_observation",
+        "risk",
+        "scale",
+        "scenario_observation",
+        "taxonomy_evidence",
+        "taxonomy_rationale"
+      ]
+    },
+    "semantic_freeze_evidence": {
+      "$ref": "#/$defs/nonEmptyStrings"
+    },
+    "annotation_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "semantic_fields_origin",
+        "contract_access",
+        "post_freeze_enrichment_fields",
+        "semantic_fields_revised_after_comparison"
+      ],
+      "properties": {
+        "semantic_fields_origin": {
+          "const": "blind-before-contract-comparison"
+        },
+        "contract_access": {
+          "const": "after-capture-only"
+        },
+        "post_freeze_enrichment_fields": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "plugin_identity",
+              "repository_identity",
+              "task_identity.public_receipt_id",
+              "task_identity.selected_at",
+              "task_identity.source_observation_sha256"
+            ]
+          }
+        },
+        "semantic_fields_revised_after_comparison": {
+          "const": false
+        }
+      }
+    },
+    "plugin_identity": {
+      "$ref": "#/$defs/pluginIdentity"
+    },
+    "task_identity": {
+      "$ref": "#/$defs/taskIdentity"
+    },
+    "repository_identity": {
+      "$ref": "#/$defs/repositoryIdentity"
+    },
+    "observation_scope": {
+      "const": "route-only-no-effects"
+    },
+    "effects_performed": {
+      "const": []
+    },
+    "legacy_administrative_visibility": {
+      "$ref": "#/$defs/strings"
+    },
+    "legacy_invocations": {
+      "const": []
+    },
+    "legacy_runtime_events": {
+      "const": []
+    },
+    "legacy_branded_state_created": {
+      "const": []
+    },
+    "loaded_specialists": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/loadedSpecialist"
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/scenario"
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "skillName": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "strings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "nonEmptyStrings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "pluginIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "installed_version",
+        "source_revision",
+        "manifest_sha256",
+        "payload_sha256",
+        "payload_hash_method",
+        "cache_relative_path"
+      ],
+      "properties": {
+        "name": {
+          "const": "project-delivery"
+        },
+        "installed_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,64}$"
+        },
+        "manifest_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "payload_hash_method": {
+          "const": "project-delivery length-prefixed path-and-content sha256 v1"
+        },
+        "cache_relative_path": {
+          "type": "string",
+          "pattern": "^plugins/cache/[^/]+/project-delivery/[^/]+$"
+        }
+      }
+    },
+    "taskIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "public_receipt_id",
+        "selected_at",
+        "source_observation_sha256"
+      ],
+      "properties": {
+        "public_receipt_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{7,127}$"
+        },
+        "selected_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_observation_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "repositoryIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "revision",
+        "working_tree_state",
+        "instructions_evidence"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "working_tree_state": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instructions_evidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "instructionFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relative_path",
+        "role",
+        "sha256",
+        "state"
+      ],
+      "properties": {
+        "relative_path": {
+          "type": "string",
+          "pattern": "^skills/(?:\\.shared|[a-z0-9]+(?:-[a-z0-9]+)*)/[A-Za-z0-9._-]+$"
+        },
+        "role": {
+          "enum": [
+            "skill-root",
+            "required-reference"
+          ]
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "state": {
+          "const": "read-completely-before-route-freeze"
+        }
+      }
+    },
+    "loadedSpecialist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill",
+        "relative_path",
+        "state",
+        "skill_sha256",
+        "instruction_closure"
+      ],
+      "properties": {
+        "skill": {
+          "$ref": "#/$defs/skillName"
+        },
+        "relative_path": {
+          "type": "string",
+          "pattern": "^skills/[a-z0-9]+(?:-[a-z0-9]+)*/SKILL\\.md$"
+        },
+        "state": {
+          "const": "loaded"
+        },
+        "skill_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "instruction_closure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "files",
+            "unresolved_references"
+          ],
+          "properties": {
+            "state": {
+              "const": "complete"
+            },
+            "files": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/instructionFile"
+              }
+            },
+            "unresolved_references": {
+              "const": []
+            }
+          }
+        }
+      }
+    },
+    "scenarioObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation_scope",
+        "effects_performed",
+        "legacy_administrative_visibility",
+        "legacy_invocations",
+        "legacy_runtime_events",
+        "legacy_branded_state_created"
+      ],
+      "properties": {
+        "observation_scope": {
+          "const": "route-only-no-effects"
+        },
+        "effects_performed": {
+          "const": []
+        },
+        "legacy_administrative_visibility": {
+          "$ref": "#/$defs/strings"
+        },
+        "legacy_invocations": {
+          "const": []
+        },
+        "legacy_runtime_events": {
+          "const": []
+        },
+        "legacy_branded_state_created": {
+          "const": []
+        }
+      }
+    },
+    "outcomeObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "evidence"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "meaningful-outcome-observed",
+            "no-meaningful-outcome-observed",
+            "unknown"
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        }
+      }
+    },
+    "triggerEvaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trigger_statement",
+        "source",
+        "result"
+      ],
+      "properties": {
+        "trigger_statement": {
+          "type": "string",
+          "minLength": 12
+        },
+        "source": {
+          "const": "installed-runtime"
+        },
+        "result": {
+          "enum": [
+            "met",
+            "not-met",
+            "unknown",
+            "future-pending"
+          ]
+        }
+      }
+    },
+    "conditionalDisposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "trigger_evaluation",
+        "rationale",
+        "evidence"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "activated",
+            "deferred",
+            "not-applicable",
+            "blocked",
+            "planned-future"
+          ]
+        },
+        "trigger_evaluation": {
+          "$ref": "#/$defs/triggerEvaluation"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 12
+        },
+        "evidence": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        }
+      }
+    },
+    "extraJustification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rationale",
+        "evidence"
+      ],
+      "properties": {
+        "rationale": {
+          "type": "string",
+          "minLength": 12
+        },
+        "evidence": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        }
+      }
+    },
+    "gap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "summary",
+        "related_field",
+        "route_effect",
+        "next_action"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^GAP-[A-Z0-9][A-Z0-9-]{2,63}$"
+        },
+        "kind": {
+          "enum": [
+            "missing-context",
+            "missing-evidence",
+            "unavailable-capability",
+            "authority-limit",
+            "unresolved-question"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 12
+        },
+        "related_field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "route_effect": {
+          "enum": [
+            "nonblocking",
+            "blocks-route"
+          ]
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 12
+        }
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "prompt",
+        "scale",
+        "risk",
+        "authority",
+        "taxonomy_rationale",
+        "taxonomy_evidence",
+        "actual_route",
+        "conditional_dispositions",
+        "extra_capability_justifications",
+        "delivery_result",
+        "evidence",
+        "gaps",
+        "outcome_observation",
+        "scenario_observation"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^ROUTE-[0-9]{3}[A-D]?$"
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scale": {
+          "enum": [
+            "small",
+            "medium",
+            "large",
+            "small-or-medium",
+            "medium-or-large",
+            "risk-dependent"
+          ]
+        },
+        "risk": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical",
+            "low-or-risk-dependent",
+            "medium-or-high",
+            "risk-dependent"
+          ]
+        },
+        "authority": {
+          "enum": [
+            "report-only",
+            "planning-only",
+            "design-only",
+            "change",
+            "review-only",
+            "documentation-change",
+            "coordination-only",
+            "release-preparation",
+            "release-execution",
+            "incident"
+          ]
+        },
+        "taxonomy_rationale": {
+          "type": "string",
+          "minLength": 20
+        },
+        "taxonomy_evidence": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        },
+        "actual_route": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/skillName"
+          }
+        },
+        "conditional_dispositions": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z0-9]+(?:-[a-z0-9]+)*$": {
+              "$ref": "#/$defs/conditionalDisposition"
+            }
+          },
+          "additionalProperties": false
+        },
+        "extra_capability_justifications": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z0-9]+(?:-[a-z0-9]+)*$": {
+              "$ref": "#/$defs/extraJustification"
+            }
+          },
+          "additionalProperties": false
+        },
+        "delivery_result": {
+          "const": "not-run"
+        },
+        "evidence": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/gap"
+          }
+        },
+        "outcome_observation": {
+          "$ref": "#/$defs/outcomeObservation"
+        },
+        "scenario_observation": {
+          "$ref": "#/$defs/scenarioObservation"
+        }
+      }
+    }
+  }
+}
