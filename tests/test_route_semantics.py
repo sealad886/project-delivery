@@ -25,6 +25,9 @@ BLIND_FIXTURE = (
 )
 TEST_SOURCE_REVISION = "0123456789abcdef0123456789abcdef01234567"
 PAYLOAD_HASH_METHOD = "project-delivery length-prefixed path-and-content sha256 v1"
+ROUTE_PROFILE_PATH = (
+    PLUGIN_ROOT / "skills" / ".shared" / "route-profiles-v1.json"
+)
 
 
 def run_contract_checker() -> subprocess.CompletedProcess[str]:
@@ -38,6 +41,8 @@ def run_contract_checker() -> subprocess.CompletedProcess[str]:
 
 def run_contract_checker_with_contract(
     contract: dict[str, object],
+    *,
+    route_profiles: dict[str, object] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     with tempfile.TemporaryDirectory() as temporary:
         root = Path(temporary)
@@ -46,9 +51,30 @@ def run_contract_checker_with_contract(
             json.dumps(contract), encoding="utf-8"
         )
         for skill_file in (PLUGIN_ROOT / "skills").glob("*/SKILL.md"):
-            target = root / "skills" / skill_file.parent.name
+            target = (
+                root
+                / "plugins"
+                / "project-delivery"
+                / "skills"
+                / skill_file.parent.name
+            )
             target.mkdir(parents=True)
             (target / "SKILL.md").write_text("fixture\n", encoding="utf-8")
+        profile_target = (
+            root
+            / "plugins"
+            / "project-delivery"
+            / "skills"
+            / ".shared"
+            / "route-profiles-v1.json"
+        )
+        profile_target.parent.mkdir(parents=True)
+        profile_target.write_text(
+            json.dumps(
+                load_route_profiles() if route_profiles is None else route_profiles
+            ),
+            encoding="utf-8",
+        )
         return subprocess.run(
             [sys.executable, str(CONTRACT_CHECKER), str(root)],
             check=False,
@@ -126,7 +152,12 @@ def load_contracts() -> dict[str, object]:
     return json.loads((REPOSITORY_ROOT / "tests" / "route-contracts.json").read_text())
 
 
+def load_route_profiles() -> dict[str, object]:
+    return json.loads(ROUTE_PROFILE_PATH.read_text(encoding="utf-8"))
+
+
 def make_fresh_receipts(receipts: dict[str, object]) -> dict[str, object]:
+    receipts["contract_schema_version"] = load_contracts()["schema_version"]
     receipts["evidence_class"] = "fresh-task semantic route observation"
     receipts["semantic_fields_were_frozen_before_contract_comparison"] = True
     receipts["semantic_freeze_scope"] = [
@@ -324,6 +355,282 @@ class RouteSemanticTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("evidence=semantic-contracts", result.stdout)
 
+    def test_contract_drift_from_installed_runtime_profile_fails(self) -> None:
+        contracts = load_contracts()
+        large_initiative = scenario(contracts, "ROUTE-003")
+        large_initiative["risk"] = "medium-or-high"
+
+        result = run_contract_checker_with_contract(contracts)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "ROUTE-003 field risk drifts from installed profile large-initiative-planning",
+            result.stdout,
+        )
+
+    def test_installed_runtime_profile_drift_from_contract_fails(self) -> None:
+        profiles = load_route_profiles()
+        profile = next(
+            item
+            for item in profiles["profiles"]
+            if item["id"] == "large-initiative-planning"
+        )
+        profile["preferred_risk"] = "medium-or-high"
+
+        result = run_contract_checker_with_contract(
+            load_contracts(),
+            route_profiles=profiles,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "ROUTE-003 field risk drifts from installed profile large-initiative-planning",
+            result.stdout,
+        )
+
+    def test_blind_canary_taxonomy_must_be_subset_of_runtime_policy(self) -> None:
+        contracts = load_contracts()
+        scenario(contracts, "ROUTE-003")["accepted_risks"].append("low")
+
+        result = run_contract_checker_with_contract(contracts)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "ROUTE-003 field accepted_risks exceeds installed profile "
+            "large-initiative-planning allowed_risks: low",
+            result.stdout,
+        )
+
+    def test_checker_preserves_hotfix_design_security_boundary_under_parallel_drift(self) -> None:
+        contracts = load_contracts()
+        profiles = load_route_profiles()
+        edge = ["solution-design", "security-operations"]
+        scenario(contracts, "ROUTE-010")["precedence"].remove(edge)
+        profile = next(
+            item for item in profiles["profiles"] if item["id"] == "incident-hotfix"
+        )
+        profile["precedence"].remove(edge)
+
+        result = run_contract_checker_with_contract(
+            contracts,
+            route_profiles=profiles,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "installed route profile incident-hotfix lacks required precedence: "
+            "solution-design->security-operations",
+            result.stdout,
+        )
+
+    def test_checker_preserves_coordination_return_under_parallel_drift(self) -> None:
+        cases = {
+            "ROUTE-011": "meeting-follow-up",
+            "ROUTE-012": "source-status-reconciliation",
+        }
+        for scenario_id, profile_id in cases.items():
+            with self.subTest(scenario=scenario_id):
+                contracts = load_contracts()
+                profiles = load_route_profiles()
+                contract = scenario(contracts, scenario_id)
+                profile = next(
+                    item
+                    for item in profiles["profiles"]
+                    if item["id"] == profile_id
+                )
+                for field, default in (
+                    ("required_reentry", []),
+                    ("required_reentry_before", {}),
+                    ("required_reentry_after", {}),
+                    ("required_final_after", {}),
+                ):
+                    profile[field] = copy.deepcopy(default)
+                    contract.pop(field, None)
+
+                result = run_contract_checker_with_contract(
+                    contracts,
+                    route_profiles=profiles,
+                )
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(
+                    f"installed route profile {profile_id} must require "
+                    "delivery-coordination entry and return around every downstream conditional",
+                    result.stdout,
+                )
+
+    def test_checker_rejects_tautological_runtime_intent(self) -> None:
+        profiles = load_route_profiles()
+        profile = next(
+            item
+            for item in profiles["profiles"]
+            if item["id"] == "medium-feature-change"
+        )
+        profile["intent"] = (
+            "Requests whose semantic intent is medium feature change; "
+            "select by meaning and lifecycle state."
+        )
+
+        result = run_contract_checker_with_contract(
+            load_contracts(),
+            route_profiles=profiles,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "installed route profile medium-feature-change intent must define "
+            "a semantic selection boundary",
+            result.stdout,
+        )
+
+    def test_fresh_receipt_accepts_normalized_taxonomy_alternative(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        contract = scenario(load_contracts(), "ROUTE-006")
+        item = synthetic_policy_scenario(contract)
+        item["scale"] = "medium-or-large"
+        item["risk"] = "risk-dependent"
+        set_fresh_scenarios(receipts, [item])
+
+        result = run_receipt_checker(receipts, allow_historical=False)
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_fresh_receipt_rejects_taxonomy_value_outside_accepted_set(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        contract = scenario(load_contracts(), "ROUTE-003")
+        item = synthetic_policy_scenario(contract)
+        item["risk"] = "critical"
+        set_fresh_scenarios(receipts, [item])
+
+        result = run_receipt_checker(receipts, allow_historical=False)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "ROUTE-003 risk is outside the accepted contract taxonomy",
+            result.stdout,
+        )
+
+    def test_hotfix_rejects_security_before_solution_design(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        contract = scenario(load_contracts(), "ROUTE-010")
+        hotfix = synthetic_policy_scenario(contract)
+        hotfix["actual_route"] = [
+            "delivery-orchestrator",
+            "release-change",
+            "project-context",
+            "requirements-acceptance",
+            "security-operations",
+            "solution-design",
+            "implementation-execution",
+            "testing-quality",
+            "release-change",
+        ]
+        set_fresh_scenarios(receipts, [hotfix])
+
+        result = run_receipt_checker(receipts, allow_historical=False)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "ROUTE-010 violates precedence: solution-design must precede security-operations",
+            result.stdout,
+        )
+
+    def test_coordination_profiles_return_after_activated_downstream_work(self) -> None:
+        cases = {
+            "ROUTE-011": [
+                "delivery-coordination",
+                "requirements-acceptance",
+                "delivery-planning",
+                "documentation-knowledge",
+                "delivery-coordination",
+            ],
+            "ROUTE-012": [
+                "delivery-coordination",
+                "project-context",
+                "documentation-knowledge",
+                "delivery-planning",
+                "delivery-coordination",
+            ],
+        }
+        contracts = load_contracts()
+        for scenario_id, actual_route in cases.items():
+            with self.subTest(scenario=scenario_id):
+                receipts = make_fresh_receipts(load_fixture())
+                item = synthetic_policy_scenario(scenario(contracts, scenario_id))
+                item["actual_route"] = actual_route
+                for skill, disposition in item["conditional_dispositions"].items():
+                    disposition.update(
+                        {
+                            "state": "activated",
+                            "rationale": (
+                                "Synthetic source evidence activates this downstream "
+                                "coordination branch before comparison."
+                            ),
+                            "evidence": [
+                                f"Synthetic activation evidence for {skill}."
+                            ],
+                        }
+                    )
+                set_fresh_scenarios(receipts, [item])
+
+                result = run_receipt_checker(receipts, allow_historical=False)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+                item["actual_route"].pop()
+                set_fresh_scenarios(receipts, [item])
+                result = run_receipt_checker(receipts, allow_historical=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(
+                    f"{scenario_id} misses required controller re-entry: delivery-coordination",
+                    result.stdout,
+                )
+
+    def test_coordination_profiles_reject_reversed_downstream_precedence(self) -> None:
+        cases = {
+            "ROUTE-011": (
+                [
+                    "delivery-coordination",
+                    "delivery-planning",
+                    "requirements-acceptance",
+                    "documentation-knowledge",
+                    "delivery-coordination",
+                ],
+                "requirements-acceptance must precede delivery-planning",
+            ),
+            "ROUTE-012": (
+                [
+                    "delivery-coordination",
+                    "documentation-knowledge",
+                    "project-context",
+                    "delivery-planning",
+                    "delivery-coordination",
+                ],
+                "project-context must precede documentation-knowledge",
+            ),
+        }
+        contracts = load_contracts()
+        for scenario_id, (actual_route, expected) in cases.items():
+            with self.subTest(scenario=scenario_id):
+                receipts = make_fresh_receipts(load_fixture())
+                item = synthetic_policy_scenario(scenario(contracts, scenario_id))
+                item["actual_route"] = actual_route
+                for disposition in item["conditional_dispositions"].values():
+                    disposition.update(
+                        {
+                            "state": "activated",
+                            "rationale": (
+                                "Synthetic source evidence activates this downstream "
+                                "coordination branch before comparison."
+                            ),
+                            "evidence": ["Synthetic activation evidence."],
+                        }
+                    )
+                set_fresh_scenarios(receipts, [item])
+
+                result = run_receipt_checker(receipts, allow_historical=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(f"{scenario_id} violates precedence: {expected}", result.stdout)
+
     def test_blind_v131_routes_pass_historical_shape_compatibility(self) -> None:
         result = run_receipt_checker(load_fixture())
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -477,9 +784,10 @@ class RouteSemanticTests(unittest.TestCase):
         )
 
     def test_equivalent_evidence_owner_order_passes(self) -> None:
-        receipts = load_fixture()
-        scenario(receipts, "ROUTE-005")["actual_route"] = [
-            "delivery-orchestrator",
+        receipts = make_fresh_receipts(load_fixture())
+        contract = scenario(load_contracts(), "ROUTE-005")
+        item = synthetic_policy_scenario(contract)
+        item["actual_route"] = [
             "release-change",
             "security-operations",
             "review-audit",
@@ -487,7 +795,21 @@ class RouteSemanticTests(unittest.TestCase):
             "testing-quality",
             "release-change",
         ]
-        result = run_receipt_checker(receipts)
+        for skill in (
+            "review-audit",
+            "documentation-knowledge",
+            "testing-quality",
+        ):
+            item["conditional_dispositions"][skill] = {
+                "state": "activated",
+                "rationale": (
+                    "Synthetic evidence activates this owner before contract comparison."
+                ),
+                "evidence": ["Synthetic evidence-owner ordering fixture."],
+            }
+        set_fresh_scenarios(receipts, [item])
+
+        result = run_receipt_checker(receipts, allow_historical=False)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_precedence_violation_fails(self) -> None:
@@ -1124,7 +1446,34 @@ class RouteSemanticTests(unittest.TestCase):
         result = run_receipt_checker(receipts, allow_historical=False)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_synthetic_route_policy_matrix_passes_all_22_contracts(self) -> None:
+    def test_release_execution_and_decommission_routes_pass_bounded_policy(self) -> None:
+        contracts = load_contracts()
+        for scenario_id in ("ROUTE-019", "ROUTE-020"):
+            with self.subTest(scenario=scenario_id):
+                receipts = make_fresh_receipts(load_fixture())
+                item = synthetic_policy_scenario(scenario(contracts, scenario_id))
+                set_fresh_scenarios(receipts, [item])
+
+                result = run_receipt_checker(receipts, allow_historical=False)
+
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                if scenario_id == "ROUTE-019":
+                    self.assertEqual(item["authority"], "release-execution")
+                    self.assertEqual(item["actual_route"][0], "release-change")
+                    self.assertEqual(item["actual_route"][-1], "release-change")
+                else:
+                    self.assertEqual(item["authority"], "change")
+                    self.assertEqual(item["actual_route"][0], "delivery-orchestrator")
+                    self.assertLess(
+                        item["actual_route"].index("security-operations"),
+                        item["actual_route"].index("implementation-execution"),
+                    )
+                    self.assertLess(
+                        item["actual_route"].index("testing-quality"),
+                        item["actual_route"].index("release-change"),
+                    )
+
+    def test_synthetic_route_policy_matrix_passes_all_24_contracts(self) -> None:
         receipts = make_fresh_receipts(load_fixture())
         contracts = load_contracts()["scenarios"]
         set_fresh_scenarios(receipts, [
@@ -1132,7 +1481,7 @@ class RouteSemanticTests(unittest.TestCase):
         ])
         result = run_receipt_checker(receipts, allow_historical=False)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("route_policy_records=22", result.stdout)
+        self.assertIn("route_policy_records=24", result.stdout)
 
     def test_mutation_does_not_modify_source_fixture(self) -> None:
         first = load_fixture()

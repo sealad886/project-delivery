@@ -32,12 +32,12 @@ class PromptExportTests(unittest.TestCase):
             for scenario in contracts["scenarios"]
         ]
         self.assertEqual(exported["scenarios"], expected)
-        self.assertEqual(exported["source_contract_schema_version"], 2)
+        self.assertEqual(exported["source_contract_schema_version"], 3)
         self.assertEqual(exported["evidence_class"], "prompt-only blind canary input")
         self.assertTrue(
             all(set(item) == {"id", "prompt"} for item in exported["scenarios"])
         )
-        self.assertIn("PROMPT [22/22] id=ROUTE-018", result.stderr)
+        self.assertIn("PROMPT [24/24] id=ROUTE-020", result.stderr)
 
 
 if __name__ == "__main__":

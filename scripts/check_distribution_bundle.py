@@ -32,6 +32,13 @@ OPTIONAL_ROOT_FILES = {
     "yarn.lock",
 }
 COMPONENT_FIELDS = ("skills", "scripts", "mcpServers", "apps", "app", "appConfig", "hooks")
+SHARED_RUNTIME_PATHS = (
+    "skills/.shared/operating-model.md",
+    "skills/.shared/artifact-templates.md",
+    "skills/.shared/external-systems.md",
+    "skills/.shared/live-route-receipt-v3.schema.json",
+    "skills/.shared/route-profiles-v1.json",
+)
 FORBIDDEN_DISTRIBUTION_PARTS = {
     ".git",
     ".github",
@@ -209,12 +216,7 @@ def validate_distribution_tree(
     errors, skill_count, _ = validate(destination, "source")
     if skill_count != 13:
         errors.append(f"runtime closure must contain 13 skills, found {skill_count}")
-    for required in (
-        "skills/.shared/operating-model.md",
-        "skills/.shared/artifact-templates.md",
-        "skills/.shared/external-systems.md",
-        "skills/.shared/live-route-receipt-v3.schema.json",
-    ):
+    for required in SHARED_RUNTIME_PATHS:
         if not (destination / required).is_file():
             errors.append(f"runtime closure is missing dependency: {required}")
 
@@ -418,7 +420,7 @@ def main(argv: list[str] | None = None) -> int:
     output = f" output={Path(args.output).expanduser().resolve()}" if args.output else ""
     print(
         f"PASS action={action} selected_files={selected_count} skills=13 "
-        f"shared_runtime=4 payload_sha256={digest}{output}"
+        f"shared_runtime={len(SHARED_RUNTIME_PATHS)} payload_sha256={digest}{output}"
     )
     return 0
 

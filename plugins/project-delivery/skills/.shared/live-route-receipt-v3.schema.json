@@ -29,7 +29,7 @@
       "const": 3
     },
     "contract_schema_version": {
-      "const": 2
+      "const": 3
     },
     "evidence_class": {
       "const": "fresh-task semantic route observation"

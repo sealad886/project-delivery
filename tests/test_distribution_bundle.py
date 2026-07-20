@@ -49,7 +49,7 @@ class DistributionBundleTests(unittest.TestCase):
             self.assertIn("action=materialized", result.stdout)
 
             files = [path for path in output.rglob("*") if path.is_file()]
-            self.assertEqual(len(files), 63)
+            self.assertEqual(len(files), 64)
             for path in files:
                 self.assertFalse(
                     FORBIDDEN_PARTS.intersection(path.relative_to(output).parts),

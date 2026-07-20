@@ -183,6 +183,8 @@ Residual gaps:
 
 Semantic route-policy validation checks required owners, evidence-bearing taxonomy and conditional dispositions, entry precedence, two-sided occurrence-aware controller entry/return, route-only authority, specialist loading, justified extras, and forbidden dependencies. It intentionally allows justified proportional specialists and equivalent unconstrained evidence-owner ordering. A fresh behavioral receipt must declare and evidence that its route, taxonomy and rationale, branch dispositions, extra-capability decisions, evidence, and gaps were all frozen before contract comparison. Post-hoc semantic annotations can establish only historical route-shape compatibility. Record retrospective learning as `planned-future` and omit it from the present route when its outcome trigger has not occurred; that is not present activation. The route-policy checker accepts only no-effect observations with delivery marked not run; delivery artifacts and execution evidence require a separate delivery receipt and review.
 
+The orchestrator selects common intent semantics from installed [`route-profiles-v1.json`](route-profiles-v1.json). Maintainer-only canary contracts add blind prompt text and must remain in validator-enforced parity with those profiles; a route task uses the installed profiles and does not inspect repository-only expected-contract data.
+
 ### Machine-comparable route receipt
 
 Use schema v3 for a fresh machine-comparable route observation. The exact closed schema is [`live-route-receipt-v3.schema.json`](live-route-receipt-v3.schema.json); do not invent fields, shorten names, or use the deprecated schema-v2 self-attestation as candidate evidence. Placeholder strings below are deliberately invalid and must be replaced with inspected evidence.
@@ -200,7 +202,7 @@ The route task's freeze declaration and instruction-closure state remain structu
 ```json
 {
   "schema_version": 3,
-  "contract_schema_version": 2,
+  "contract_schema_version": 3,
   "evidence_class": "fresh-task semantic route observation",
   "semantic_fields_were_frozen_before_contract_comparison": true,
   "semantic_freeze_scope": [
@@ -275,6 +277,12 @@ The route task's freeze declaration and instruction-closure state remain structu
           },
           {
             "relative_path": "skills/.shared/operating-model.md",
+            "role": "required-reference",
+            "sha256": "REPLACE_WITH_64_LOWERCASE_HEX_SHA256",
+            "state": "read-completely-before-route-freeze"
+          },
+          {
+            "relative_path": "skills/.shared/route-profiles-v1.json",
             "role": "required-reference",
             "sha256": "REPLACE_WITH_64_LOWERCASE_HEX_SHA256",
             "state": "read-completely-before-route-freeze"

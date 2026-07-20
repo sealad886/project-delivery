@@ -163,7 +163,7 @@ class CanaryFixture:
         )
         self.control.mkdir()
         self.prompt_manifest.write_bytes(
-            b'{"schema_version":1,"source_contract_schema_version":2,'
+            b'{"schema_version":1,"source_contract_schema_version":3,'
             b'"evidence_class":"prompt-only blind canary input",'
             b'"scenarios":[{"id":"ROUTE-X","prompt":"Blind"}]}\n'
         )
@@ -501,6 +501,139 @@ class RouteCanaryProtocolTests(unittest.TestCase):
             self.assertNotEqual(captured.returncode, 0)
             self.assertIn("six-hour launch window", captured.stderr)
             self.assertFalse(fixture.capture_output.exists())
+
+    def test_prepare_rejects_duplicate_prompt_manifest_key(self) -> None:
+        with CanaryFixture() as fixture:
+            fixture.prompt_manifest.write_bytes(
+                b'{"schema_version":1,"source_contract_schema_version":3,'
+                b'"evidence_class":"prompt-only blind canary input",'
+                b'"scenarios":[{"id":"ROUTE-X","prompt":"Blind",'
+                b'"prompt":"Shadowed"}]}\n'
+            )
+
+            prepared = fixture.prepare()
+
+            self.assertNotEqual(prepared.returncode, 0)
+            self.assertIn("prompt manifest contains duplicate JSON object key", prepared.stderr)
+            self.assertIn("'prompt'", prepared.stderr)
+            self.assertFalse(fixture.launch.exists())
+
+    def test_prepare_rejects_duplicate_plugin_manifest_key(self) -> None:
+        with CanaryFixture() as fixture:
+            manifest_path = fixture.prepared / ".codex-plugin" / "plugin.json"
+            original = manifest_path.read_text(encoding="utf-8")
+            duplicate = original.replace(
+                f'"version": "{fixture.prepared_version}"',
+                f'"version": "{fixture.prepared_version}",\n'
+                f'  "version": "{fixture.prepared_version}-shadow"',
+                1,
+            )
+            self.assertNotEqual(original, duplicate)
+            manifest_path.write_text(duplicate, encoding="utf-8")
+
+            prepared = fixture.prepare()
+
+            self.assertNotEqual(prepared.returncode, 0)
+            self.assertIn("plugin manifest contains duplicate JSON object key", prepared.stderr)
+            self.assertIn("'version'", prepared.stderr)
+            self.assertFalse(fixture.launch.exists())
+
+    def test_prepare_rejects_nested_duplicate_marketplace_key(self) -> None:
+        with CanaryFixture() as fixture:
+            original = fixture.marketplace.read_text(encoding="utf-8")
+            duplicate = original.replace(
+                '"path": "./plugins/project-delivery"',
+                '"path": "./plugins/project-delivery",\n'
+                '          "path": "./plugins/shadow"',
+                1,
+            )
+            self.assertNotEqual(original, duplicate)
+            fixture.marketplace.write_text(duplicate, encoding="utf-8")
+
+            prepared = fixture.prepare()
+
+            self.assertNotEqual(prepared.returncode, 0)
+            self.assertIn("marketplace contains duplicate JSON object key", prepared.stderr)
+            self.assertIn("'path'", prepared.stderr)
+            self.assertFalse(fixture.launch.exists())
+
+    def test_capture_rejects_duplicate_launch_state_key(self) -> None:
+        with CanaryFixture() as fixture:
+            prepared = fixture.prepare()
+            self.assertEqual(prepared.returncode, 0, prepared.stdout + prepared.stderr)
+            original = fixture.launch.read_bytes()
+            fixture.launch.write_bytes(
+                b'{"schema_version":1,' + original.removeprefix(b"{")
+            )
+
+            captured = fixture.capture()
+
+            self.assertNotEqual(captured.returncode, 0)
+            self.assertIn("launch state contains duplicate JSON object key", captured.stderr)
+            self.assertIn("'schema_version'", captured.stderr)
+            self.assertFalse(fixture.capture_output.exists())
+
+    def test_capture_rejects_duplicate_private_binding_key(self) -> None:
+        with CanaryFixture() as fixture:
+            prepared = fixture.prepare()
+            self.assertEqual(prepared.returncode, 0, prepared.stdout + prepared.stderr)
+            fixture.write_binding()
+            original = fixture.binding.read_bytes()
+            fixture.binding.write_bytes(
+                b'{"schema_version":1,' + original.removeprefix(b"{")
+            )
+
+            captured = fixture.capture()
+
+            self.assertNotEqual(captured.returncode, 0)
+            self.assertIn(
+                "private task-binding contains duplicate JSON object key",
+                captured.stderr,
+            )
+            self.assertIn("'schema_version'", captured.stderr)
+            self.assertFalse(fixture.capture_output.exists())
+
+    def test_prepare_rejects_final_symlink_control_inputs(self) -> None:
+        for attribute in ("prompt_manifest", "marketplace", "instruction_file"):
+            with self.subTest(attribute=attribute), CanaryFixture() as fixture:
+                control_path = getattr(fixture, attribute)
+                target = control_path.with_name(control_path.name + ".target")
+                control_path.rename(target)
+                control_path.symlink_to(target)
+
+                prepared = fixture.prepare()
+
+                self.assertNotEqual(prepared.returncode, 0)
+                self.assertIn("regular non-symlink file", prepared.stderr)
+                self.assertFalse(fixture.launch.exists())
+
+    def test_capture_rejects_final_symlink_control_inputs(self) -> None:
+        for attribute in ("launch", "binding", "observation"):
+            with self.subTest(attribute=attribute), CanaryFixture() as fixture:
+                prepared = fixture.prepare()
+                self.assertEqual(prepared.returncode, 0, prepared.stdout + prepared.stderr)
+                fixture.write_binding()
+                control_path = getattr(fixture, attribute)
+                target = control_path.with_name(control_path.name + ".target")
+                control_path.rename(target)
+                control_path.symlink_to(target)
+
+                captured = fixture.capture()
+
+                self.assertNotEqual(captured.returncode, 0)
+                self.assertIn("regular non-symlink file", captured.stderr)
+                self.assertFalse(fixture.capture_output.exists())
+
+    def test_prepare_rejects_nonregular_control_input(self) -> None:
+        with CanaryFixture() as fixture:
+            fixture.prompt_manifest.unlink()
+            fixture.prompt_manifest.mkdir()
+
+            prepared = fixture.prepare()
+
+            self.assertNotEqual(prepared.returncode, 0)
+            self.assertIn("prompt manifest must be a regular non-symlink file", prepared.stderr)
+            self.assertFalse(fixture.launch.exists())
 
 
 if __name__ == "__main__":

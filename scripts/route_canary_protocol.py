@@ -17,11 +17,18 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from check_distribution_bundle import payload_sha256
-from check_distribution_bundle import select_paths
+from check_distribution_bundle import COMPONENT_FIELDS
+from check_distribution_bundle import OPTIONAL_ROOT_FILES
+from check_distribution_bundle import add_declared_path
 from check_distribution_bundle import validate_source_boundary
-from check_installed_parity import compare
-from check_installed_parity import file_sha256
+from check_plugin import PUBLIC_FIXTURE_HOME_PATH
+from check_plugin import PUBLIC_FIXTURE_TASK_ID
+from check_plugin import REQUIRED_ROOT_FILES
+from check_plugin import REQUIRED_SKILL_SECTIONS
+from check_plugin import SEMVER
+from check_plugin import TEXT_SUFFIXES
+from check_plugin import is_external_link
+from check_plugin import layout_is_valid
 
 
 PLUGIN_NAME = "project-delivery"
@@ -123,6 +130,18 @@ class ProtocolError(ValueError):
     """A sealed-canary precondition or binding check failed."""
 
 
+class DuplicateJsonProtocolError(ProtocolError):
+    """A sealed JSON input contains an ambiguous repeated object key."""
+
+
+class DuplicateJsonKeyError(ValueError):
+    """A JSON object repeated a key and therefore has ambiguous meaning."""
+
+    def __init__(self, key: str) -> None:
+        super().__init__(key)
+        self.key = key
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -186,13 +205,210 @@ def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
+def absolute_lexical_path(value: str | Path) -> Path:
+    """Return an absolute path without resolving its final symlink."""
+
+    return Path(os.path.abspath(os.fspath(Path(value).expanduser())))
+
+
+def read_regular_snapshot(
+    path: Path,
+    label: str,
+    *,
+    require_nonempty: bool = True,
+    owner_only: bool = False,
+) -> tuple[bytes, os.stat_result]:
+    """Read one regular-file snapshot without following the final symlink."""
+
+    flags = os.O_RDONLY
+    flags |= getattr(os, "O_CLOEXEC", 0)
+    flags |= getattr(os, "O_NONBLOCK", 0)
+    flags |= getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as error:
+        raise ProtocolError(
+            f"{label} must be a regular non-symlink file: {path}"
+        ) from error
+    try:
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode):
+            raise ProtocolError(
+                f"{label} must be a regular non-symlink file: {path}"
+            )
+        if owner_only and stat.S_IMODE(metadata.st_mode) & 0o077:
+            raise ProtocolError(f"{label} permissions must be owner-only")
+        with os.fdopen(descriptor, "rb", closefd=False) as handle:
+            value = handle.read()
+    finally:
+        os.close(descriptor)
+    if require_nonempty and not value:
+        raise ProtocolError(f"{label} must not be empty: {path}")
+    return value, metadata
+
+
 def read_nonempty_bytes(path: Path, label: str) -> bytes:
-    if path.is_symlink() or not path.is_file():
-        raise ProtocolError(f"{label} must be a regular non-symlink file: {path}")
-    value = path.read_bytes()
+    value, _ = read_regular_snapshot(path, label)
     if not value:
         raise ProtocolError(f"{label} must not be empty: {path}")
     return value
+
+
+def unique_json_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    value: dict[str, object] = {}
+    for key, item in pairs:
+        if key in value:
+            raise DuplicateJsonKeyError(key)
+        value[key] = item
+    return value
+
+
+def parse_json_bytes(raw: bytes, label: str) -> object:
+    try:
+        return json.loads(
+            raw.decode("utf-8"),
+            object_pairs_hook=unique_json_object,
+        )
+    except DuplicateJsonKeyError as error:
+        raise DuplicateJsonProtocolError(
+            f"{label} contains duplicate JSON object key: {error.key!r}"
+        ) from error
+    except (UnicodeError, json.JSONDecodeError) as error:
+        raise ProtocolError(f"{label} is invalid JSON: {error}") from error
+
+
+def select_paths_from_manifest(
+    root: Path,
+    manifest: dict[str, object],
+) -> list[Path]:
+    selected = {Path(".codex-plugin/plugin.json")}
+    selected.update(
+        path for path in map(Path, OPTIONAL_ROOT_FILES) if (root / path).is_file()
+    )
+    for field in COMPONENT_FIELDS:
+        value = manifest.get(field)
+        if isinstance(value, str):
+            add_declared_path(root, selected, value)
+    interface = manifest.get("interface", {})
+    if isinstance(interface, dict):
+        for field in ("composerIcon", "logo"):
+            value = interface.get(field)
+            if isinstance(value, str):
+                add_declared_path(root, selected, value)
+        screenshots = interface.get("screenshots", [])
+        if isinstance(screenshots, list):
+            for value in screenshots:
+                if isinstance(value, str):
+                    add_declared_path(root, selected, value)
+    return sorted(selected)
+
+
+def payload_sha256_from_snapshots(
+    snapshots: dict[Path, bytes],
+    relative_paths: list[Path],
+) -> str:
+    digest = hashlib.sha256()
+    for relative in relative_paths:
+        encoded_path = relative.as_posix().encode("utf-8")
+        contents = snapshots[relative]
+        digest.update(len(encoded_path).to_bytes(8, "big"))
+        digest.update(encoded_path)
+        digest.update(len(contents).to_bytes(8, "big"))
+        digest.update(contents)
+    return digest.hexdigest()
+
+
+def validate_plugin_snapshots(
+    root: Path,
+    manifest: dict[str, object],
+    snapshots: dict[Path, bytes],
+) -> tuple[list[str], int]:
+    """Apply plugin structural checks to the already sealed byte snapshots."""
+
+    errors: list[str] = []
+    for relative in REQUIRED_ROOT_FILES:
+        if Path(relative) not in snapshots:
+            errors.append(f"missing required release file: {relative}")
+    name = manifest.get("name")
+    version = manifest.get("version")
+    if not isinstance(name, str) or not re.fullmatch(
+        r"[a-z0-9]+(?:-[a-z0-9]+)*",
+        name,
+    ):
+        errors.append("manifest name must be lower-case hyphen-case")
+        name = ""
+    if not isinstance(version, str) or not SEMVER.fullmatch(version):
+        errors.append("manifest version must be valid Semantic Versioning")
+        version = ""
+    if name and version and not layout_is_valid(root, name, version, "auto"):
+        errors.append(
+            "plugin path must be either <parent>/<name> for source or "
+            "<cache>/<name>/<version> for an installed cache"
+        )
+
+    started = time.monotonic()
+    for index, (relative, raw) in enumerate(sorted(snapshots.items()), 1):
+        elapsed = time.monotonic() - started
+        eta = (elapsed / index) * (len(snapshots) - index)
+        print(
+            f"CHECK [{index}/{len(snapshots)}] file={relative} eta={eta:.1f}s",
+            flush=True,
+        )
+        if relative.suffix.lower() not in TEXT_SUFFIXES:
+            continue
+        try:
+            text = raw.decode("utf-8")
+        except UnicodeError as error:
+            errors.append(f"unreadable text file: {relative}: {error}")
+            continue
+        if "[TODO:" in text:
+            errors.append(f"placeholder: {relative}")
+        if len(relative.parts) >= 2 and relative.parts[:2] == ("tests", "fixtures"):
+            if PUBLIC_FIXTURE_HOME_PATH.search(text):
+                errors.append(
+                    f"public fixture contains an absolute user-home path: {relative}"
+                )
+            if PUBLIC_FIXTURE_TASK_ID.search(text):
+                errors.append(f"public fixture contains a raw task identifier: {relative}")
+        if relative.name == "SKILL.md":
+            if not text.startswith("---\n") or not re.search(
+                r"^name: [a-z0-9]+(?:-[a-z0-9]+)*$",
+                text,
+                re.MULTILINE,
+            ):
+                errors.append(f"invalid skill frontmatter: {relative}")
+            if not re.search(r"^description: .+", text, re.MULTILINE):
+                errors.append(f"missing skill description: {relative}")
+            for section in REQUIRED_SKILL_SECTIONS:
+                if section not in text:
+                    errors.append(
+                        f"missing skill contract section {section}: {relative}"
+                    )
+        if relative.suffix.lower() == ".md":
+            for target in re.findall(r"\[[^]]+\]\(([^)]+)\)", text):
+                clean_target = target.strip().split(maxsplit=1)[0].strip("<>")
+                if is_external_link(clean_target):
+                    continue
+                relative_target = clean_target.split("#", 1)[0]
+                if relative_target and not (
+                    root / relative.parent / relative_target
+                ).resolve().exists():
+                    errors.append(f"broken link: {relative} -> {target}")
+            for target in re.findall(r"`((?:\.\.?/)[^`\n]+)`", text):
+                relative_target = target.split("#", 1)[0]
+                if not (root / relative.parent / relative_target).resolve().exists():
+                    errors.append(f"missing referenced path: {relative} -> {target}")
+
+    skill_count = sum(
+        1
+        for relative in snapshots
+        if len(relative.parts) == 3
+        and relative.parts[0] == "skills"
+        and relative.name == "SKILL.md"
+    )
+    if not skill_count:
+        errors.append("no skills found")
+    return errors, skill_count
 
 
 def canonical_json_sha256(value: object) -> str:
@@ -301,25 +517,58 @@ def count_expected_directories(selected: list[Path]) -> int:
     return len(directories)
 
 
-def plugin_identity(root: Path) -> tuple[dict[str, object], list[Path]]:
+def plugin_identity(
+    root: Path,
+) -> tuple[
+    dict[str, object],
+    list[Path],
+    dict[str, object],
+    bytes,
+    dict[Path, bytes],
+]:
     if not root.is_dir():
         raise ProtocolError(f"plugin tree is not a directory: {root}")
+    manifest_path = root / ".codex-plugin" / "plugin.json"
+    manifest_bytes = read_nonempty_bytes(manifest_path, "plugin manifest")
+    manifest = parse_json_bytes(manifest_bytes, "plugin manifest")
+    if not isinstance(manifest, dict):
+        raise ProtocolError("plugin manifest root must be an object")
     try:
-        selected = sorted(select_paths(root))
+        selected = select_paths_from_manifest(root, manifest)
         boundary_errors = validate_source_boundary(root, selected)
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
         raise ProtocolError(f"plugin identity inspection failed: {error}") from error
     if boundary_errors:
         raise ProtocolError("plugin tree boundary failed: " + "; ".join(boundary_errors))
 
-    manifest_path = root / ".codex-plugin" / "plugin.json"
-    manifest_bytes = read_nonempty_bytes(manifest_path, "plugin manifest")
-    try:
-        manifest = json.loads(manifest_bytes)
-    except (UnicodeError, json.JSONDecodeError) as error:
-        raise ProtocolError(f"plugin manifest is invalid JSON: {error}") from error
-    if not isinstance(manifest, dict):
-        raise ProtocolError("plugin manifest root must be an object")
+    manifest_relative = Path(".codex-plugin/plugin.json")
+    snapshots: dict[Path, bytes] = {}
+    started = time.monotonic()
+    for index, relative in enumerate(selected, 1):
+        elapsed = time.monotonic() - started
+        eta = (elapsed / index) * (len(selected) - index)
+        print(
+            f"SNAPSHOT [{index}/{len(selected)}] root={root.name} "
+            f"file={relative} eta={eta:.1f}s",
+            flush=True,
+        )
+        if relative == manifest_relative:
+            snapshots[relative] = manifest_bytes
+        else:
+            snapshots[relative], _ = read_regular_snapshot(
+                root / relative,
+                f"plugin payload file {relative}",
+                require_nonempty=False,
+            )
+    validation_errors, _skill_count = validate_plugin_snapshots(
+        root,
+        manifest,
+        snapshots,
+    )
+    if validation_errors:
+        raise ProtocolError(
+            "plugin structural validation failed: " + "; ".join(validation_errors)
+        )
     name = manifest.get("name")
     version = manifest.get("version")
     if name != PLUGIN_NAME:
@@ -334,10 +583,13 @@ def plugin_identity(root: Path) -> tuple[dict[str, object], list[Path]]:
             "manifest_sha256": sha256_bytes(manifest_bytes),
             "file_count": len(selected),
             "directory_count": count_expected_directories(selected),
-            "payload_sha256": payload_sha256(root, selected),
+            "payload_sha256": payload_sha256_from_snapshots(snapshots, selected),
             "payload_hash_method": PAYLOAD_HASH_METHOD,
         },
         selected,
+        manifest,
+        manifest_bytes,
+        snapshots,
     )
 
 
@@ -362,12 +614,15 @@ def cache_shape(root: Path, identity: dict[str, object]) -> dict[str, str]:
 
 
 def source_prepared_relation(
-    source_root: Path,
     source_identity: dict[str, object],
     source_selected: list[Path],
-    prepared_root: Path,
+    source_manifest: dict[str, object],
+    source_snapshots: dict[Path, bytes],
     prepared_identity: dict[str, object],
     prepared_selected: list[Path],
+    prepared_manifest: dict[str, object],
+    prepared_manifest_bytes: bytes,
+    prepared_snapshots: dict[Path, bytes],
 ) -> dict[str, object]:
     if source_identity["payload_sha256"] == prepared_identity["payload_sha256"]:
         return {
@@ -389,15 +644,11 @@ def source_prepared_relation(
             f"CACHEBUSTER [{index}/{len(comparable)}] file={relative} eta={eta:.1f}s",
             flush=True,
         )
-        if file_sha256(source_root / relative) != file_sha256(prepared_root / relative):
+        if source_snapshots[relative] != prepared_snapshots[relative]:
             raise ProtocolError(
                 f"source/prepared content differs outside manifest: {relative}"
             )
 
-    source_manifest = json.loads((source_root / manifest_relative).read_text(encoding="utf-8"))
-    prepared_manifest = json.loads(
-        (prepared_root / manifest_relative).read_text(encoding="utf-8")
-    )
     source_version = source_manifest.get("version")
     prepared_version = prepared_manifest.get("version")
     if not isinstance(source_version, str) or not isinstance(prepared_version, str):
@@ -419,8 +670,7 @@ def source_prepared_relation(
     expected_prepared_bytes = (
         json.dumps(expected_prepared_manifest, indent=2) + "\n"
     ).encode("utf-8")
-    actual_prepared_bytes = (prepared_root / manifest_relative).read_bytes()
-    if actual_prepared_bytes != expected_prepared_bytes:
+    if prepared_manifest_bytes != expected_prepared_bytes:
         raise ProtocolError(
             "prepared manifest does not match exact Plugin Creator cachebuster serialization"
         )
@@ -435,15 +685,35 @@ def source_prepared_relation(
 
 
 def prepared_installed_relation(
-    prepared_root: Path, installed_root: Path
+    prepared_identity: dict[str, object],
+    prepared_selected: list[Path],
+    prepared_snapshots: dict[Path, bytes],
+    installed_identity: dict[str, object],
+    installed_selected: list[Path],
+    installed_snapshots: dict[Path, bytes],
 ) -> dict[str, object]:
-    errors, file_count, digest = compare(prepared_root, installed_root)
+    errors: list[str] = []
+    if prepared_selected != installed_selected:
+        errors.append("selected path sets differ")
+    if prepared_identity["directory_count"] != installed_identity["directory_count"]:
+        errors.append("directory counts differ")
+    common = sorted(set(prepared_selected).intersection(installed_selected))
+    started = time.monotonic()
+    for index, relative in enumerate(common, 1):
+        elapsed = time.monotonic() - started
+        eta = (elapsed / index) * (len(common) - index)
+        print(
+            f"PARITY [{index}/{len(common)}] file={relative} eta={eta:.1f}s",
+            flush=True,
+        )
+        if prepared_snapshots[relative] != installed_snapshots[relative]:
+            errors.append(f"content differs: {relative}")
     if errors:
         raise ProtocolError("prepared/installed parity failed: " + "; ".join(errors))
     return {
         "mode": "exact-byte-parity",
-        "file_count": file_count,
-        "payload_sha256": digest,
+        "file_count": prepared_identity["file_count"],
+        "payload_sha256": prepared_identity["payload_sha256"],
     }
 
 
@@ -474,10 +744,7 @@ def marketplace_identity(
     prepared_identity: dict[str, object],
 ) -> dict[str, object]:
     raw = read_nonempty_bytes(marketplace_path, "marketplace file")
-    try:
-        marketplace = json.loads(raw)
-    except (UnicodeError, json.JSONDecodeError) as error:
-        raise ProtocolError(f"marketplace is invalid JSON: {error}") from error
+    marketplace = parse_json_bytes(raw, "marketplace")
     if not isinstance(marketplace, dict):
         raise ProtocolError("marketplace root must be an object")
     marketplace_name = marketplace.get("name")
@@ -540,8 +807,7 @@ def marketplace_identity(
     }
 
 
-def file_identity(path: Path, label: str = "prompt manifest") -> dict[str, object]:
-    value = read_nonempty_bytes(path, label)
+def file_identity_from_snapshot(path: Path, value: bytes) -> dict[str, object]:
     return {
         "path": str(path),
         "sha256": sha256_bytes(value),
@@ -550,11 +816,13 @@ def file_identity(path: Path, label: str = "prompt manifest") -> dict[str, objec
     }
 
 
+def file_identity(path: Path, label: str = "prompt manifest") -> dict[str, object]:
+    value = read_nonempty_bytes(path, label)
+    return file_identity_from_snapshot(path, value)
+
+
 def validate_prompt_manifest(raw: bytes) -> dict[str, object]:
-    try:
-        manifest = json.loads(raw.decode("utf-8"))
-    except (UnicodeError, json.JSONDecodeError) as error:
-        raise ProtocolError(f"prompt manifest is invalid JSON: {error}") from error
+    manifest = parse_json_bytes(raw, "prompt manifest")
     if not isinstance(manifest, dict):
         raise ProtocolError("prompt manifest root must be an object")
     exact_fields(
@@ -569,7 +837,7 @@ def validate_prompt_manifest(raw: bytes) -> dict[str, object]:
     )
     if (
         manifest.get("schema_version") != 1
-        or manifest.get("source_contract_schema_version") != 2
+        or manifest.get("source_contract_schema_version") != 3
         or manifest.get("evidence_class") != "prompt-only blind canary input"
     ):
         raise ProtocolError("prompt manifest protocol identity is invalid")
@@ -693,7 +961,8 @@ def collect_facts(
     marketplace: Path,
     observation_mode: str,
     instruction_files: list[Path],
-) -> dict[str, object]:
+    prompt_manifest_snapshot: bytes | None = None,
+) -> tuple[dict[str, object], bytes]:
     ensure_distinct_paths(
         {
             "source": source_package,
@@ -705,20 +974,57 @@ def collect_facts(
         raise ProtocolError("canonical source package must be inside source repository")
 
     git_identity = source_git_identity(repository_root)
-    prompt_identity = file_identity(prompt_manifest)
-    source_identity, source_selected = plugin_identity(source_package)
-    prepared_identity, prepared_selected = plugin_identity(prepared_source)
-    installed_identity, _ = plugin_identity(installed_cache)
-    installed_shape = cache_shape(installed_cache, installed_identity)
-    source_prepared = source_prepared_relation(
-        source_package,
+    prompt_manifest_raw = (
+        read_nonempty_bytes(prompt_manifest, "prompt manifest")
+        if prompt_manifest_snapshot is None
+        else prompt_manifest_snapshot
+    )
+    validate_prompt_manifest(prompt_manifest_raw)
+    prompt_identity = file_identity_from_snapshot(
+        prompt_manifest,
+        prompt_manifest_raw,
+    )
+    (
         source_identity,
         source_selected,
-        prepared_source,
+        source_manifest,
+        _source_manifest_bytes,
+        source_snapshots,
+    ) = plugin_identity(source_package)
+    (
         prepared_identity,
         prepared_selected,
+        prepared_manifest,
+        prepared_manifest_bytes,
+        prepared_snapshots,
+    ) = plugin_identity(prepared_source)
+    (
+        installed_identity,
+        installed_selected,
+        _installed_manifest,
+        _installed_manifest_bytes,
+        installed_snapshots,
+    ) = plugin_identity(installed_cache)
+    installed_shape = cache_shape(installed_cache, installed_identity)
+    source_prepared = source_prepared_relation(
+        source_identity,
+        source_selected,
+        source_manifest,
+        source_snapshots,
+        prepared_identity,
+        prepared_selected,
+        prepared_manifest,
+        prepared_manifest_bytes,
+        prepared_snapshots,
     )
-    prepared_installed = prepared_installed_relation(prepared_source, installed_cache)
+    prepared_installed = prepared_installed_relation(
+        prepared_identity,
+        prepared_selected,
+        prepared_snapshots,
+        installed_identity,
+        installed_selected,
+        installed_snapshots,
+    )
     source_installed = source_installed_relation(
         source_prepared, source_identity, installed_identity
     )
@@ -734,33 +1040,36 @@ def collect_facts(
             "installed cache marketplace segment does not match marketplace name"
         )
     installed_identity = {**installed_identity, **installed_shape}
-    return {
-        "prompt_manifest": prompt_identity,
-        "source_git": git_identity,
-        "plugin_identities": {
-            "source_package": source_identity,
-            "prepared_personal_source": prepared_identity,
-            "installed_cache": installed_identity,
+    return (
+        {
+            "prompt_manifest": prompt_identity,
+            "source_git": git_identity,
+            "plugin_identities": {
+                "source_package": source_identity,
+                "prepared_personal_source": prepared_identity,
+                "installed_cache": installed_identity,
+            },
+            "parity": {
+                "source_to_prepared": source_prepared,
+                "prepared_to_installed": prepared_installed,
+                "source_to_installed": source_installed,
+            },
+            "marketplace_entry": marketplace_entry,
+            "observation_boundary": observation_boundary,
         },
-        "parity": {
-            "source_to_prepared": source_prepared,
-            "prepared_to_installed": prepared_installed,
-            "source_to_installed": source_installed,
-        },
-        "marketplace_entry": marketplace_entry,
-        "observation_boundary": observation_boundary,
-    }
+        prompt_manifest_raw,
+    )
 
 
 def prepare(args: argparse.Namespace) -> int:
     repository_root = Path(args.repository_root).expanduser().resolve()
-    prompt_manifest = Path(args.prompt_manifest).expanduser().resolve()
+    prompt_manifest = absolute_lexical_path(args.prompt_manifest)
     source_package = Path(args.source_package).expanduser().resolve()
     prepared_source = Path(args.prepared_source).expanduser().resolve()
     installed_cache = Path(args.installed_cache).expanduser().resolve()
-    marketplace = Path(args.marketplace).expanduser().resolve()
+    marketplace = absolute_lexical_path(args.marketplace)
     instruction_files = [
-        Path(value).expanduser().resolve() for value in args.instruction_file
+        absolute_lexical_path(value) for value in args.instruction_file
     ]
     task_prompt_output = Path(args.task_prompt_output).expanduser().resolve()
     output = Path(args.output).expanduser().resolve()
@@ -773,7 +1082,7 @@ def prepare(args: argparse.Namespace) -> int:
     if output == task_prompt_output:
         raise ProtocolError("launch state and task prompt outputs must be distinct")
 
-    facts = collect_facts(
+    facts, prompt_manifest_raw = collect_facts(
         repository_root,
         prompt_manifest,
         source_package,
@@ -791,7 +1100,6 @@ def prepare(args: argparse.Namespace) -> int:
         + "-"
         + nonce.removeprefix("canary-")[:12]
     )
-    prompt_manifest_raw = read_nonempty_bytes(prompt_manifest, "prompt manifest")
     plugin_identities = facts.get("plugin_identities")
     source_git = facts.get("source_git")
     if not isinstance(plugin_identities, dict) or not isinstance(source_git, dict):
@@ -854,14 +1162,12 @@ def prepare(args: argparse.Namespace) -> int:
 
 
 def read_launch(path: Path) -> tuple[dict[str, object], bytes]:
-    mode = stat.S_IMODE(path.stat().st_mode) if path.exists() else 0
-    if mode & 0o077:
-        raise ProtocolError("launch state permissions must be owner-only")
-    raw = read_nonempty_bytes(path, "launch state")
-    try:
-        launch = json.loads(raw)
-    except (UnicodeError, json.JSONDecodeError) as error:
-        raise ProtocolError(f"launch state is invalid JSON: {error}") from error
+    raw, _ = read_regular_snapshot(
+        path,
+        "launch state",
+        owner_only=True,
+    )
+    launch = parse_json_bytes(raw, "launch state")
     if not isinstance(launch, dict):
         raise ProtocolError("launch state root must be an object")
     exact_fields(launch, LAUNCH_FIELDS, "launch state")
@@ -891,16 +1197,12 @@ def private_binding_identity(
     launch_sha256: str,
     captured_at: datetime,
 ) -> tuple[str, str]:
-    if path.is_symlink() or not path.is_file():
-        raise ProtocolError("private task-binding must be a regular non-symlink file")
-    mode = stat.S_IMODE(path.stat().st_mode)
-    if mode & 0o077:
-        raise ProtocolError("private task-binding permissions must be owner-only")
-    raw = read_nonempty_bytes(path, "private task-binding")
-    try:
-        binding = json.loads(raw)
-    except (UnicodeError, json.JSONDecodeError) as error:
-        raise ProtocolError(f"private task-binding is invalid JSON: {error}") from error
+    raw, _ = read_regular_snapshot(
+        path,
+        "private task-binding",
+        owner_only=True,
+    )
+    binding = parse_json_bytes(raw, "private task-binding")
     if not isinstance(binding, dict):
         raise ProtocolError("private task-binding root must be an object")
     exact_fields(binding, BINDING_FIELDS, "private task-binding")
@@ -972,19 +1274,35 @@ def facts_from_launch(launch: dict[str, object]) -> dict[str, object]:
             raise ProtocolError(
                 "launch observation boundary instruction identity is invalid"
             )
-        instruction_paths.append(Path(item["path"]).expanduser().resolve())
-    facts = collect_facts(
+        instruction_paths.append(absolute_lexical_path(item["path"]))
+    prompt_path = absolute_lexical_path(str(prompt.get("path")))
+    prompt_raw = read_nonempty_bytes(prompt_path, "prompt manifest")
+    prompt_identity = file_identity_from_snapshot(prompt_path, prompt_raw)
+    try:
+        validate_prompt_manifest(prompt_raw)
+    except DuplicateJsonProtocolError:
+        raise
+    except ProtocolError as error:
+        if prompt_identity != prompt:
+            raise ProtocolError(
+                "launch state changed since prepare: prompt_manifest"
+            ) from error
+        raise
+    if prompt_identity != prompt:
+        raise ProtocolError("launch state changed since prepare: prompt_manifest")
+    facts, _prompt_manifest_raw = collect_facts(
         Path(str(source_git.get("root"))).expanduser().resolve(),
-        Path(str(prompt.get("path"))).expanduser().resolve(),
+        prompt_path,
         Path(str(identities["source_package"].get("path"))).expanduser().resolve(),
         Path(str(identities["prepared_personal_source"].get("path"))).expanduser().resolve(),
         Path(str(identities["installed_cache"].get("path"))).expanduser().resolve(),
-        Path(str(marketplace.get("path"))).expanduser().resolve(),
+        absolute_lexical_path(str(marketplace.get("path"))),
         str(observation_boundary.get("mode")),
         instruction_paths,
+        prompt_raw,
     )
     task_prompt_identity = file_identity(
-        Path(str(task_prompt.get("path"))).expanduser().resolve(),
+        absolute_lexical_path(str(task_prompt.get("path"))),
         "canonical blind task prompt",
     )
     task_prompt_identity["prompt_protocol"] = TASK_PROMPT_PROTOCOL
@@ -1043,9 +1361,9 @@ def public_observation_boundary(identity: dict[str, object]) -> dict[str, object
 
 
 def capture(args: argparse.Namespace) -> int:
-    launch_path = Path(args.launch_state).expanduser().resolve()
-    observation_path = Path(args.observation).expanduser().resolve()
-    binding_path = Path(args.task_binding).expanduser().resolve()
+    launch_path = absolute_lexical_path(args.launch_state)
+    observation_path = absolute_lexical_path(args.observation)
+    binding_path = absolute_lexical_path(args.task_binding)
     output = Path(args.output).expanduser().resolve()
     launch, launch_raw = read_launch(launch_path)
     source_git_at_launch = launch.get("source_git")

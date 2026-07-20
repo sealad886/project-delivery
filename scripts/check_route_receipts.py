@@ -5,9 +5,14 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
+import os
 import re
+import stat
+import subprocess
 import sys
+import tarfile
 import time
 from collections import Counter
 from datetime import datetime, timezone
@@ -53,6 +58,9 @@ PLANNED_FUTURE_CAPABILITIES = {"retrospective-improvement"}
 FRESH_EVIDENCE_CLASS = "fresh-task semantic route observation"
 HISTORICAL_EVIDENCE_CLASS = (
     "historical contract-blind route with post-hoc semantic annotation"
+)
+HISTORICAL_CONTRACT_FIXTURE = Path(
+    "tests/fixtures/route-contracts-v2.legacy.json"
 )
 FRESH_SEMANTIC_FREEZE_FIELDS = {
     "actual_route",
@@ -209,6 +217,9 @@ BACKTICKED_SHARED_REFERENCE = re.compile(
 INSTALLED_PAYLOAD_HASH_METHOD = (
     "project-delivery length-prefixed path-and-content sha256 v1"
 )
+SOURCE_PLUGIN_PREFIX = Path("plugins/project-delivery")
+PLUGIN_MANIFEST = Path(".codex-plugin/plugin.json")
+CACHEBUSTER_VERSION = re.compile(r"^.+\+codex\.[0-9]{14}$")
 COORDINATOR_PROMPT_FIELDS = {"byte_count", "hash_method", "sha256"}
 COORDINATOR_TASK_PROMPT_FIELDS = COORDINATOR_PROMPT_FIELDS | {"prompt_protocol"}
 COORDINATOR_SOURCE_GIT_FIELDS = {
@@ -270,6 +281,8 @@ GRADE_FIELDS = {
     "candidate_proof",
     "checker_sha256",
     "coordinator_attestation_sha256",
+    "error_count",
+    "error_set_sha256",
     "errors",
     "evidence_class",
     "graded_at_utc",
@@ -363,18 +376,460 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def read_json(path: Path, label: str) -> tuple[dict[str, object] | None, list[str]]:
+def read_regular_bytes(path: Path, label: str) -> tuple[bytes | None, list[str]]:
+    """Read one immutable regular-file snapshot without following a final symlink."""
+    if path.is_symlink():
+        return None, [f"{label} must be a regular non-symlink file"]
+    descriptor: int | None = None
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+        descriptor = os.open(path, flags)
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode):
+            os.close(descriptor)
+            descriptor = None
+            return None, [f"{label} must be a regular non-symlink file"]
+        with os.fdopen(descriptor, "rb") as handle:
+            descriptor = None
+            return handle.read(), []
+    except OSError as error:
+        if descriptor is not None:
+            os.close(descriptor)
+        return None, [f"invalid {label}: {error}"]
+
+
+class DuplicateJSONKey(ValueError):
+    """Raised when sealed JSON contains an ambiguous repeated object key."""
+
+
+def reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    value: dict[str, object] = {}
+    for key, item in pairs:
+        if key in value:
+            raise DuplicateJSONKey(f"duplicate object key: {key}")
+        value[key] = item
+    return value
+
+
+def json_from_bytes(raw: bytes) -> object:
+    return json.loads(
+        raw.decode("utf-8"),
+        object_pairs_hook=reject_duplicate_json_keys,
+    )
+
+
+def parse_json_bytes(
+    raw: bytes,
+    label: str,
+) -> tuple[dict[str, object] | None, list[str]]:
+    try:
+        value = json_from_bytes(raw)
+    except (UnicodeError, json.JSONDecodeError, DuplicateJSONKey) as error:
         return None, [f"invalid {label}: {error}"]
     if not isinstance(value, dict):
         return None, [f"{label} root must be an object"]
     return value, []
 
 
+def read_json(path: Path, label: str) -> tuple[dict[str, object] | None, list[str]]:
+    raw, errors = read_regular_bytes(path, label)
+    if raw is None:
+        return None, errors
+    return parse_json_bytes(raw, label)
+
+
 def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+def git_command(root: Path, *arguments: str) -> tuple[bytes | None, str | None]:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), *arguments],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except OSError:
+        return None, "Git could not be executed"
+    if result.returncode != 0:
+        return None, "Git command failed"
+    return result.stdout, None
+
+
+def payload_sha256_snapshot(files: dict[Path, bytes]) -> str:
+    """Hash one already-read package snapshot using the canonical payload method."""
+    digest = hashlib.sha256()
+    for relative, contents in sorted(files.items()):
+        encoded_path = relative.as_posix().encode("utf-8")
+        digest.update(len(encoded_path).to_bytes(8, "big"))
+        digest.update(encoded_path)
+        digest.update(len(contents).to_bytes(8, "big"))
+        digest.update(contents)
+    return digest.hexdigest()
+
+
+def snapshot_directory_count(files: dict[Path, bytes]) -> int:
+    directories: set[Path] = set()
+    for relative in files:
+        parent = relative.parent
+        while parent != Path("."):
+            directories.add(parent)
+            parent = parent.parent
+    return len(directories)
+
+
+def identity_from_package_snapshot(
+    files: dict[Path, bytes],
+    label: str,
+) -> tuple[dict[str, object] | None, list[str]]:
+    manifest_raw = files.get(PLUGIN_MANIFEST)
+    if manifest_raw is None:
+        return None, [f"{label} lacks {PLUGIN_MANIFEST.as_posix()}"]
+    manifest, manifest_errors = parse_json_bytes(manifest_raw, f"{label} manifest")
+    if manifest is None:
+        return None, manifest_errors
+    errors = list(manifest_errors)
+    if manifest.get("name") != "project-delivery":
+        errors.append(f"{label} manifest name must be project-delivery")
+    version = manifest.get("version")
+    if not isinstance(version, str) or not version.strip():
+        errors.append(f"{label} manifest version must be non-empty")
+    if errors:
+        return None, errors
+    return {
+        "name": manifest["name"],
+        "version": version,
+        "manifest_sha256": sha256_bytes(manifest_raw),
+        "file_count": len(files),
+        "directory_count": snapshot_directory_count(files),
+        "payload_sha256": payload_sha256_snapshot(files),
+        "payload_hash_method": INSTALLED_PAYLOAD_HASH_METHOD,
+    }, []
+
+
+def snapshot_committed_plugin(
+    root: Path,
+    expected_commit: str,
+) -> tuple[dict[Path, bytes] | None, list[str]]:
+    """Read the exact committed plugin tree without checking out or extracting it."""
+    archive_raw, archive_error = git_command(
+        root,
+        "archive",
+        "--format=tar",
+        expected_commit,
+        SOURCE_PLUGIN_PREFIX.as_posix(),
+    )
+    if archive_error is not None or archive_raw is None:
+        return None, ["expected source commit plugin package cannot be archived"]
+    files: dict[Path, bytes] = {}
+    errors: list[str] = []
+    try:
+        with tarfile.open(fileobj=io.BytesIO(archive_raw), mode="r:") as archive:
+            for member in archive.getmembers():
+                candidate = Path(member.name)
+                if candidate.is_absolute() or ".." in candidate.parts:
+                    errors.append("expected source plugin archive contains an unsafe path")
+                    continue
+                if candidate == SOURCE_PLUGIN_PREFIX or member.isdir():
+                    continue
+                try:
+                    relative = candidate.relative_to(SOURCE_PLUGIN_PREFIX)
+                except ValueError:
+                    errors.append("expected source plugin archive escapes its package prefix")
+                    continue
+                if relative == Path(".") or not member.isfile():
+                    errors.append(
+                        "expected source plugin contains a non-regular entry: "
+                        + relative.as_posix()
+                    )
+                    continue
+                if member.mode & 0o111:
+                    errors.append(
+                        "expected source plugin contains an executable file: "
+                        + relative.as_posix()
+                    )
+                    continue
+                extracted = archive.extractfile(member)
+                if extracted is None:
+                    errors.append(
+                        "expected source plugin file cannot be read: "
+                        + relative.as_posix()
+                    )
+                    continue
+                if relative in files:
+                    errors.append(
+                        "expected source plugin contains a duplicate path: "
+                        + relative.as_posix()
+                    )
+                    continue
+                files[relative] = extracted.read()
+    except (OSError, tarfile.TarError) as error:
+        return None, [f"expected source plugin archive cannot be inspected: {error}"]
+    if not files:
+        errors.append("expected source commit does not contain the plugin package")
+    return (files if not errors else None), errors
+
+
+def snapshot_installed_plugin(
+    installed_plugin_root: Path | None,
+) -> tuple[dict[Path, bytes] | None, list[str]]:
+    """Read one bounded snapshot of every installed package entry."""
+    if installed_plugin_root is None:
+        return None, ["sealed provenance requires --installed-plugin-root"]
+    if installed_plugin_root.is_symlink() or not installed_plugin_root.is_dir():
+        return None, ["sealed provenance requires a regular installed plugin directory"]
+    files: dict[Path, bytes] = {}
+    errors: list[str] = []
+    try:
+        entries = sorted(installed_plugin_root.rglob("*"))
+    except OSError as error:
+        return None, [f"installed plugin package cannot be inventoried: {error}"]
+    for entry in entries:
+        relative = entry.relative_to(installed_plugin_root)
+        if entry.is_symlink():
+            errors.append(
+                "installed plugin package contains a symlink: " + relative.as_posix()
+            )
+            continue
+        if entry.is_dir():
+            continue
+        try:
+            metadata = entry.stat(follow_symlinks=False)
+        except OSError as error:
+            errors.append(
+                f"installed plugin entry cannot be inspected: {relative.as_posix()}: {error}"
+            )
+            continue
+        if not stat.S_ISREG(metadata.st_mode):
+            errors.append(
+                "installed plugin package contains a non-regular entry: "
+                + relative.as_posix()
+            )
+            continue
+        if metadata.st_mode & 0o111:
+            errors.append(
+                "installed plugin package contains an executable file: "
+                + relative.as_posix()
+            )
+            continue
+        raw, read_errors = read_regular_bytes(
+            entry, f"installed plugin file {relative.as_posix()}"
+        )
+        errors.extend(read_errors)
+        if raw is not None:
+            files[relative] = raw
+    return (files if not errors else None), errors
+
+
+def compare_identity(
+    claimed: object,
+    actual: dict[str, object],
+    label: str,
+) -> list[str]:
+    if not isinstance(claimed, dict):
+        return [f"{label} identity must be an object"]
+    errors: list[str] = []
+    for field, value in actual.items():
+        if claimed.get(field) != value:
+            errors.append(f"{label} {field} does not match inspected bytes")
+    return errors
+
+
+def validate_source_installed_provenance(
+    root: Path,
+    expected_source_revision: str | None,
+    installed_files: dict[Path, bytes] | None,
+    identities: dict[str, object],
+    parity: object,
+) -> list[str]:
+    """Prove the installed package is the expected commit plus one cachebuster edit."""
+    if not isinstance(expected_source_revision, str) or not SOURCE_REVISION.fullmatch(
+        expected_source_revision
+    ):
+        return ["sealed provenance requires a full expected source revision"]
+    committed_files, committed_errors = snapshot_committed_plugin(
+        root, expected_source_revision
+    )
+    errors = list(committed_errors)
+    if committed_files is None or installed_files is None:
+        if installed_files is None:
+            errors.append("sealed provenance lacks the initial installed package snapshot")
+        return errors
+    source_identity, source_errors = identity_from_package_snapshot(
+        committed_files, "expected source package"
+    )
+    installed_identity, identity_errors = identity_from_package_snapshot(
+        installed_files, "installed plugin package"
+    )
+    errors.extend(source_errors)
+    errors.extend(identity_errors)
+    if source_identity is None or installed_identity is None:
+        return errors
+    errors.extend(
+        compare_identity(
+            identities.get("source_package"), source_identity, "source_package"
+        )
+    )
+    errors.extend(
+        compare_identity(
+            identities.get("installed_cache"),
+            installed_identity,
+            "installed_cache",
+        )
+    )
+
+    source_paths = set(committed_files)
+    installed_paths = set(installed_files)
+    if source_paths != installed_paths:
+        errors.append(
+            "installed plugin paths do not exactly match the expected source commit"
+        )
+        return errors
+    changed = [
+        relative
+        for relative in sorted(source_paths)
+        if committed_files[relative] != installed_files[relative]
+    ]
+    mode = "exact-byte-parity"
+    if changed:
+        if changed != [PLUGIN_MANIFEST]:
+            errors.append(
+                "installed plugin differs from the expected source commit outside the manifest"
+            )
+            return errors
+        source_manifest, source_manifest_errors = parse_json_bytes(
+            committed_files[PLUGIN_MANIFEST], "expected source manifest"
+        )
+        installed_manifest, installed_manifest_errors = parse_json_bytes(
+            installed_files[PLUGIN_MANIFEST], "installed plugin manifest"
+        )
+        errors.extend(source_manifest_errors)
+        errors.extend(installed_manifest_errors)
+        if source_manifest is None or installed_manifest is None:
+            return errors
+        source_version = source_manifest.get("version")
+        installed_version = installed_manifest.get("version")
+        transformed = dict(source_manifest)
+        transformed["version"] = installed_version
+        if not isinstance(source_version, str) or not isinstance(installed_version, str):
+            errors.append("source and installed manifest versions must be strings")
+        elif (
+            not CACHEBUSTER_VERSION.fullmatch(installed_version)
+            or installed_version != f"{source_version}+codex.{installed_version.rsplit('.', 1)[-1]}"
+        ):
+            errors.append(
+                "installed manifest version is not the canonical Plugin Creator cachebuster"
+            )
+        expected_manifest_raw = (
+            json.dumps(transformed, indent=2, ensure_ascii=False) + "\n"
+        ).encode("utf-8")
+        if installed_files[PLUGIN_MANIFEST] != expected_manifest_raw:
+            errors.append(
+                "installed manifest contains changes beyond the canonical cachebuster"
+            )
+        mode = "manifest-version-cachebuster-only"
+
+    if not isinstance(parity, dict) or not isinstance(
+        parity.get("source_to_installed"), dict
+    ):
+        errors.append("coordinator source_to_installed parity is unavailable")
+    else:
+        source_to_installed = parity["source_to_installed"]
+        if source_to_installed.get("mode") != mode:
+            errors.append(
+                "coordinator source_to_installed mode differs from inspected provenance"
+            )
+        if source_to_installed.get("file_count") != len(committed_files):
+            errors.append(
+                "coordinator source_to_installed file count differs from inspected provenance"
+            )
+    return errors
+
+
+def validate_grader_source(
+    root: Path,
+    expected_source_revision: str | None,
+    contract_raw: bytes,
+    checker_raw: bytes,
+) -> list[str]:
+    """Bind grading policy to one clean, exact source commit."""
+    errors: list[str] = []
+    if not isinstance(expected_source_revision, str) or not SOURCE_REVISION.fullmatch(
+        expected_source_revision
+    ):
+        return ["sealed grading requires a valid expected source revision"]
+
+    top_level_raw, top_level_error = git_command(root, "rev-parse", "--show-toplevel")
+    if top_level_error is not None or top_level_raw is None:
+        return ["sealed grading root must be an inspectable Git working tree"]
+    try:
+        top_level = Path(top_level_raw.decode("utf-8").strip()).resolve()
+    except UnicodeError:
+        return ["sealed grading Git top-level is not valid UTF-8"]
+    if top_level != root:
+        errors.append("sealed grading root must be the exact Git top-level")
+
+    current_head_raw, current_head_error = git_command(root, "rev-parse", "HEAD")
+    expected_commit_raw, expected_commit_error = git_command(
+        root,
+        "rev-parse",
+        "--verify",
+        f"{expected_source_revision}^{{commit}}",
+    )
+    current_head = (
+        current_head_raw.decode("ascii").strip()
+        if current_head_error is None and current_head_raw is not None
+        else None
+    )
+    expected_commit = (
+        expected_commit_raw.decode("ascii").strip()
+        if expected_commit_error is None and expected_commit_raw is not None
+        else None
+    )
+    if current_head is None or expected_commit is None:
+        errors.append("sealed grading source revision cannot be resolved")
+    else:
+        if expected_source_revision != expected_commit:
+            errors.append("sealed grading requires the full resolved source revision")
+        if current_head != expected_commit:
+            errors.append("sealed grading Git HEAD differs from the expected source revision")
+
+    status_raw, status_error = git_command(
+        root,
+        "status",
+        "--porcelain=v1",
+        "-z",
+        "--untracked-files=all",
+        "--ignore-submodules=none",
+    )
+    if status_error is not None or status_raw is None:
+        errors.append("sealed grading source status cannot be inspected")
+    elif status_raw:
+        errors.append("sealed grading source must be clean")
+
+    expected_checker = (root / "scripts" / "check_route_receipts.py").resolve()
+    if Path(__file__).resolve() != expected_checker:
+        errors.append("sealed grading must execute the checker from the grading root")
+
+    if expected_commit is not None:
+        for relative, snapshot, label in (
+            ("tests/route-contracts.json", contract_raw, "route contracts"),
+            ("scripts/check_route_receipts.py", checker_raw, "receipt checker"),
+        ):
+            committed_raw, committed_error = git_command(
+                root,
+                "cat-file",
+                "blob",
+                f"{expected_commit}:{relative}",
+            )
+            if committed_error is not None or committed_raw is None:
+                errors.append(f"sealed grading committed {label} cannot be inspected")
+            elif committed_raw != snapshot:
+                errors.append(
+                    f"sealed grading {label} bytes differ from the expected source revision"
+                )
+    return errors
 
 
 def parse_utc_second(value: object, label: str) -> tuple[datetime | None, list[str]]:
@@ -533,15 +988,14 @@ def validate_coordinator_parity(
 
 
 def validate_prompt_manifest_binding(
-    prompt_path: Path,
+    raw: bytes,
     public_identity: object,
     receipts: dict[str, object],
 ) -> tuple[list[str], str]:
     errors: list[str] = []
     try:
-        raw = prompt_path.read_bytes()
-        prompt_manifest = json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        prompt_manifest = json_from_bytes(raw)
+    except (UnicodeError, json.JSONDecodeError, DuplicateJSONKey) as error:
         return [f"sealed prompt manifest cannot be inspected: {error}"], "unknown"
     digest = sha256_bytes(raw)
     if not isinstance(public_identity, dict):
@@ -573,7 +1027,7 @@ def validate_prompt_manifest_binding(
     )
     if (
         prompt_manifest.get("schema_version") != 1
-        or prompt_manifest.get("source_contract_schema_version") != 2
+        or prompt_manifest.get("source_contract_schema_version") != 3
         or prompt_manifest.get("evidence_class") != "prompt-only blind canary input"
     ):
         errors.append("sealed prompt manifest protocol identity is invalid")
@@ -603,8 +1057,10 @@ def validate_prompt_manifest_binding(
 
 
 def validate_coordinator_binding(
+    root: Path,
     receipts: dict[str, object],
-    receipt_path: Path,
+    receipt_raw: bytes,
+    installed_files: dict[Path, bytes] | None,
     attestation_path: Path | None,
     expected_attestation_sha256: str | None,
     prompt_path: Path | None,
@@ -624,12 +1080,24 @@ def validate_coordinator_binding(
         return ["sealed schema-v3 candidate proof requires --prompt-manifest"], evidence
     if task_prompt_path is None:
         return ["sealed schema-v3 candidate proof requires --task-prompt"], evidence
-    if attestation_path.is_symlink() or not attestation_path.is_file():
-        return ["coordinator attestation must be a regular non-symlink file"], evidence
+
+    attestation_raw, attestation_read_errors = read_regular_bytes(
+        attestation_path, "coordinator attestation"
+    )
+    prompt_raw, prompt_read_errors = read_regular_bytes(
+        prompt_path, "sealed prompt manifest"
+    )
+    task_prompt_raw, task_prompt_read_errors = read_regular_bytes(
+        task_prompt_path, "canonical task prompt"
+    )
+    errors.extend(attestation_read_errors)
+    errors.extend(prompt_read_errors)
+    errors.extend(task_prompt_read_errors)
+    if attestation_raw is None or prompt_raw is None or task_prompt_raw is None:
+        return errors, evidence
     try:
-        attestation_raw = attestation_path.read_bytes()
-        capture = json.loads(attestation_raw.decode("utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        capture = json_from_bytes(attestation_raw)
+    except (UnicodeError, json.JSONDecodeError, DuplicateJSONKey) as error:
         return [f"coordinator attestation cannot be inspected: {error}"], evidence
     attestation_digest = sha256_bytes(attestation_raw)
     evidence["coordinator_attestation_sha256"] = attestation_digest
@@ -685,7 +1153,6 @@ def validate_coordinator_binding(
             errors.append("coordinator capture is outside the permitted six-hour window")
 
     raw_observation = capture.get("raw_observation")
-    receipt_raw = receipt_path.read_bytes()
     receipt_raw_digest = sha256_bytes(receipt_raw)
     evidence["raw_observation_sha256"] = receipt_raw_digest
     if not isinstance(raw_observation, dict):
@@ -704,7 +1171,7 @@ def validate_coordinator_binding(
             errors.append("coordinator raw observation hash method is invalid")
 
     prompt_errors, prompt_digest = validate_prompt_manifest_binding(
-        prompt_path, capture.get("prompt_manifest"), receipts
+        prompt_raw, capture.get("prompt_manifest"), receipts
     )
     errors.extend(prompt_errors)
     evidence["prompt_manifest_sha256"] = prompt_digest
@@ -755,6 +1222,15 @@ def validate_coordinator_binding(
         )
     )
     errors.extend(validate_coordinator_parity(capture.get("parity"), identities))
+    errors.extend(
+        validate_source_installed_provenance(
+            root,
+            expected_source_revision,
+            installed_files,
+            identities,
+            capture.get("parity"),
+        )
+    )
 
     installed_identity = identities.get("installed_cache")
     plugin_identity = receipts.get("plugin_identity")
@@ -788,48 +1264,39 @@ def validate_coordinator_binding(
                 "coordinator task_prompt",
             )
         )
-    if task_prompt_path.is_symlink() or not task_prompt_path.is_file():
-        errors.append("canonical task prompt must be a regular non-symlink file")
-    else:
+    task_prompt_digest = sha256_bytes(task_prompt_raw)
+    evidence["task_prompt_sha256"] = task_prompt_digest
+    if isinstance(task_prompt_identity, dict):
+        if task_prompt_identity.get("sha256") != task_prompt_digest:
+            errors.append(
+                "coordinator task prompt SHA-256 does not match exact bytes"
+            )
+        if task_prompt_identity.get("byte_count") != len(task_prompt_raw):
+            errors.append(
+                "coordinator task prompt byte count does not match exact bytes"
+            )
+        if task_prompt_identity.get("hash_method") != RAW_HASH_METHOD:
+            errors.append("coordinator task prompt hash method is invalid")
+        if task_prompt_identity.get("prompt_protocol") != TASK_PROMPT_PROTOCOL:
+            errors.append("coordinator task prompt protocol is invalid")
+    if isinstance(installed_identity, dict) and isinstance(source_git, dict):
         try:
-            task_prompt_raw = task_prompt_path.read_bytes()
-            prompt_manifest_raw = prompt_path.read_bytes()
-        except OSError as error:
-            errors.append(f"canonical task prompt cannot be inspected: {error}")
+            expected_task_prompt = render_task_prompt(
+                prompt_raw,
+                str(nonce),
+                str(slug),
+                source_git,
+                installed_identity,
+            )
+        except (KeyError, TypeError, ValueError) as error:
+            errors.append(
+                f"canonical task prompt cannot be reconstructed: {error}"
+            )
         else:
-            task_prompt_digest = sha256_bytes(task_prompt_raw)
-            evidence["task_prompt_sha256"] = task_prompt_digest
-            if isinstance(task_prompt_identity, dict):
-                if task_prompt_identity.get("sha256") != task_prompt_digest:
-                    errors.append(
-                        "coordinator task prompt SHA-256 does not match exact bytes"
-                    )
-                if task_prompt_identity.get("byte_count") != len(task_prompt_raw):
-                    errors.append(
-                        "coordinator task prompt byte count does not match exact bytes"
-                    )
-                if task_prompt_identity.get("hash_method") != RAW_HASH_METHOD:
-                    errors.append("coordinator task prompt hash method is invalid")
-                if task_prompt_identity.get("prompt_protocol") != TASK_PROMPT_PROTOCOL:
-                    errors.append("coordinator task prompt protocol is invalid")
-            if isinstance(installed_identity, dict) and isinstance(source_git, dict):
-                try:
-                    expected_task_prompt = render_task_prompt(
-                        prompt_manifest_raw,
-                        str(nonce),
-                        str(slug),
-                        source_git,
-                        installed_identity,
-                    )
-                except (KeyError, TypeError, ValueError) as error:
-                    errors.append(
-                        f"canonical task prompt cannot be reconstructed: {error}"
-                    )
-                else:
-                    if task_prompt_raw != expected_task_prompt:
-                        errors.append(
-                            "task prompt bytes do not match the canonical blind prompt"
-                        )
+            if task_prompt_raw != expected_task_prompt:
+                errors.append(
+                    "task prompt bytes do not match the canonical blind prompt"
+                )
 
     marketplace = capture.get("marketplace_entry")
     if not isinstance(marketplace, dict):
@@ -956,6 +1423,62 @@ def validate_string_list(value: object, *, require_nonempty: bool = False) -> bo
     )
 
 
+def dotted_path_exists(value: object, path: object) -> bool:
+    """Return whether a non-empty dotted dictionary path exists in value."""
+    if (
+        not isinstance(path, str)
+        or not path
+        or path.startswith(".")
+        or path.endswith(".")
+    ):
+        return False
+    current = value
+    for part in path.split("."):
+        if not part or not isinstance(current, dict) or part not in current:
+            return False
+        current = current[part]
+    return True
+
+
+def dotted_paths_related(left: str, right: str) -> bool:
+    """Treat an exact path, an ancestor, or a descendant as structurally related."""
+    return (
+        left == right
+        or left.startswith(f"{right}.")
+        or right.startswith(f"{left}.")
+    )
+
+
+def has_linked_gap(
+    gaps: object,
+    related_path: str,
+    evidence: object,
+) -> bool:
+    """Require a structurally related gap whose ID is cited by the disposition."""
+    if not isinstance(gaps, list) or not validate_string_list(
+        evidence, require_nonempty=True
+    ):
+        return False
+    evidence_text = "\n".join(evidence)
+    for gap in gaps:
+        if not isinstance(gap, dict):
+            continue
+        gap_id = gap.get("id")
+        gap_path = gap.get("related_field")
+        if (
+            isinstance(gap_id, str)
+            and GAP_ID.fullmatch(gap_id)
+            and isinstance(gap_path, str)
+            and dotted_paths_related(gap_path, related_path)
+            and re.search(
+                rf"(?<![A-Z0-9-]){re.escape(gap_id)}(?![A-Z0-9-])",
+                evidence_text,
+            )
+        ):
+            return True
+    return False
+
+
 def exact_field_errors(
     value: dict[str, object],
     expected: set[str],
@@ -1054,8 +1577,8 @@ def validate_installed_identity(
     manifest_path = installed_plugin_root / ".codex-plugin" / "plugin.json"
     try:
         manifest_bytes = manifest_path.read_bytes()
-        manifest = json.loads(manifest_bytes.decode("utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        manifest = json_from_bytes(manifest_bytes)
+    except (OSError, UnicodeError, json.JSONDecodeError, DuplicateJSONKey) as error:
         return errors + [f"installed plugin manifest cannot be inspected: {error}"]
     if not isinstance(manifest, dict):
         return errors + ["installed plugin manifest root must be an object"]
@@ -1133,26 +1656,30 @@ def validate(
     allow_unsealed_fresh: bool = False,
     installed_plugin_root: Path | None = None,
     expected_source_revision: str | None = None,
+    contracts_snapshot: dict[str, object] | None = None,
+    receipts_snapshot: dict[str, object] | None = None,
 ) -> tuple[list[str], int, str]:
     errors: list[str] = []
     plugin_root = root / "plugins" / "project-delivery"
     if not plugin_root.is_dir():
         plugin_root = root
-    contracts, contract_errors = read_json(
-        root / "tests" / "route-contracts.json", "route contracts"
-    )
-    receipts, receipt_errors = read_json(receipt_path, "route receipts")
-    errors.extend(contract_errors)
-    errors.extend(receipt_errors)
+    contracts = contracts_snapshot
+    receipts = receipts_snapshot
+    if contracts is None:
+        contracts, contract_errors = read_json(
+            root / "tests" / "route-contracts.json", "route contracts"
+        )
+        errors.extend(contract_errors)
+    if receipts is None:
+        receipts, receipt_errors = read_json(receipt_path, "route receipts")
+        errors.extend(receipt_errors)
     if contracts is None or receipts is None:
         return errors, 0, "unknown"
 
-    if contracts.get("schema_version") != 2:
-        errors.append("route contracts must use schema version 2")
+    if contracts.get("schema_version") != 3:
+        errors.append("route contracts must use schema version 3")
     if receipts.get("schema_version") not in {2, 3}:
         errors.append("route receipts must use historical schema 2 or sealed schema 3")
-    if receipts.get("contract_schema_version") != contracts.get("schema_version"):
-        errors.append("receipt contract_schema_version does not match route contracts")
     evidence_class = receipts.get("evidence_class")
     if evidence_class not in {FRESH_EVIDENCE_CLASS, HISTORICAL_EVIDENCE_CLASS}:
         errors.append("receipts have an unsupported evidence class")
@@ -1160,6 +1687,24 @@ def validate(
     is_fresh = evidence_class == FRESH_EVIDENCE_CLASS
     is_fresh_v3 = is_fresh and receipts.get("schema_version") == 3
     is_unsealed_fresh_v2 = is_fresh and receipts.get("schema_version") == 2
+    comparison_contracts = contracts
+    if evidence_class == HISTORICAL_EVIDENCE_CLASS:
+        historical_contracts, historical_contract_errors = read_json(
+            root / HISTORICAL_CONTRACT_FIXTURE,
+            "historical route contracts",
+        )
+        errors.extend(historical_contract_errors)
+        if historical_contracts is not None:
+            if historical_contracts.get("schema_version") != 2:
+                errors.append("historical route contracts must use schema version 2")
+            comparison_contracts = historical_contracts
+    expected_contract_schema = (
+        2
+        if evidence_class == HISTORICAL_EVIDENCE_CLASS
+        else contracts.get("schema_version")
+    )
+    if receipts.get("contract_schema_version") != expected_contract_schema:
+        errors.append("receipt contract_schema_version does not match its evidence profile")
     if is_unsealed_fresh_v2 and not allow_unsealed_fresh:
         errors.append(
             "schema-v2 fresh self-attestation requires --allow-unsealed-fresh and cannot establish candidate proof"
@@ -1409,7 +1954,7 @@ def validate(
             if not validate_string_list(value) or value:
                 errors.append(f"route-only observations must record no {label}")
 
-    contract_items = contracts.get("scenarios")
+    contract_items = comparison_contracts.get("scenarios")
     receipt_items = receipts.get("scenarios")
     if not isinstance(contract_items, list):
         return errors + ["route contract scenarios must be a list"], 0, str(evidence_class)
@@ -1635,7 +2180,9 @@ def validate(
                     errors.append(
                         f"loaded specialist {skill} instruction closure must contain exactly one skill-root"
                     )
-    forbidden_dependencies = set(contracts.get("forbidden_runtime_dependencies", []))
+    forbidden_dependencies = set(
+        comparison_contracts.get("forbidden_runtime_dependencies", [])
+    )
     selected_route_skills: set[str] = set()
     seen_gap_ids: set[str] = set()
     scenario_observation_unions: dict[str, set[str]] = {
@@ -1765,11 +2312,22 @@ def validate(
                 + ", ".join(sorted(unloaded_skills))
             )
 
-        for classification_field in ("scale", "risk", "authority"):
-            if receipt.get(classification_field) != contract.get(classification_field):
+        accepted_taxonomy = {
+            "scale": contract.get("accepted_scales", [contract.get("scale")]),
+            "risk": contract.get("accepted_risks", [contract.get("risk")]),
+        }
+        for classification_field, accepted_values in accepted_taxonomy.items():
+            if (
+                not isinstance(accepted_values, list)
+                or receipt.get(classification_field) not in accepted_values
+            ):
                 errors.append(
-                    f"{scenario_id} {classification_field} does not match the contract taxonomy"
+                    f"{scenario_id} {classification_field} is outside the accepted contract taxonomy"
                 )
+        if receipt.get("authority") != contract.get("authority"):
+            errors.append(
+                f"{scenario_id} authority does not match the contract taxonomy"
+            )
         taxonomy_rationale = receipt.get("taxonomy_rationale")
         if not isinstance(taxonomy_rationale, str) or len(taxonomy_rationale.strip()) < 20:
             errors.append(f"{scenario_id} lacks a substantive taxonomy rationale")
@@ -1856,13 +2414,6 @@ def validate(
                 )
 
         raw_gaps = receipt.get("gaps")
-        related_gap_fields = {
-            gap.get("related_field")
-            for gap in raw_gaps
-            if isinstance(raw_gaps, list)
-            and isinstance(gap, dict)
-            and isinstance(gap.get("related_field"), str)
-        } if isinstance(raw_gaps, list) else set()
         dispositions = receipt.get("conditional_dispositions")
         if not isinstance(dispositions, dict):
             errors.append(f"{scenario_id} conditional_dispositions must be an object")
@@ -1879,12 +2430,24 @@ def validate(
                 f"{scenario_id} omits conditional dispositions: "
                 + ", ".join(sorted(missing_dispositions))
             )
-        if extra_dispositions:
+        invalid_extra_dispositions = extra_dispositions.intersection(
+            required.union(forbidden).union({"delivery-orchestrator"})
+        )
+        unknown_extra_dispositions = extra_dispositions.difference(available_skills)
+        if invalid_extra_dispositions:
             errors.append(
-                f"{scenario_id} has unknown conditional dispositions: "
-                + ", ".join(sorted(extra_dispositions))
+                f"{scenario_id} extra conditional dispositions duplicate required, forbidden, or controller capabilities: "
+                + ", ".join(sorted(invalid_extra_dispositions))
             )
-        for skill in expected_conditional.intersection(dispositions):
+        if unknown_extra_dispositions:
+            errors.append(
+                f"{scenario_id} extra conditional dispositions reference unknown capabilities: "
+                + ", ".join(sorted(unknown_extra_dispositions))
+            )
+        validated_dispositions = set(dispositions).difference(
+            invalid_extra_dispositions.union(unknown_extra_dispositions)
+        )
+        for skill in validated_dispositions:
             disposition = dispositions[skill]
             if not isinstance(disposition, dict):
                 errors.append(f"{scenario_id} disposition for {skill} must be an object")
@@ -1967,8 +2530,10 @@ def validate(
                     errors.append(
                         f"{scenario_id} disposition for {skill} state {state} contradicts trigger result {trigger_result}"
                     )
-                if trigger_result == "unknown" and (
-                    f"conditional_dispositions.{skill}" not in related_gap_fields
+                if trigger_result == "unknown" and not has_linked_gap(
+                    raw_gaps,
+                    f"conditional_dispositions.{skill}",
+                    disposition.get("evidence"),
                 ):
                     errors.append(
                         f"{scenario_id} unknown trigger for {skill} requires a linked structured gap"
@@ -2032,7 +2597,9 @@ def validate(
         if not isinstance(extra_justifications, dict):
             errors.append(f"{scenario_id} extra_capability_justifications must be an object")
             extra_justifications = {}
-        selectable = required.union(expected_conditional).union({"delivery-orchestrator"})
+        selectable = required.union(validated_dispositions).union(
+            {"delivery-orchestrator"}
+        )
         extra_capabilities = set(route).difference(selectable)
         missing_extra_justifications = extra_capabilities.difference(extra_justifications)
         unexpected_extra_justifications = set(extra_justifications).difference(extra_capabilities)
@@ -2075,10 +2642,6 @@ def validate(
             if not isinstance(raw_gaps, list):
                 errors.append(f"{scenario_id} gaps must be a structured list")
                 raw_gaps = []
-            valid_related_fields = set(FRESH_V3_SCENARIO_FIELDS) | {
-                f"conditional_dispositions.{skill}"
-                for skill in expected_conditional
-            }
             for gap_index, gap in enumerate(raw_gaps, 1):
                 if not isinstance(gap, dict):
                     errors.append(
@@ -2111,7 +2674,7 @@ def validate(
                         f"{scenario_id} gap {gap_id} blocks the route claim"
                     )
                 related_field = gap.get("related_field")
-                if related_field not in valid_related_fields:
+                if not dotted_path_exists(receipt, related_field):
                     errors.append(
                         f"{scenario_id} gap {gap_id} references an unknown related_field"
                     )
@@ -2152,14 +2715,37 @@ def write_grade_record(
     output: Path,
     root: Path,
     receipts: dict[str, object],
+    contract_raw: bytes,
+    checker_raw: bytes,
     scenario_count: int,
     evidence: dict[str, str],
     expected_source_revision: str,
     candidate_proof: str,
+    verdict: str = "PASS",
+    validation_errors: list[str] | None = None,
 ) -> str:
+    if not output.is_absolute() or output.name in {"", ".", ".."}:
+        raise ValueError("grade output must be an absolute new file path")
     if output.is_relative_to(root):
         raise ValueError("grade output must remain outside the source repository")
-    contract_path = root / "tests" / "route-contracts.json"
+    if verdict not in {"PASS", "FAIL"}:
+        raise ValueError("grade verdict must be PASS or FAIL")
+    if verdict == "PASS" and validation_errors:
+        raise ValueError("a PASS grade cannot contain validation errors")
+    if verdict == "FAIL" and not validation_errors:
+        raise ValueError("a FAIL grade must contain validation errors")
+    if verdict == "FAIL" and candidate_proof != "not-established":
+        raise ValueError("a FAIL grade cannot establish candidate proof")
+    raw_errors = list(validation_errors or [])
+    serialized_errors = json.dumps(
+        raw_errors,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    public_error_records = [
+        f"validation-error-{index:03d} sha256={sha256_bytes(error.encode('utf-8'))}"
+        for index, error in enumerate(raw_errors, 1)
+    ]
     installed_identity = receipts.get("plugin_identity")
     installed_payload = (
         installed_identity.get("payload_sha256")
@@ -2169,7 +2755,7 @@ def write_grade_record(
     grade = {
         "schema_version": 1,
         "evidence_class": GRADE_EVIDENCE_CLASS,
-        "verdict": "PASS",
+        "verdict": verdict,
         "candidate_proof": candidate_proof,
         "scenario_count": scenario_count,
         "raw_observation_sha256": evidence["raw_observation_sha256"],
@@ -2178,57 +2764,135 @@ def write_grade_record(
         ],
         "prompt_manifest_sha256": evidence["prompt_manifest_sha256"],
         "task_prompt_sha256": evidence["task_prompt_sha256"],
-        "route_contract_sha256": sha256_bytes(contract_path.read_bytes()),
-        "checker_sha256": sha256_bytes(Path(__file__).read_bytes()),
+        "route_contract_sha256": sha256_bytes(contract_raw),
+        "checker_sha256": sha256_bytes(checker_raw),
         "source_revision": expected_source_revision,
         "installed_payload_sha256": installed_payload,
         "graded_at_utc": datetime.now(timezone.utc)
         .replace(microsecond=0)
         .strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "errors": [],
+        "error_count": len(raw_errors),
+        "error_set_sha256": sha256_bytes(serialized_errors),
+        "errors": public_error_records,
         "limitations": [
             "This grade establishes only the bounded route-policy claim for the sealed scenarios.",
             "It does not establish implementation, release, decommission, UI-rendering, or production-readiness claims.",
             "Coordinator hashing binds bytes and launch facts but cannot prove model attention or absence of unrecorded effects.",
             "Independent task execution provenance remains bounded by the coordinator's private task-binding procedure.",
+            "FAIL grades publish only ordered SHA-256 identities of validation errors; exact messages remain in local checker output to avoid reflecting untrusted content.",
         ],
     }
     field_errors = exact_field_errors(grade, GRADE_FIELDS, "grade record")
     if field_errors:
         raise ValueError("; ".join(field_errors))
-    output.parent.mkdir(parents=True, exist_ok=True)
     rendered = (json.dumps(grade, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
-    with output.open("xb") as handle:
-        handle.write(rendered)
-        handle.flush()
+    try:
+        resolved_parent = output.parent.resolve(strict=True)
+    except OSError as error:
+        raise ValueError(f"grade output parent cannot be resolved: {error}") from error
+    if resolved_parent.is_relative_to(root):
+        raise ValueError("grade output must remain outside the source repository")
+    parent_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(
+        os, "O_NOFOLLOW", 0
+    )
+    parent_descriptor = os.open(output.parent, parent_flags)
+    output_descriptor: int | None = None
+    try:
+        opened_parent = os.fstat(parent_descriptor)
+        resolved_metadata = os.stat(resolved_parent, follow_symlinks=False)
+        if not stat.S_ISDIR(opened_parent.st_mode) or (
+            opened_parent.st_dev,
+            opened_parent.st_ino,
+        ) != (resolved_metadata.st_dev, resolved_metadata.st_ino):
+            raise ValueError("grade output parent changed during validation")
+        output_flags = (
+            os.O_WRONLY
+            | os.O_CREAT
+            | os.O_EXCL
+            | getattr(os, "O_NOFOLLOW", 0)
+        )
+        output_descriptor = os.open(
+            output.name,
+            output_flags,
+            0o600,
+            dir_fd=parent_descriptor,
+        )
+        with os.fdopen(output_descriptor, "wb") as handle:
+            output_descriptor = None
+            handle.write(rendered)
+            handle.flush()
+            os.fsync(handle.fileno())
+    finally:
+        if output_descriptor is not None:
+            os.close(output_descriptor)
+        os.close(parent_descriptor)
     return sha256_bytes(rendered)
+
+
+def printable_error(error: object) -> str:
+    """Render one error as one escaped log token without control-line injection."""
+    return json.dumps(str(error), ensure_ascii=True)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
     root = Path(args.root).expanduser().resolve()
-    receipt_path = Path(args.receipts).expanduser().resolve()
+    receipt_path = Path(args.receipts).expanduser().absolute()
     installed_plugin_root = (
-        Path(args.installed_plugin_root).expanduser().resolve()
+        Path(args.installed_plugin_root).expanduser().absolute()
         if args.installed_plugin_root
         else None
     )
-    errors, scenario_count, evidence_class = validate(
-        root,
-        receipt_path,
-        args.allow_subset,
-        args.allow_historical_annotations,
-        args.allow_unsealed_fresh,
-        installed_plugin_root,
-        args.expected_source_revision,
+    contract_path = root / "tests" / "route-contracts.json"
+    checker_path = Path(__file__).absolute()
+    contract_raw, contract_read_errors = read_regular_bytes(
+        contract_path, "route contracts"
     )
-    receipts, receipt_load_errors = read_json(receipt_path, "route receipts")
-    errors.extend(receipt_load_errors)
+    receipt_raw, receipt_read_errors = read_regular_bytes(
+        receipt_path, "route receipts"
+    )
+    checker_raw, checker_read_errors = read_regular_bytes(
+        checker_path, "receipt checker"
+    )
+    errors = [
+        *contract_read_errors,
+        *receipt_read_errors,
+        *checker_read_errors,
+    ]
+    contracts: dict[str, object] | None = None
+    receipts: dict[str, object] | None = None
+    if contract_raw is not None:
+        contracts, parse_errors = parse_json_bytes(contract_raw, "route contracts")
+        errors.extend(parse_errors)
+    if receipt_raw is not None:
+        receipts, parse_errors = parse_json_bytes(receipt_raw, "route receipts")
+        errors.extend(parse_errors)
     is_sealed_v3 = (
         receipts is not None
         and receipts.get("schema_version") == 3
         and receipts.get("evidence_class") == FRESH_EVIDENCE_CLASS
     )
+    installed_snapshot: dict[Path, bytes] | None = None
+    if is_sealed_v3 and not args.allow_unattested_v3:
+        installed_snapshot, installed_snapshot_errors = snapshot_installed_plugin(
+            installed_plugin_root
+        )
+        errors.extend(installed_snapshot_errors)
+    scenario_count = 0
+    evidence_class = "unknown"
+    if contracts is not None and receipts is not None:
+        semantic_errors, scenario_count, evidence_class = validate(
+            root,
+            receipt_path,
+            args.allow_subset,
+            args.allow_historical_annotations,
+            args.allow_unsealed_fresh,
+            installed_plugin_root,
+            args.expected_source_revision,
+            contracts_snapshot=contracts,
+            receipts_snapshot=receipts,
+        )
+        errors.extend(semantic_errors)
     binding_evidence = {
         "coordinator_attestation_sha256": "unknown",
         "prompt_manifest_sha256": "unknown",
@@ -2236,35 +2900,96 @@ def main(argv: list[str] | None = None) -> int:
         "task_prompt_sha256": "unknown",
     }
     if is_sealed_v3 and not args.allow_unattested_v3:
+        if contract_raw is not None and checker_raw is not None:
+            errors.extend(
+                validate_grader_source(
+                    root,
+                    args.expected_source_revision,
+                    contract_raw,
+                    checker_raw,
+                )
+            )
         attestation_path = (
-            Path(args.coordinator_attestation).expanduser().resolve()
+            Path(args.coordinator_attestation).expanduser().absolute()
             if args.coordinator_attestation
             else None
         )
         prompt_path = (
-            Path(args.prompt_manifest).expanduser().resolve()
+            Path(args.prompt_manifest).expanduser().absolute()
             if args.prompt_manifest
             else None
         )
         task_prompt_path = (
-            Path(args.task_prompt).expanduser().resolve()
+            Path(args.task_prompt).expanduser().absolute()
             if args.task_prompt
             else None
         )
-        binding_errors, binding_evidence = validate_coordinator_binding(
-            receipts,
-            receipt_path,
-            attestation_path,
-            args.expected_attestation_sha256,
-            prompt_path,
-            task_prompt_path,
-            args.expected_source_revision,
+        if receipt_raw is not None:
+            binding_errors, binding_evidence = validate_coordinator_binding(
+                root,
+                receipts,
+                receipt_raw,
+                installed_snapshot,
+                attestation_path,
+                args.expected_attestation_sha256,
+                prompt_path,
+                task_prompt_path,
+                args.expected_source_revision,
+            )
+            errors.extend(binding_errors)
+        final_installed_snapshot, final_snapshot_errors = snapshot_installed_plugin(
+            installed_plugin_root
         )
-        errors.extend(binding_errors)
+        errors.extend(final_snapshot_errors)
+        if (
+            installed_snapshot is not None
+            and final_installed_snapshot is not None
+            and installed_snapshot != final_installed_snapshot
+        ):
+            errors.append(
+                "installed plugin package changed during sealed validation"
+            )
         if not args.grade_output:
             errors.append("sealed schema-v3 candidate proof requires --grade-output")
     if errors:
-        print("\n".join(f"ERROR {error}" for error in errors))
+        print("\n".join(f"ERROR {printable_error(error)}" for error in errors))
+        if (
+            is_sealed_v3
+            and args.grade_output
+            and receipts is not None
+            and contract_raw is not None
+            and checker_raw is not None
+        ):
+            grade_output = Path(args.grade_output).expanduser().absolute()
+            expected_revision = (
+                args.expected_source_revision
+                if isinstance(args.expected_source_revision, str)
+                else "unknown"
+            )
+            try:
+                grade_sha = write_grade_record(
+                    grade_output,
+                    root,
+                    receipts,
+                    contract_raw,
+                    checker_raw,
+                    scenario_count,
+                    binding_evidence,
+                    expected_revision,
+                    "not-established",
+                    verdict="FAIL",
+                    validation_errors=errors,
+                )
+            except (OSError, UnicodeError, ValueError) as error:
+                print(
+                    "ERROR independent failure grade could not be written: "
+                    + printable_error(error)
+                )
+            else:
+                print(
+                    "FAIL_GRADE candidate_proof=not-established "
+                    f"grade_sha256={grade_sha}"
+                )
         return 1
     if evidence_class == HISTORICAL_EVIDENCE_CLASS:
         print(
@@ -2286,8 +3011,10 @@ def main(argv: list[str] | None = None) -> int:
         )
     else:
         assert receipts is not None
+        assert contract_raw is not None
+        assert checker_raw is not None
         assert isinstance(args.expected_source_revision, str)
-        grade_output = Path(args.grade_output).expanduser().resolve()
+        grade_output = Path(args.grade_output).expanduser().absolute()
         candidate_proof = (
             "established-for-subset-route-policy-only"
             if args.allow_subset
@@ -2298,13 +3025,18 @@ def main(argv: list[str] | None = None) -> int:
                 grade_output,
                 root,
                 receipts,
+                contract_raw,
+                checker_raw,
                 scenario_count,
                 binding_evidence,
                 args.expected_source_revision,
                 candidate_proof,
             )
         except (OSError, UnicodeError, ValueError) as error:
-            print(f"ERROR independent grade record could not be written: {error}")
+            print(
+                "ERROR independent grade record could not be written: "
+                + printable_error(error)
+            )
             return 1
         print(
             f"PASS scenarios={scenario_count} route_policy_records={scenario_count} "

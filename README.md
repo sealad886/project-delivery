@@ -79,6 +79,8 @@ python3 -m unittest discover -s tests -p 'test_*.py' -v
 
 The package-boundary check rejects undeclared files, symlinks, unsupported file types, source-only directories, broken internal references, and missing skill metadata. Release validation additionally uses Plugin Creator, Skill Creator, the pinned HOL scanner, an isolated install/rollback rehearsal, fresh-task behavioral canaries, and independent review.
 
+Routing policy has two deliberately separated representations: installed `skills/.shared/route-profiles-v1.json` supplies runtime semantics, while repository-only `tests/route-contracts.json` supplies schema-v3 canary prompts and expected semantics. `scripts/check_routes.py` requires their profile IDs and semantic fields to remain in exact parity before either representation can support release evidence.
+
 ## Governance
 
 - [Plugin guide](plugins/project-delivery/README.md)

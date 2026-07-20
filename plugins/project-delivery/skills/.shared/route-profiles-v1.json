@@ -1,0 +1,2182 @@
+{
+  "schema_version": 1,
+  "evidence_class": "installed canonical route profiles",
+  "selection_policy": "Select exactly one profile by semantic intent, lifecycle state, evidence, and authority. Never match exact wording or a maintainer scenario identifier. Required and conditional capability sets are disjoint. Every declared conditional capability must have a disposition. A genuinely additional proportional owner may be added only from current evidence and requires a complete conditional disposition or an explicit direct-selection justification; it must not duplicate a required, forbidden, or controller owner.",
+  "taxonomy_policy": "preferred_scale and preferred_risk are evidence-sparse defaults. A normalized alternative is conformant only when it appears in allowed_scales or allowed_risks and repository or task evidence explains the choice. Scale and risk remain independent. Maintainer canary accepted sets are test-only subsets and never runtime instruction. Authority remains exact and never grants consequential effects.",
+  "profiles": [
+    {
+      "id": "small-bug-planning",
+      "intent": "Select when the requested outcome is a plan for an isolated defect with bounded implementation scope and no edit authority. Do not use for authorized implementation, incident restoration, or a design-only deliverable.",
+      "preferred_scale": "small",
+      "allowed_scales": [
+        "small",
+        "small-or-medium"
+      ],
+      "preferred_risk": "risk-dependent",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "planning-only",
+      "lead_capability": "delivery-orchestrator",
+      "required_capabilities": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "delivery-planning"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "solution-design",
+          "when": "the fix changes a contract, compatibility boundary, recovery behavior, or established design"
+        },
+        {
+          "skill": "testing-quality",
+          "when": "test strategy requires specialist depth beyond the compact plan"
+        },
+        {
+          "skill": "security-operations",
+          "when": "the affected behavior reaches sensitive data, privileged boundaries, reliability, operations, infrastructure, or material blast radius"
+        }
+      ],
+      "precedence": [
+        [
+          "project-context",
+          "requirements-acceptance"
+        ],
+        [
+          "requirements-acceptance",
+          "solution-design"
+        ],
+        [
+          "requirements-acceptance",
+          "delivery-planning"
+        ],
+        [
+          "solution-design",
+          "delivery-planning"
+        ]
+      ],
+      "allowed_reentry": [],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {},
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "compact project brief",
+        "acceptance criteria",
+        "root-cause evidence or labeled hypothesis",
+        "ordered plan",
+        "regression-test plan",
+        "rollback note"
+      ],
+      "required_evidence": [
+        "repository instructions and status",
+        "current behavior",
+        "related tests and history"
+      ],
+      "stop_conditions": [
+        "do not edit files",
+        "do not claim an unverified root cause"
+      ]
+    },
+    {
+      "id": "medium-feature-change",
+      "intent": "Select when repository changes are authorized for a feature or refactor that needs the full build-to-release lifecycle. Do not use for planning-only work, incident containment, migration-specific delivery, or release execution.",
+      "preferred_scale": "medium",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "risk-dependent",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "change",
+      "lead_capability": "delivery-orchestrator",
+      "required_capabilities": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design",
+        "delivery-planning",
+        "implementation-execution",
+        "testing-quality",
+        "documentation-knowledge",
+        "review-audit",
+        "release-change"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "security-operations",
+          "when": "risk classification identifies security, privacy, reliability, infrastructure, migration, or operational depth"
+        },
+        {
+          "skill": "delivery-coordination",
+          "when": "external sources or systems of record require reconciliation or authorized mutation"
+        },
+        {
+          "skill": "retrospective-improvement",
+          "when": "a meaningful delivery outcome, failure, or reusable learning exists"
+        }
+      ],
+      "precedence": [
+        [
+          "project-context",
+          "requirements-acceptance"
+        ],
+        [
+          "requirements-acceptance",
+          "solution-design"
+        ],
+        [
+          "solution-design",
+          "delivery-planning"
+        ],
+        [
+          "delivery-planning",
+          "implementation-execution"
+        ],
+        [
+          "implementation-execution",
+          "testing-quality"
+        ]
+      ],
+      "allowed_reentry": [],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {
+        "release-change": [
+          "testing-quality",
+          "documentation-knowledge",
+          "review-audit",
+          "security-operations"
+        ]
+      },
+      "forbidden_capabilities": [],
+      "expected_artifacts": [
+        "brief",
+        "requirements and acceptance",
+        "design",
+        "WBS",
+        "changes",
+        "actual test evidence",
+        "documentation",
+        "review findings",
+        "release gate"
+      ],
+      "required_evidence": [
+        "repository conventions",
+        "exact changed revision",
+        "actual command results"
+      ],
+      "stop_conditions": [
+        "implementation waits for Ready and Design gates",
+        "publishing requires separate authority"
+      ]
+    },
+    {
+      "id": "large-initiative-planning",
+      "intent": "Select when a broad initiative needs requirements, architecture, dependencies, milestones, and multi-PR or multi-release slicing without implementation authority. Do not use for a bounded one-PR plan or an authorized delivery run.",
+      "preferred_scale": "large",
+      "allowed_scales": [
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "high",
+      "allowed_risks": [
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "planning-only",
+      "lead_capability": "delivery-orchestrator",
+      "required_capabilities": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design",
+        "delivery-planning"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "security-operations",
+          "when": "initiative evidence exposes sensitive, privileged, infrastructure, migration, reliability, or high-blast-radius concerns"
+        },
+        {
+          "skill": "delivery-coordination",
+          "when": "teams, trackers, external dependencies, status, or communication require synchronization"
+        }
+      ],
+      "precedence": [
+        [
+          "project-context",
+          "requirements-acceptance"
+        ],
+        [
+          "requirements-acceptance",
+          "solution-design"
+        ],
+        [
+          "solution-design",
+          "delivery-planning"
+        ]
+      ],
+      "allowed_reentry": [],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {},
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "project brief",
+        "requirements",
+        "ADRs",
+        "RAID",
+        "milestones",
+        "critical path",
+        "PR and release slices",
+        "evidence waves"
+      ],
+      "required_evidence": [
+        "repository boundaries",
+        "dependencies",
+        "release constraints",
+        "known ownership and capacity"
+      ],
+      "stop_conditions": [
+        "do not invent owners or dates",
+        "do not implement under planning authority"
+      ]
+    },
+    {
+      "id": "release-readiness-review",
+      "intent": "Select when the outcome is an independent go, no-go, or conditional release-readiness judgment for a pinned change or PR. Do not use when the user asks to fix findings, prepare missing release material, or execute a release.",
+      "preferred_scale": "risk-dependent",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "risk-dependent",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "review-only",
+      "lead_capability": "review-audit",
+      "required_capabilities": [
+        "review-audit",
+        "release-change"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "testing-quality",
+          "when": "quality evidence is missing, failing, stale, disputed, quantitative, or requires execution or triage"
+        },
+        {
+          "skill": "security-operations",
+          "when": "the diff or release surface is security, privacy, reliability, infrastructure, migration, or operationally material"
+        },
+        {
+          "skill": "documentation-knowledge",
+          "when": "canonical documentation or release communication is missing or inconsistent"
+        }
+      ],
+      "precedence": [
+        [
+          "review-audit",
+          "release-change"
+        ]
+      ],
+      "allowed_reentry": [
+        "review-audit",
+        "release-change"
+      ],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {
+        "release-change": [
+          "review-audit",
+          "testing-quality",
+          "security-operations",
+          "documentation-knowledge"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "pinned review scope",
+        "requirement coverage",
+        "located findings",
+        "test and CI evidence",
+        "release decision",
+        "residual risk"
+      ],
+      "required_evidence": [
+        "exact base and head",
+        "supporting code",
+        "actual checks and release configuration"
+      ],
+      "stop_conditions": [
+        "do not implement fixes",
+        "do not self-approve missing evidence"
+      ]
+    },
+    {
+      "id": "production-release-preparation",
+      "intent": "Select when completed work must be made release-ready through evidence recovery, versioning, notes, rollout, rollback, and gate disposition without consequential release effects. Do not use when merge, tag, publish, deploy, or promotion is authorized for execution.",
+      "preferred_scale": "risk-dependent",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "high",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "release-preparation",
+      "lead_capability": "release-change",
+      "required_capabilities": [
+        "release-change",
+        "security-operations"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "testing-quality",
+          "when": "quality evidence is missing, failing, stale, disputed, quantitative, or requires execution or triage"
+        },
+        {
+          "skill": "documentation-knowledge",
+          "when": "version, changelog, release notes, migration, configuration, runbook, or support knowledge is missing or inconsistent"
+        },
+        {
+          "skill": "review-audit",
+          "when": "required independent review or release-readiness adjudication is missing, stale, or unresolved"
+        },
+        {
+          "skill": "delivery-coordination",
+          "when": "release status, external systems, handoff, or communication require synchronization"
+        }
+      ],
+      "precedence": [],
+      "allowed_reentry": [
+        "release-change"
+      ],
+      "required_reentry": [
+        "release-change"
+      ],
+      "required_reentry_before": {
+        "release-change": [
+          "testing-quality",
+          "documentation-knowledge",
+          "review-audit",
+          "security-operations"
+        ]
+      },
+      "required_reentry_after": {
+        "release-change": [
+          "testing-quality",
+          "documentation-knowledge",
+          "review-audit",
+          "security-operations"
+        ]
+      },
+      "required_final_after": {
+        "release-change": [
+          "testing-quality",
+          "documentation-knowledge",
+          "review-audit",
+          "security-operations"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "immutable release unit",
+        "gate evidence",
+        "version and notes",
+        "migration and flag plan",
+        "rollout",
+        "rollback",
+        "post-release verification"
+      ],
+      "required_evidence": [
+        "exact revision and artifact",
+        "actual checks and approvals",
+        "environment and provider capabilities"
+      ],
+      "stop_conditions": [
+        "preparation does not authorize merge, tag, publish, deploy, flag change, or communication"
+      ]
+    },
+    {
+      "id": "operational-documentation-handoff",
+      "intent": "Select when canonical runbooks, configuration, recovery guidance, and ownership handoff must be changed together for an operational surface. Do not use for ordinary prose-only documentation or a status message with no durable knowledge change.",
+      "preferred_scale": "small-or-medium",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "medium-or-high",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "documentation-change",
+      "lead_capability": "delivery-orchestrator",
+      "required_capabilities": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "documentation-knowledge",
+        "security-operations",
+        "release-change",
+        "delivery-coordination"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "testing-quality",
+          "when": "documentation examples, runbook steps, configuration, or recovery procedures require execution or measurable validation"
+        }
+      ],
+      "precedence": [
+        [
+          "project-context",
+          "requirements-acceptance"
+        ],
+        [
+          "requirements-acceptance",
+          "documentation-knowledge"
+        ],
+        [
+          "documentation-knowledge",
+          "testing-quality"
+        ],
+        [
+          "documentation-knowledge",
+          "security-operations"
+        ],
+        [
+          "testing-quality",
+          "security-operations"
+        ],
+        [
+          "security-operations",
+          "release-change"
+        ],
+        [
+          "release-change",
+          "delivery-coordination"
+        ]
+      ],
+      "allowed_reentry": [],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {
+        "release-change": [
+          "documentation-knowledge",
+          "testing-quality",
+          "security-operations"
+        ]
+      },
+      "forbidden_capabilities": [],
+      "expected_artifacts": [
+        "canonical operational documentation",
+        "validation evidence",
+        "ownership and support handoff",
+        "monitoring and rollback notes"
+      ],
+      "required_evidence": [
+        "current behavior and configuration",
+        "canonical documentation location",
+        "operational constraints"
+      ],
+      "stop_conditions": [
+        "external document mutation routes through delivery coordination",
+        "do not invent support commitments"
+      ]
+    },
+    {
+      "id": "design-only-change",
+      "intent": "Select when the requested deliverable is a solution design or architecture decision grounded in current requirements, with no delivery-plan or implementation authority. Do not use when work breakdown, code changes, or release decisions are part of the requested outcome.",
+      "preferred_scale": "risk-dependent",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "risk-dependent",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "design-only",
+      "lead_capability": "delivery-orchestrator",
+      "required_capabilities": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "security-operations",
+          "when": "the design crosses sensitive, privileged, infrastructure, migration, reliability, or high-blast-radius boundaries"
+        }
+      ],
+      "precedence": [
+        [
+          "project-context",
+          "requirements-acceptance"
+        ],
+        [
+          "requirements-acceptance",
+          "solution-design"
+        ]
+      ],
+      "allowed_reentry": [],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {},
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "current and proposed design",
+        "alternatives and tradeoffs",
+        "contracts",
+        "compatibility",
+        "ADR or decision record",
+        "open questions"
+      ],
+      "required_evidence": [
+        "accepted requirements",
+        "current architecture",
+        "authoritative external documentation when applicable"
+      ],
+      "stop_conditions": [
+        "stop before planning and implementation"
+      ]
+    },
+    {
+      "id": "nonmodifying-review",
+      "intent": "Select when a pinned design, diff, repository state, or artifact needs evidence-backed findings without edits and without an integration or release decision by default. Do not use for implementation, security-led review, or explicit release-readiness adjudication.",
+      "preferred_scale": "risk-dependent",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "risk-dependent",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "review-only",
+      "lead_capability": "review-audit",
+      "required_capabilities": [
+        "review-audit"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "testing-quality",
+          "when": "validation must be executed or quality evidence is missing, failing, stale, disputed, or quantitative"
+        },
+        {
+          "skill": "security-operations",
+          "when": "security, privacy, reliability, infrastructure, migration, or operational depth is material"
+        },
+        {
+          "skill": "release-change",
+          "when": "the requested decision includes integration or release readiness"
+        }
+      ],
+      "precedence": [],
+      "allowed_reentry": [
+        "review-audit"
+      ],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {
+        "release-change": [
+          "review-audit",
+          "testing-quality",
+          "security-operations"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "pinned scope",
+        "finding ledger",
+        "evidence gaps",
+        "decision",
+        "residual risks"
+      ],
+      "required_evidence": [
+        "diff or deterministic snapshot",
+        "requirements",
+        "supporting tests and conventions"
+      ],
+      "stop_conditions": [
+        "do not edit",
+        "do not suppress uncertain material candidates"
+      ]
+    },
+    {
+      "id": "documentation-only-change",
+      "intent": "Select when authority is limited to changing canonical user or maintainer documentation and validating its links, examples, build, or rendering. Do not use when code behavior, operational handoff, provider state, or release execution must change.",
+      "preferred_scale": "small",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "low-or-risk-dependent",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "documentation-change",
+      "lead_capability": "delivery-orchestrator",
+      "required_capabilities": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "documentation-knowledge",
+        "testing-quality"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "security-operations",
+          "when": "documentation concerns security, privacy, permissions, operations, migration, or recovery"
+        },
+        {
+          "skill": "release-change",
+          "when": "documentation changes a versioned, release, migration, configuration, or operational contract"
+        }
+      ],
+      "precedence": [
+        [
+          "project-context",
+          "requirements-acceptance"
+        ],
+        [
+          "requirements-acceptance",
+          "documentation-knowledge"
+        ],
+        [
+          "documentation-knowledge",
+          "testing-quality"
+        ]
+      ],
+      "allowed_reentry": [],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {
+        "release-change": [
+          "documentation-knowledge",
+          "testing-quality",
+          "security-operations"
+        ]
+      },
+      "forbidden_capabilities": [],
+      "expected_artifacts": [
+        "canonical documentation update",
+        "link, example, or build evidence",
+        "documentation impact handoff"
+      ],
+      "required_evidence": [
+        "documentation conventions",
+        "canonical source",
+        "related behavior and version"
+      ],
+      "stop_conditions": [
+        "do not invent code test results",
+        "do not create duplicate documentation"
+      ]
+    },
+    {
+      "id": "incident-hotfix",
+      "intent": "Select when an active incident has explicit containment or restoration authority and requires a minimal repair plus recovery evidence under compressed gates. Do not use for retrospective incident analysis, an ordinary urgent bug, or a failed-deployment assessment without action authority.",
+      "preferred_scale": "small-or-medium",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "critical",
+      "allowed_risks": [
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "incident",
+      "lead_capability": "delivery-orchestrator",
+      "required_capabilities": [
+        "delivery-orchestrator",
+        "release-change",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design",
+        "implementation-execution",
+        "testing-quality",
+        "security-operations"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "delivery-planning",
+          "when": "repair sequencing, dependencies, ownership, or deferred-gate planning exceed a compact incident checklist"
+        },
+        {
+          "skill": "documentation-knowledge",
+          "when": "runbooks, status, recovery, configuration, support, or release knowledge changes"
+        },
+        {
+          "skill": "review-audit",
+          "when": "time and blast radius permit independent hotfix or release review"
+        },
+        {
+          "skill": "delivery-coordination",
+          "when": "provider state, incident status, escalation, handoff, or separately authorized communication requires synchronization"
+        },
+        {
+          "skill": "retrospective-improvement",
+          "when": "the incident reaches a meaningful recovery, failure, or cancelled-outcome boundary"
+        }
+      ],
+      "precedence": [
+        [
+          "release-change",
+          "project-context"
+        ],
+        [
+          "security-operations",
+          "implementation-execution"
+        ],
+        [
+          "project-context",
+          "requirements-acceptance"
+        ],
+        [
+          "requirements-acceptance",
+          "solution-design"
+        ],
+        [
+          "solution-design",
+          "security-operations"
+        ],
+        [
+          "solution-design",
+          "implementation-execution"
+        ],
+        [
+          "delivery-planning",
+          "implementation-execution"
+        ],
+        [
+          "implementation-execution",
+          "testing-quality"
+        ]
+      ],
+      "allowed_reentry": [
+        "release-change",
+        "security-operations"
+      ],
+      "required_reentry": [
+        "release-change"
+      ],
+      "required_reentry_before": {
+        "release-change": [
+          "implementation-execution",
+          "testing-quality"
+        ]
+      },
+      "required_reentry_after": {
+        "release-change": [
+          "implementation-execution",
+          "testing-quality",
+          "security-operations"
+        ]
+      },
+      "required_final_after": {
+        "release-change": [
+          "implementation-execution",
+          "testing-quality",
+          "security-operations"
+        ]
+      },
+      "forbidden_capabilities": [],
+      "expected_artifacts": [
+        "incident timeline",
+        "containment",
+        "minimal repair",
+        "regression evidence",
+        "recovery verification",
+        "deferred gates",
+        "follow-up"
+      ],
+      "required_evidence": [
+        "explicit incident authority",
+        "preserved failure evidence",
+        "actual recovery signal"
+      ],
+      "stop_conditions": [
+        "production action stays within incident authority",
+        "communication requires separate authority"
+      ]
+    },
+    {
+      "id": "meeting-follow-up",
+      "intent": "Select when meeting evidence must be reconciled into confirmed decisions, action candidates, native targets, and authorized drafts or receipts. Do not use when notes themselves are treated as approved requirements or when the primary outcome is implementation.",
+      "preferred_scale": "small-or-medium",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "medium",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "coordination-only",
+      "lead_capability": "delivery-coordination",
+      "required_capabilities": [
+        "delivery-coordination"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "requirements-acceptance",
+          "when": "notes contain ambiguous behavior or proposed requirements that need confirmation"
+        },
+        {
+          "skill": "delivery-planning",
+          "when": "confirmed actions require dependency-safe work structure"
+        },
+        {
+          "skill": "documentation-knowledge",
+          "when": "confirmed decisions or knowledge must update a canonical durable source"
+        }
+      ],
+      "precedence": [
+        [
+          "requirements-acceptance",
+          "delivery-planning"
+        ],
+        [
+          "requirements-acceptance",
+          "documentation-knowledge"
+        ],
+        [
+          "delivery-planning",
+          "documentation-knowledge"
+        ]
+      ],
+      "allowed_reentry": [
+        "delivery-coordination"
+      ],
+      "required_reentry": [
+        "delivery-coordination"
+      ],
+      "required_reentry_before": {
+        "delivery-coordination": [
+          "requirements-acceptance",
+          "delivery-planning",
+          "documentation-knowledge"
+        ]
+      },
+      "required_reentry_after": {
+        "delivery-coordination": [
+          "requirements-acceptance",
+          "delivery-planning",
+          "documentation-knowledge"
+        ]
+      },
+      "required_final_after": {
+        "delivery-coordination": [
+          "requirements-acceptance",
+          "delivery-planning",
+          "documentation-knowledge"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "source and freshness",
+        "confirmed decisions",
+        "action candidates with provenance",
+        "target mappings",
+        "draft payloads or receipts"
+      ],
+      "required_evidence": [
+        "meeting source",
+        "exact tracker targets",
+        "write authority"
+      ],
+      "stop_conditions": [
+        "notes do not silently create work",
+        "draft authority does not authorize send or write"
+      ]
+    },
+    {
+      "id": "source-status-reconciliation",
+      "intent": "Select when repository, tracker, document, or provider records disagree or are stale and the outcome is a provenance-preserving status reconciliation. Do not use for a meeting-specific follow-up, delivery implementation, or an unbounded choice between conflicting sources.",
+      "preferred_scale": "medium",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "medium",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "coordination-only",
+      "lead_capability": "delivery-coordination",
+      "required_capabilities": [
+        "delivery-coordination"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "project-context",
+          "when": "repository or project context is missing or contradictory"
+        },
+        {
+          "skill": "documentation-knowledge",
+          "when": "canonical specification or status documentation must change"
+        },
+        {
+          "skill": "delivery-planning",
+          "when": "reconciliation identifies delivery-plan, dependency, milestone, or ownership changes"
+        }
+      ],
+      "precedence": [
+        [
+          "project-context",
+          "documentation-knowledge"
+        ],
+        [
+          "project-context",
+          "delivery-planning"
+        ]
+      ],
+      "allowed_reentry": [
+        "delivery-coordination"
+      ],
+      "required_reentry": [
+        "delivery-coordination"
+      ],
+      "required_reentry_before": {
+        "delivery-coordination": [
+          "project-context",
+          "documentation-knowledge",
+          "delivery-planning"
+        ]
+      },
+      "required_reentry_after": {
+        "delivery-coordination": [
+          "project-context",
+          "documentation-knowledge",
+          "delivery-planning"
+        ]
+      },
+      "required_final_after": {
+        "delivery-coordination": [
+          "project-context",
+          "documentation-knowledge",
+          "delivery-planning"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "source-of-truth map",
+        "native and normalized states",
+        "freshness",
+        "conflicts",
+        "reconciliation actions and receipts"
+      ],
+      "required_evidence": [
+        "authorized system reads",
+        "native IDs and statuses",
+        "repository revision"
+      ],
+      "stop_conditions": [
+        "do not silently choose between contradictory sources",
+        "no write without exact target and authority"
+      ]
+    },
+    {
+      "id": "security-sensitive-review",
+      "intent": "Select when the review target is explicitly security, privacy, permission, secret, trust-boundary, or abuse-path sensitive and needs independent review closure. Do not use for a general code review with only routine proportional security checks.",
+      "preferred_scale": "risk-dependent",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "high",
+      "allowed_risks": [
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "review-only",
+      "lead_capability": "review-audit",
+      "required_capabilities": [
+        "review-audit",
+        "security-operations"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "testing-quality",
+          "when": "candidate validation requires execution, measurement, scanner triage, or missing/failing quality evidence"
+        },
+        {
+          "skill": "release-change",
+          "when": "the review must make a release-blocking disposition"
+        },
+        {
+          "skill": "delivery-coordination",
+          "when": "findings, suppressions, deferrals, owners, status, handoff, or authorized communication must be synchronized with an external source"
+        }
+      ],
+      "precedence": [
+        [
+          "review-audit",
+          "security-operations"
+        ]
+      ],
+      "allowed_reentry": [
+        "review-audit",
+        "security-operations"
+      ],
+      "required_reentry": [
+        "review-audit"
+      ],
+      "required_reentry_before": {
+        "review-audit": [
+          "security-operations",
+          "testing-quality"
+        ]
+      },
+      "required_reentry_after": {
+        "review-audit": [
+          "security-operations",
+          "testing-quality"
+        ]
+      },
+      "required_final_after": {
+        "release-change": [
+          "review-audit",
+          "security-operations",
+          "testing-quality"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "pinned coverage",
+        "candidate proof and counterevidence",
+        "closure records",
+        "stable findings",
+        "validation and release treatment"
+      ],
+      "required_evidence": [
+        "source-control-sink reachability",
+        "sibling analysis",
+        "qualified closure and risk authority"
+      ],
+      "stop_conditions": [
+        "uncertain material candidates remain open or deferred",
+        "suppression is not risk acceptance"
+      ]
+    },
+    {
+      "id": "flaky-ci-triage",
+      "intent": "Select when nondeterministic, missing, or provider-only CI evidence must be causally triaged at an exact revision before release impact is decided. Do not use for a deterministic local test failure or for changing CI configuration under review-only authority.",
+      "preferred_scale": "small-or-medium",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "medium-or-high",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "review-only",
+      "lead_capability": "testing-quality",
+      "required_capabilities": [
+        "testing-quality",
+        "release-change"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "delivery-coordination",
+          "when": "provider access, external status, escalation, or communication requires cross-system coordination"
+        },
+        {
+          "skill": "retrospective-improvement",
+          "when": "the failure demonstrates recurring delivery friction or reaches a meaningful failure, recovery, cancellation, or learning boundary"
+        }
+      ],
+      "precedence": [
+        [
+          "testing-quality",
+          "release-change"
+        ]
+      ],
+      "allowed_reentry": [
+        "testing-quality",
+        "release-change"
+      ],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {
+        "release-change": [
+          "testing-quality",
+          "delivery-coordination"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "first causal failure",
+        "classification",
+        "fanout",
+        "same-revision reproduction",
+        "retry rationale or evidence gap"
+      ],
+      "required_evidence": [
+        "exact revision, job, and step",
+        "available logs and artifacts",
+        "provider capability"
+      ],
+      "stop_conditions": [
+        "no blind retry",
+        "do not claim CI parity without provider evidence"
+      ]
+    },
+    {
+      "id": "failed-staged-deployment",
+      "intent": "Select when a staged deployment or feature-flag rollout has already failed and the requested outcome is incident assessment, containment disposition, and evidence recovery. Do not use for an ordinary release-readiness review or silently assume rollback or redeploy authority.",
+      "preferred_scale": "medium-or-large",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "critical",
+      "allowed_risks": [
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "incident",
+      "lead_capability": "release-change",
+      "required_capabilities": [
+        "release-change",
+        "security-operations",
+        "testing-quality"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "delivery-coordination",
+          "when": "provider state, incident status, escalation, or communication requires synchronization"
+        },
+        {
+          "skill": "retrospective-improvement",
+          "when": "the incident reaches a meaningful recovery, failure, or cancelled-outcome boundary"
+        }
+      ],
+      "precedence": [],
+      "allowed_reentry": [
+        "release-change",
+        "security-operations"
+      ],
+      "required_reentry": [
+        "release-change"
+      ],
+      "required_reentry_before": {
+        "release-change": [
+          "security-operations",
+          "testing-quality"
+        ]
+      },
+      "required_reentry_after": {
+        "release-change": [
+          "security-operations",
+          "testing-quality"
+        ]
+      },
+      "required_final_after": {
+        "release-change": [
+          "security-operations",
+          "testing-quality"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "immutable release unit",
+        "flag lifecycle",
+        "deployment timeline",
+        "telemetry baseline",
+        "stop or rollback decision",
+        "recovery and follow-up"
+      ],
+      "required_evidence": [
+        "exact environment and artifact",
+        "flag state and authority",
+        "actual observation source"
+      ],
+      "stop_conditions": [
+        "no flag or deployment mutation without authority",
+        "pipeline success is not user recovery"
+      ]
+    },
+    {
+      "id": "preview-migration-delivery",
+      "intent": "Select when an authorized change includes a data or state migration exercised in a preview-like environment with compatibility, rollback, teardown, and staged-release obligations. Do not use for migration design alone or a production execution request.",
+      "preferred_scale": "large",
+      "allowed_scales": [
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "high",
+      "allowed_risks": [
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "change",
+      "lead_capability": "delivery-orchestrator",
+      "required_capabilities": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design",
+        "delivery-planning",
+        "security-operations",
+        "implementation-execution",
+        "testing-quality",
+        "documentation-knowledge",
+        "review-audit",
+        "release-change"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "delivery-coordination",
+          "when": "provider mutation, shared environment ownership, status, handoff, or teardown synchronization is involved"
+        },
+        {
+          "skill": "retrospective-improvement",
+          "when": "the preview delivery produces a meaningful result, failure, or reusable learning"
+        }
+      ],
+      "precedence": [
+        [
+          "project-context",
+          "requirements-acceptance"
+        ],
+        [
+          "requirements-acceptance",
+          "solution-design"
+        ],
+        [
+          "solution-design",
+          "security-operations"
+        ],
+        [
+          "security-operations",
+          "delivery-planning"
+        ],
+        [
+          "delivery-planning",
+          "implementation-execution"
+        ],
+        [
+          "implementation-execution",
+          "testing-quality"
+        ]
+      ],
+      "allowed_reentry": [
+        "security-operations",
+        "release-change"
+      ],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {
+        "release-change": [
+          "security-operations",
+          "testing-quality",
+          "documentation-knowledge",
+          "review-audit"
+        ]
+      },
+      "forbidden_capabilities": [],
+      "expected_artifacts": [
+        "isolation and parity design",
+        "migration phases",
+        "compatibility window",
+        "restore evidence",
+        "TTL and teardown",
+        "artifact-bound release evidence"
+      ],
+      "required_evidence": [
+        "actual provider capabilities",
+        "data classification",
+        "backup and restore path"
+      ],
+      "stop_conditions": [
+        "do not invent an environment",
+        "code rollback does not imply data rollback"
+      ]
+    },
+    {
+      "id": "combined-platform-validation",
+      "intent": "Select when one review claim combines performance, packaging, signing, or distribution evidence and needs a cross-cutting artifact-bound disposition. Do not use when exactly one specialized evidence claim determines the route.",
+      "preferred_scale": "risk-dependent",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "high",
+      "allowed_risks": [
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "review-only",
+      "lead_capability": "testing-quality",
+      "required_capabilities": [
+        "testing-quality",
+        "security-operations",
+        "release-change"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "review-audit",
+          "when": "the claim requires independent or release-readiness adjudication beyond the evidence owner"
+        },
+        {
+          "skill": "documentation-knowledge",
+          "when": "validated results change canonical platform, packaging, signing, or distribution guidance"
+        },
+        {
+          "skill": "delivery-coordination",
+          "when": "authorized provider reads, distribution status, handoff, escalation, or communication must be synchronized"
+        }
+      ],
+      "precedence": [
+        [
+          "testing-quality",
+          "release-change"
+        ]
+      ],
+      "allowed_reentry": [
+        "testing-quality",
+        "release-change"
+      ],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {
+        "release-change": [
+          "testing-quality",
+          "security-operations",
+          "review-audit",
+          "documentation-knowledge"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "focused scenario",
+        "exact platform and build identity",
+        "fresh comparable measurements",
+        "artifact provenance",
+        "signing and distribution evidence",
+        "limitations"
+      ],
+      "required_evidence": [
+        "exact revision, device, runtime, build, data, and run count",
+        "platform-native evidence"
+      ],
+      "stop_conditions": [
+        "packaging is not signing, notarization, deployment, or distribution",
+        "do not generalize from a noisy sample"
+      ]
+    },
+    {
+      "id": "performance-validation",
+      "intent": "Select when the decision turns on a measured performance, capacity, latency, throughput, resource, or regression claim against a pinned baseline. Do not use for broad platform validation or an optimization implementation request.",
+      "preferred_scale": "risk-dependent",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "medium-or-high",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "review-only",
+      "lead_capability": "testing-quality",
+      "required_capabilities": [
+        "testing-quality"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "security-operations",
+          "when": "measurement exercises privileged, sensitive, production, resource-exhaustion, or supply-chain surfaces"
+        },
+        {
+          "skill": "review-audit",
+          "when": "independent adjudication is required for a release or public claim"
+        },
+        {
+          "skill": "release-change",
+          "when": "the measurement gates a release or artifact decision"
+        },
+        {
+          "skill": "documentation-knowledge",
+          "when": "validated results change canonical performance guidance or a durable claim"
+        }
+      ],
+      "precedence": [],
+      "allowed_reentry": [
+        "testing-quality"
+      ],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {
+        "release-change": [
+          "testing-quality",
+          "security-operations",
+          "review-audit",
+          "documentation-knowledge"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "focused performance scenario",
+        "exact platform and build identity",
+        "fresh comparable measurements",
+        "baseline",
+        "limitations"
+      ],
+      "required_evidence": [
+        "exact revision, device, runtime, build, data, run count, and threshold",
+        "comparable platform-native measurements"
+      ],
+      "stop_conditions": [
+        "do not modify the product",
+        "do not generalize from a noisy or incomparable sample"
+      ]
+    },
+    {
+      "id": "package-validation",
+      "intent": "Select when a built package's exact identity, provenance, contents, execution behavior, and release suitability must be validated without signing or publication. Do not use for source-only testing or a distribution-channel claim.",
+      "preferred_scale": "small-or-medium",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "medium-or-high",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "review-only",
+      "lead_capability": "release-change",
+      "required_capabilities": [
+        "release-change",
+        "testing-quality"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "security-operations",
+          "when": "artifact provenance, permissions, contents, dependencies, or supply-chain exposure is material"
+        },
+        {
+          "skill": "review-audit",
+          "when": "independent release-readiness adjudication is required"
+        },
+        {
+          "skill": "documentation-knowledge",
+          "when": "validated packaging behavior changes canonical build or release guidance"
+        }
+      ],
+      "precedence": [],
+      "allowed_reentry": [
+        "release-change",
+        "testing-quality"
+      ],
+      "required_reentry": [
+        "release-change"
+      ],
+      "required_reentry_before": {
+        "release-change": [
+          "testing-quality"
+        ]
+      },
+      "required_reentry_after": {
+        "release-change": [
+          "testing-quality"
+        ]
+      },
+      "required_final_after": {
+        "release-change": [
+          "testing-quality",
+          "security-operations",
+          "review-audit",
+          "documentation-knowledge"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "exact package identity",
+        "artifact provenance",
+        "content and execution checks",
+        "release disposition",
+        "limitations"
+      ],
+      "required_evidence": [
+        "exact revision, build, package path or digest, platform, and packaging command",
+        "fresh artifact inspection and tests"
+      ],
+      "stop_conditions": [
+        "package validation does not authorize signing, notarization, publication, deployment, or distribution"
+      ]
+    },
+    {
+      "id": "signing-notarization-audit",
+      "intent": "Select when existing signature, certificate, entitlement, trust, or notarization evidence must be audited read-only for a pinned artifact. Do not use when credentials may be accessed or signing, submission, stapling, publication, or distribution is requested.",
+      "preferred_scale": "small-or-medium",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "high",
+      "allowed_risks": [
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "review-only",
+      "lead_capability": "security-operations",
+      "required_capabilities": [
+        "security-operations",
+        "testing-quality",
+        "release-change"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "review-audit",
+          "when": "independent attestation or release-readiness adjudication is required"
+        },
+        {
+          "skill": "documentation-knowledge",
+          "when": "validated results change canonical signing, notarization, or release guidance"
+        }
+      ],
+      "precedence": [
+        [
+          "testing-quality",
+          "release-change"
+        ],
+        [
+          "security-operations",
+          "release-change"
+        ]
+      ],
+      "allowed_reentry": [
+        "security-operations",
+        "testing-quality",
+        "release-change"
+      ],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {
+        "release-change": [
+          "security-operations",
+          "testing-quality",
+          "review-audit",
+          "documentation-knowledge"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "artifact and signature identity",
+        "certificate or identity metadata without secrets",
+        "notarization evidence",
+        "trust and release disposition",
+        "limitations"
+      ],
+      "required_evidence": [
+        "exact revision, artifact digest, platform, signature metadata, and notarization record",
+        "read-only platform-native verification"
+      ],
+      "stop_conditions": [
+        "do not access private signing material",
+        "do not sign, re-sign, submit, staple, publish, or distribute"
+      ]
+    },
+    {
+      "id": "distribution-validation",
+      "intent": "Select when an artifact's current channel presence, installability, integrity, access, and provider state must be validated without changing external state. Do not use for package-only inspection or an authorized publish, deploy, or promotion.",
+      "preferred_scale": "small-or-medium",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "high",
+      "allowed_risks": [
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "review-only",
+      "lead_capability": "release-change",
+      "required_capabilities": [
+        "release-change",
+        "testing-quality",
+        "security-operations"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "delivery-coordination",
+          "when": "authorized provider reads, distribution status, target reconciliation, escalation, or communication is required"
+        },
+        {
+          "skill": "review-audit",
+          "when": "independent release-readiness adjudication is required"
+        },
+        {
+          "skill": "documentation-knowledge",
+          "when": "validated results change canonical distribution or support guidance"
+        }
+      ],
+      "precedence": [],
+      "allowed_reentry": [
+        "release-change",
+        "testing-quality",
+        "security-operations"
+      ],
+      "required_reentry": [
+        "release-change"
+      ],
+      "required_reentry_before": {
+        "release-change": [
+          "testing-quality",
+          "security-operations"
+        ]
+      },
+      "required_reentry_after": {
+        "release-change": [
+          "testing-quality",
+          "security-operations"
+        ]
+      },
+      "required_final_after": {
+        "release-change": [
+          "testing-quality",
+          "security-operations",
+          "delivery-coordination",
+          "review-audit",
+          "documentation-knowledge"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "artifact and channel identity",
+        "distribution-state evidence",
+        "integrity and access checks",
+        "release disposition",
+        "limitations"
+      ],
+      "required_evidence": [
+        "exact revision, artifact digest, distribution channel, environment, and current provider state",
+        "read-only verification with freshness"
+      ],
+      "stop_conditions": [
+        "do not upload, publish, deploy, promote, distribute, change access, or communicate externally"
+      ]
+    },
+    {
+      "id": "retrospective-report",
+      "intent": "Select when a meaningful completed, failed, cancelled, recovered, or repeatedly painful outcome needs evidence-backed learning and bounded follow-up under report-only authority. Do not use for a prospective delivery route or to treat mere code completion as an observed outcome.",
+      "preferred_scale": "risk-dependent",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "risk-dependent",
+      "allowed_risks": [
+        "low",
+        "low-or-risk-dependent",
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "report-only",
+      "lead_capability": "retrospective-improvement",
+      "required_capabilities": [
+        "retrospective-improvement"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "documentation-knowledge",
+          "when": "validated learning changes canonical user, maintainer, operator, architecture, or process guidance"
+        },
+        {
+          "skill": "delivery-coordination",
+          "when": "follow-up ownership or system-of-record reconciliation is needed without performing an unauthorized write"
+        }
+      ],
+      "precedence": [],
+      "allowed_reentry": [],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {},
+      "forbidden_capabilities": [
+        "implementation-execution",
+        "release-change"
+      ],
+      "expected_artifacts": [
+        "evidence-backed retrospective",
+        "unresolved debt and follow-up",
+        "reusable learning",
+        "canonical knowledge disposition"
+      ],
+      "required_evidence": [
+        "expected versus actual outcome",
+        "observed delivery evidence",
+        "root causes or bounded uncertainty",
+        "follow-up owner or ownership gap"
+      ],
+      "stop_conditions": [
+        "do not invent outcomes or lessons",
+        "do not mutate code, release state, trackers, or providers under report-only authority"
+      ]
+    },
+    {
+      "id": "release-execution",
+      "intent": "Select when exact merge, tag, publish, deploy, promote, or equivalent production-release effects are explicitly authorized for a pinned artifact and environment with resolved gates and rollback. Do not use for preparation, review, provider visibility, or an imprecise request to ship.",
+      "preferred_scale": "risk-dependent",
+      "allowed_scales": [
+        "small",
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "high",
+      "allowed_risks": [
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "release-execution",
+      "lead_capability": "release-change",
+      "required_capabilities": [
+        "release-change",
+        "testing-quality",
+        "security-operations",
+        "documentation-knowledge",
+        "delivery-coordination"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "review-audit",
+          "when": "a required independent approval or release-readiness adjudication is missing, stale, disputed, or unresolved"
+        },
+        {
+          "skill": "retrospective-improvement",
+          "when": "the executed release reaches a meaningful observed outcome, recovery, failure, or reusable learning boundary"
+        }
+      ],
+      "precedence": [],
+      "allowed_reentry": [
+        "release-change"
+      ],
+      "required_reentry": [
+        "release-change"
+      ],
+      "required_reentry_before": {
+        "release-change": [
+          "testing-quality",
+          "security-operations",
+          "documentation-knowledge",
+          "delivery-coordination",
+          "review-audit"
+        ]
+      },
+      "required_reentry_after": {
+        "release-change": [
+          "testing-quality",
+          "security-operations",
+          "documentation-knowledge",
+          "delivery-coordination",
+          "review-audit"
+        ]
+      },
+      "required_final_after": {
+        "release-change": [
+          "testing-quality",
+          "security-operations",
+          "documentation-knowledge",
+          "delivery-coordination",
+          "review-audit"
+        ]
+      },
+      "forbidden_capabilities": [
+        "implementation-execution"
+      ],
+      "expected_artifacts": [
+        "immutable release unit and target",
+        "exact effect authorization",
+        "pre-release gate evidence",
+        "rollout and rollback decision",
+        "provider mutation receipts",
+        "post-release verification and final disposition"
+      ],
+      "required_evidence": [
+        "exact commit, artifact digest, environment, provider, and release command or API target",
+        "current approvals, quality, security, documentation, migration, observability, and rollback evidence",
+        "post-effect readback bound to the released unit"
+      ],
+      "stop_conditions": [
+        "stop before any effect when target, artifact, authority, gates, or rollback is unresolved",
+        "never broaden release authority to another environment, artifact, provider, communication, or follow-up action"
+      ]
+    },
+    {
+      "id": "workflow-decommission",
+      "intent": "Select when an active workflow, plugin, instruction set, hook, configuration, or branded state is being replaced and then disabled or removed with rollback and fresh-task observation gates. Do not use for archival documentation, a replacement design alone, or uninstalling an unverified target.",
+      "preferred_scale": "medium-or-large",
+      "allowed_scales": [
+        "small-or-medium",
+        "medium",
+        "medium-or-large",
+        "large",
+        "risk-dependent"
+      ],
+      "preferred_risk": "high",
+      "allowed_risks": [
+        "medium",
+        "medium-or-high",
+        "high",
+        "critical",
+        "risk-dependent"
+      ],
+      "authority": "change",
+      "lead_capability": "delivery-orchestrator",
+      "required_capabilities": [
+        "delivery-orchestrator",
+        "project-context",
+        "requirements-acceptance",
+        "solution-design",
+        "delivery-planning",
+        "security-operations",
+        "implementation-execution",
+        "testing-quality",
+        "documentation-knowledge",
+        "review-audit",
+        "release-change"
+      ],
+      "conditional_capabilities": [
+        {
+          "skill": "delivery-coordination",
+          "when": "shared ownership, external systems, status, handoff, or authorized communication must be synchronized"
+        },
+        {
+          "skill": "retrospective-improvement",
+          "when": "the decommission reaches a meaningful observed success, rollback, failure, or reusable learning boundary"
+        }
+      ],
+      "precedence": [
+        [
+          "project-context",
+          "requirements-acceptance"
+        ],
+        [
+          "requirements-acceptance",
+          "solution-design"
+        ],
+        [
+          "solution-design",
+          "security-operations"
+        ],
+        [
+          "security-operations",
+          "delivery-planning"
+        ],
+        [
+          "delivery-planning",
+          "implementation-execution"
+        ],
+        [
+          "security-operations",
+          "implementation-execution"
+        ],
+        [
+          "implementation-execution",
+          "testing-quality"
+        ],
+        [
+          "testing-quality",
+          "review-audit"
+        ],
+        [
+          "documentation-knowledge",
+          "review-audit"
+        ],
+        [
+          "testing-quality",
+          "release-change"
+        ],
+        [
+          "documentation-knowledge",
+          "release-change"
+        ],
+        [
+          "review-audit",
+          "release-change"
+        ]
+      ],
+      "allowed_reentry": [
+        "delivery-orchestrator",
+        "release-change"
+      ],
+      "required_reentry": [],
+      "required_reentry_before": {},
+      "required_reentry_after": {},
+      "required_final_after": {
+        "release-change": [
+          "testing-quality",
+          "documentation-knowledge",
+          "review-audit",
+          "security-operations",
+          "delivery-coordination"
+        ]
+      },
+      "forbidden_capabilities": [],
+      "expected_artifacts": [
+        "active-surface inventory and replacement map",
+        "exact target identities and recovery sources",
+        "rollback and one-at-a-time disable plan",
+        "static and independently resolved fresh-task smoke evidence",
+        "observation gate and uninstall disposition",
+        "canonical migration and support handoff"
+      ],
+      "required_evidence": [
+        "active instructions, prompts, hooks, configurations, state, installed versions, and legacy imperative artifacts",
+        "replacement parity at an exact source and installed revision",
+        "fresh-task behavior after each disable with reversible recovery evidence"
+      ],
+      "stop_conditions": [
+        "do not disable or uninstall without exact target authority and a verified recovery source",
+        "disable one candidate at a time, re-enable on any routing or parity failure, and uninstall only after the observation gate and user-confirmed scope"
+      ]
+    }
+  ]
+}

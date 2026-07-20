@@ -41,8 +41,11 @@ ALLOWED_AUTHORITIES = {
     "review-only",
 }
 REQUIRED_SCENARIO_FIELDS = {
+    "accepted_risks",
+    "accepted_scales",
     "id",
     "prompt",
+    "profile_id",
     "scale",
     "risk",
     "authority",
@@ -68,19 +71,98 @@ CONTRACT_TOP_LEVEL_FIELDS = {
     "evidence_class",
     "forbidden_runtime_dependencies",
     "limitations",
+    "runtime_profile_source",
     "scenarios",
     "schema_version",
 }
 CONTRACT_CONDITIONAL_FIELDS = {"skill", "when"}
+PROFILE_TOP_LEVEL_FIELDS = {
+    "evidence_class",
+    "profiles",
+    "schema_version",
+    "selection_policy",
+    "taxonomy_policy",
+}
+PROFILE_FIELDS = {
+    "allowed_risks",
+    "allowed_scales",
+    "allowed_reentry",
+    "authority",
+    "conditional_capabilities",
+    "expected_artifacts",
+    "forbidden_capabilities",
+    "id",
+    "intent",
+    "lead_capability",
+    "precedence",
+    "preferred_risk",
+    "preferred_scale",
+    "required_capabilities",
+    "required_evidence",
+    "required_final_after",
+    "required_reentry",
+    "required_reentry_after",
+    "required_reentry_before",
+    "stop_conditions",
+}
+PROFILE_PARITY_FIELDS = {
+    "allowed_reentry": "allowed_reentry",
+    "authority": "authority",
+    "conditional_capabilities": "conditional_capabilities",
+    "expected_artifacts": "expected_artifacts",
+    "forbidden_capabilities": "forbidden_capabilities",
+    "lead_capability": "lead_capability",
+    "precedence": "precedence",
+    "preferred_risk": "risk",
+    "preferred_scale": "scale",
+    "required_capabilities": "required_capabilities",
+    "required_evidence": "required_evidence",
+    "required_final_after": "required_final_after",
+    "required_reentry": "required_reentry",
+    "required_reentry_after": "required_reentry_after",
+    "required_reentry_before": "required_reentry_before",
+    "stop_conditions": "stop_conditions",
+}
+PROFILE_DEFAULTS = {
+    "required_final_after": {},
+    "required_reentry": [],
+    "required_reentry_after": {},
+    "required_reentry_before": {},
+}
+CANONICAL_RUNTIME_PROFILE_SOURCE = (
+    "plugins/project-delivery/skills/.shared/route-profiles-v1.json"
+)
 REQUIRED_SCENARIO_IDS = {f"ROUTE-{index:03d}" for index in range(1, 18)} | {
     "ROUTE-017A",
     "ROUTE-017B",
     "ROUTE-017C",
     "ROUTE-017D",
     "ROUTE-018",
+    "ROUTE-019",
+    "ROUTE-020",
 }
 REQUIRED_SUPERSEDED_IDENTITIES = {"boss", "epic", "epic-harness", "superpowers"}
 SCENARIO_ID = re.compile(r"^ROUTE-[0-9]{3}[A-D]?$")
+PROFILE_ID = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+TAUTOLOGICAL_INTENT_FRAGMENTS = {
+    "requests whose semantic intent is",
+    "select by meaning and lifecycle state",
+}
+REQUIRED_PROFILE_PRECEDENCE = {
+    "incident-hotfix": {("solution-design", "security-operations")},
+}
+REQUIRED_COORDINATION_RETURNS = {
+    "meeting-follow-up": {
+        "requirements-acceptance",
+        "delivery-planning",
+        "documentation-knowledge",
+    },
+    "source-status-reconciliation": {
+        "project-context",
+        "documentation-knowledge",
+        "delivery-planning",
+    },
+}
 
 
 def duplicates(values: list[str]) -> set[str]:
@@ -144,8 +226,8 @@ def validate(root: Path) -> tuple[list[str], int, set[str]]:
             + ", ".join(sorted(extra_contract_fields))
         )
 
-    if contract.get("schema_version") != 2:
-        errors.append("route suite must use semantic schema version 2")
+    if contract.get("schema_version") != 3:
+        errors.append("route suite must use semantic schema version 3")
     if contract.get("evidence_class") != "semantic authored-route contract":
         errors.append("route suite must identify itself as semantic authored-route evidence")
     if not isinstance(contract.get("comparison_policy"), str) or not contract[
@@ -156,6 +238,131 @@ def validate(root: Path) -> tuple[list[str], int, set[str]]:
         "limitations"
     ].strip():
         errors.append("route suite must state its behavioral-proof limitation")
+
+    runtime_profile_source = contract.get("runtime_profile_source")
+    profiles_by_id: dict[str, dict[str, object]] = {}
+    profile_document: object | None = None
+    if runtime_profile_source != CANONICAL_RUNTIME_PROFILE_SOURCE:
+        errors.append(
+            "route suite must name the canonical installed runtime profile source"
+        )
+    else:
+        profile_path = root / runtime_profile_source
+        if profile_path.is_symlink() or not profile_path.is_file():
+            errors.append(
+                "installed route profile source must be a regular non-symlink file"
+            )
+            profile_document = None
+        else:
+            try:
+                profile_document = json.loads(
+                    profile_path.read_text(encoding="utf-8")
+                )
+            except (OSError, UnicodeError, json.JSONDecodeError) as error:
+                errors.append(f"invalid installed route profile file: {error}")
+                profile_document = None
+        if isinstance(profile_document, dict):
+            missing_profile_root = PROFILE_TOP_LEVEL_FIELDS.difference(profile_document)
+            extra_profile_root = set(profile_document).difference(PROFILE_TOP_LEVEL_FIELDS)
+            if missing_profile_root:
+                errors.append(
+                    "installed route profiles missing fields: "
+                    + ", ".join(sorted(missing_profile_root))
+                )
+            if extra_profile_root:
+                errors.append(
+                    "installed route profiles have unsupported fields: "
+                    + ", ".join(sorted(extra_profile_root))
+                )
+            if profile_document.get("schema_version") != 1:
+                errors.append("installed route profiles must use schema version 1")
+            if profile_document.get("evidence_class") != "installed canonical route profiles":
+                errors.append("installed route profiles have the wrong evidence class")
+            for field in ("selection_policy", "taxonomy_policy"):
+                value = profile_document.get(field)
+                if not isinstance(value, str) or len(value.strip()) < 20:
+                    errors.append(f"installed route profiles field {field} must be substantive")
+            raw_profiles = profile_document.get("profiles")
+            if not isinstance(raw_profiles, list) or not raw_profiles:
+                errors.append("installed route profiles must contain a non-empty profile list")
+            else:
+                for profile_index, profile in enumerate(raw_profiles, 1):
+                    if not isinstance(profile, dict):
+                        errors.append(f"installed route profile {profile_index} must be an object")
+                        continue
+                    missing_profile_fields = PROFILE_FIELDS.difference(profile)
+                    extra_profile_fields = set(profile).difference(PROFILE_FIELDS)
+                    profile_id = profile.get("id")
+                    label = profile_id if isinstance(profile_id, str) else str(profile_index)
+                    if missing_profile_fields:
+                        errors.append(
+                            f"installed route profile {label} missing fields: "
+                            + ", ".join(sorted(missing_profile_fields))
+                        )
+                    if extra_profile_fields:
+                        errors.append(
+                            f"installed route profile {label} has unsupported fields: "
+                            + ", ".join(sorted(extra_profile_fields))
+                        )
+                    if not isinstance(profile_id, str) or not PROFILE_ID.fullmatch(profile_id):
+                        errors.append(f"installed route profile {label} has an invalid ID")
+                    elif profile_id in profiles_by_id:
+                        errors.append(f"duplicate installed route profile ID: {profile_id}")
+                    else:
+                        profiles_by_id[profile_id] = profile
+                    intent = profile.get("intent")
+                    if not isinstance(intent, str) or len(intent.strip()) < 20:
+                        errors.append(f"installed route profile {label} intent must be substantive")
+                    elif any(
+                        fragment in intent.casefold()
+                        for fragment in TAUTOLOGICAL_INTENT_FRAGMENTS
+                    ):
+                        errors.append(
+                            f"installed route profile {label} intent must define a semantic selection boundary"
+                        )
+                    elif "select when" not in intent.casefold() or not any(
+                        marker in intent.casefold()
+                        for marker in ("do not use", "rather than", "instead of")
+                    ):
+                        errors.append(
+                            f"installed route profile {label} intent must state both selection and exclusion criteria"
+                        )
+                    for allowed_field, normalized_values, preferred_field in (
+                        ("allowed_scales", ALLOWED_SCALES, "preferred_scale"),
+                        ("allowed_risks", ALLOWED_RISKS, "preferred_risk"),
+                    ):
+                        allowed_value = profile.get(allowed_field)
+                        if (
+                            not isinstance(allowed_value, list)
+                            or not allowed_value
+                            or not all(
+                                isinstance(item, str) and item in normalized_values
+                                for item in allowed_value
+                            )
+                        ):
+                            errors.append(
+                                f"installed route profile {label} field {allowed_field} "
+                                "must be a non-empty normalized list"
+                            )
+                        elif duplicates(allowed_value):
+                            errors.append(
+                                f"installed route profile {label} field {allowed_field} "
+                                "must not contain duplicates"
+                            )
+                        elif profile.get(preferred_field) not in allowed_value:
+                            errors.append(
+                                f"installed route profile {label} {preferred_field} "
+                                f"must be included in {allowed_field}"
+                            )
+        elif profile_document is not None:
+            errors.append("installed route profile root must be an object")
+        if isinstance(profile_document, dict) and re.search(
+            r"\bROUTE-[0-9]{3}",
+            json.dumps(profile_document, ensure_ascii=False, sort_keys=True),
+        ):
+            errors.append(
+                "installed route profiles must not contain maintainer scenario identifiers"
+            )
 
     legacy_names = contract.get("forbidden_runtime_dependencies")
     if (
@@ -202,7 +409,7 @@ def validate(root: Path) -> tuple[list[str], int, set[str]]:
             errors.append(
                 f"{scenario_id} has unsupported fields: {', '.join(sorted(extra))}"
             )
-        for field in ("id", "prompt", "scale", "risk"):
+        for field in ("id", "profile_id", "prompt", "scale", "risk"):
             value = scenario.get(field)
             if not isinstance(value, str) or not value.strip():
                 errors.append(f"{scenario_id} field {field} must be a non-empty string")
@@ -219,6 +426,109 @@ def validate(root: Path) -> tuple[list[str], int, set[str]]:
             errors.append(f"{scenario_id} has unsupported scale: {scenario.get('scale')}")
         if scenario.get("risk") not in ALLOWED_RISKS:
             errors.append(f"{scenario_id} has unsupported risk: {scenario.get('risk')}")
+        profile_id = scenario.get("profile_id")
+        if not isinstance(profile_id, str) or not PROFILE_ID.fullmatch(profile_id):
+            errors.append(f"{scenario_id} has an invalid profile_id")
+        for field, allowed, preferred_field in (
+            ("accepted_scales", ALLOWED_SCALES, "scale"),
+            ("accepted_risks", ALLOWED_RISKS, "risk"),
+        ):
+            value = scenario.get(field)
+            if (
+                not isinstance(value, list)
+                or not value
+                or not all(isinstance(item, str) and item in allowed for item in value)
+            ):
+                errors.append(f"{scenario_id} field {field} must be a non-empty normalized list")
+            elif duplicates(value):
+                errors.append(f"{scenario_id} field {field} must not contain duplicates")
+            elif scenario.get(preferred_field) not in value:
+                errors.append(
+                    f"{scenario_id} preferred {preferred_field} must be accepted by {field}"
+                )
+
+        profile = profiles_by_id.get(profile_id) if isinstance(profile_id, str) else None
+        if profile is None:
+            errors.append(f"{scenario_id} does not resolve an installed route profile")
+        else:
+            for profile_field, scenario_field in PROFILE_PARITY_FIELDS.items():
+                scenario_value = scenario.get(
+                    scenario_field, PROFILE_DEFAULTS.get(scenario_field)
+                )
+                if profile.get(profile_field) != scenario_value:
+                    errors.append(
+                        f"{scenario_id} field {scenario_field} drifts from installed profile {profile_id}"
+                    )
+            for accepted_field, allowed_field in (
+                ("accepted_scales", "allowed_scales"),
+                ("accepted_risks", "allowed_risks"),
+            ):
+                accepted_value = scenario.get(accepted_field)
+                allowed_value = profile.get(allowed_field)
+                if isinstance(accepted_value, list) and isinstance(allowed_value, list):
+                    outside_runtime_policy = set(accepted_value).difference(allowed_value)
+                    if outside_runtime_policy:
+                        errors.append(
+                            f"{scenario_id} field {accepted_field} exceeds installed profile "
+                            f"{profile_id} {allowed_field}: "
+                            + ", ".join(sorted(outside_runtime_policy))
+                        )
+
+            required_edges = REQUIRED_PROFILE_PRECEDENCE.get(profile_id, set())
+            profile_edges = {
+                tuple(edge)
+                for edge in profile.get("precedence", [])
+                if isinstance(edge, list)
+                and len(edge) == 2
+                and all(isinstance(item, str) for item in edge)
+            }
+            missing_required_edges = required_edges.difference(profile_edges)
+            if missing_required_edges:
+                formatted_edges = ", ".join(
+                    f"{before}->{after}"
+                    for before, after in sorted(missing_required_edges)
+                )
+                errors.append(
+                    f"installed route profile {profile_id} lacks required precedence: "
+                    f"{formatted_edges}"
+                )
+
+            coordination_return_owners = REQUIRED_COORDINATION_RETURNS.get(profile_id)
+            if coordination_return_owners is not None:
+                controller = "delivery-coordination"
+                required_reentry = profile.get("required_reentry", [])
+                return_before = profile.get("required_reentry_before", {})
+                return_after = profile.get("required_reentry_after", {})
+                before_owners = (
+                    return_before.get(controller, [])
+                    if isinstance(return_before, dict)
+                    else []
+                )
+                after_owners = (
+                    return_after.get(controller, [])
+                    if isinstance(return_after, dict)
+                    else []
+                )
+                if (
+                    not isinstance(required_reentry, list)
+                    or controller not in required_reentry
+                    or not coordination_return_owners.issubset(set(before_owners))
+                    or not coordination_return_owners.issubset(set(after_owners))
+                ):
+                    errors.append(
+                        f"installed route profile {profile_id} must require "
+                        "delivery-coordination entry and return around every downstream conditional"
+                    )
+
+            prompt = scenario.get("prompt")
+            if isinstance(prompt, str) and isinstance(profile_document, dict):
+                installed_profile_text = json.dumps(
+                    profile_document, ensure_ascii=False, sort_keys=True
+                )
+                if prompt in installed_profile_text:
+                    errors.append(
+                        f"installed route profiles must not contain exact maintainer prompt for {scenario_id}"
+                    )
         for field in (
             "required_capabilities",
             "allowed_reentry",
@@ -535,6 +845,24 @@ def validate(root: Path) -> tuple[list[str], int, set[str]]:
         errors.append(
             "canonical route suite has unexpected scenarios: "
             + ", ".join(sorted(unexpected_scenarios))
+        )
+
+    scenario_profile_ids = {
+        scenario.get("profile_id")
+        for scenario in scenarios
+        if isinstance(scenario, dict) and isinstance(scenario.get("profile_id"), str)
+    }
+    missing_profiles = scenario_profile_ids.difference(profiles_by_id)
+    unused_profiles = set(profiles_by_id).difference(scenario_profile_ids)
+    if missing_profiles:
+        errors.append(
+            "canonical route scenarios lack installed profiles: "
+            + ", ".join(sorted(missing_profiles))
+        )
+    if unused_profiles:
+        errors.append(
+            "installed route profiles lack canonical scenario coverage: "
+            + ", ".join(sorted(unused_profiles))
         )
 
     missing_skill_coverage = available_skills.difference(referenced_skills)
