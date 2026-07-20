@@ -303,6 +303,21 @@ class RouteCanaryProtocolTests(unittest.TestCase):
                 '"artifacts"',
             ):
                 self.assertNotIn(hidden_contract_field, task_prompt_text)
+            self.assertIn(
+                "conditional_dispositions.<skill>", task_prompt_text
+            )
+            self.assertIn(
+                "cite that exact gap ID in the same disposition's evidence",
+                task_prompt_text,
+            )
+            self.assertIn(
+                "blocks-route` means the route itself cannot be selected safely",
+                task_prompt_text,
+            )
+            self.assertIn(
+                "independently recompute it from the completed object",
+                task_prompt_text,
+            )
             self.assertEqual(result["private_task_binding_sha256"], sha256(binding_bytes))
             self.assertEqual(result["coordinator_attestation"], COORDINATOR_ATTESTATION)
             rendered = fixture.capture_output.read_text(encoding="utf-8")

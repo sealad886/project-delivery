@@ -10,7 +10,7 @@ Read `../.shared/operating-model.md`; use the retrospective template in `../.sha
 
 ## When to invoke
 
-Use after a meaningful release/initiative, incident/hotfix, failed/cancelled effort, recurring delivery friction, or when maintaining the backlog/knowledge base. Small changes need only notable learning or follow-ups; do not manufacture ceremony.
+Use after a meaningful release/initiative, incident/hotfix, failed/cancelled effort, recurring delivery friction, or when maintaining the backlog/knowledge base. For a direct retrospective request whose meaningful outcome evidence is not yet available, act only as the intake and evidence owner: record the outcome as unknown, link the evidence gap, and stop before producing findings or lessons. Small changes need only notable learning or follow-ups; do not manufacture ceremony.
 
 ## Inputs and evidence
 
@@ -33,7 +33,7 @@ Outcome assessment, learning summary, root causes, debt/follow-up ledger, proces
 
 ## Completion evidence
 
-Claims link to delivery/production evidence; open debt has actionable metadata; durable decisions/knowledge live canonically; temporary rollout/migration work is closed or owned; no redundant retrospective file was created when an existing system suffices.
+Claims link to delivery/production evidence; an evidence-incomplete direct request ends with a cited outcome gap and no fabricated findings; open debt has actionable metadata; durable decisions/knowledge live canonically; temporary rollout/migration work is closed or owned; no redundant retrospective file was created when an existing system suffices.
 
 ## Must not
 

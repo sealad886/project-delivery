@@ -663,11 +663,24 @@ class SealedRouteSemanticTests(unittest.TestCase):
             PLUGIN_ROOT,
             self.grader_root / "plugins" / "project-delivery",
         )
+        shutil.copy2(
+            REPOSITORY_ROOT / ".gitignore",
+            self.grader_root / ".gitignore",
+        )
         for command in (
             ["git", "init", "-q"],
             ["git", "config", "user.name", "Project Delivery Tests"],
             ["git", "config", "user.email", "tests@example.invalid"],
-            ["git", "add", "-f", "--", "plugins", "scripts", "tests"],
+            [
+                "git",
+                "add",
+                "-f",
+                "--",
+                ".gitignore",
+                "plugins",
+                "scripts",
+                "tests",
+            ],
             ["git", "commit", "-q", "-m", "test: freeze grader source"],
         ):
             subprocess.run(
@@ -1017,6 +1030,28 @@ class SealedRouteSemanticTests(unittest.TestCase):
             "selects retrospective-improvement without a meaningful observed outcome",
             result.stdout,
         )
+
+    def test_direct_retrospective_allows_unknown_intake_with_linked_gap(self) -> None:
+        retrospective = find_scenario(self.receipt, "ROUTE-018")
+        gap_id = "GAP-ROUTE-018-OUTCOME"
+        retrospective["outcome_observation"] = {
+            "state": "unknown",
+            "evidence": [
+                f"{gap_id} records that measured outcome evidence is unavailable."
+            ],
+        }
+        retrospective["gaps"] = [
+            {
+                "id": gap_id,
+                "kind": "missing-evidence",
+                "summary": "Measured outcome evidence is not available for this intake.",
+                "related_field": "outcome_observation",
+                "route_effect": "nonblocking",
+                "next_action": "Collect an outcome measure before producing findings or lessons.",
+            }
+        ]
+        result = run_checker(self.receipt, self.installed_root)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_unknown_trigger_requires_linked_structured_gap(self) -> None:
         item = find_scenario(self.receipt, "ROUTE-014")

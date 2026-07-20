@@ -2584,14 +2584,24 @@ def validate(
                     f"{scenario_id} has a blocked conditional branch and cannot pass route policy"
                 )
 
-        if (
-            is_fresh_v3
-            and "retrospective-improvement" in route
-            and outcome_state != "meaningful-outcome-observed"
-        ):
-            errors.append(
-                f"{scenario_id} selects retrospective-improvement without a meaningful observed outcome"
+        if is_fresh_v3 and "retrospective-improvement" in route:
+            direct_unknown_intake = (
+                "retrospective-improvement" in required
+                and outcome_state == "unknown"
+                and isinstance(outcome_observation, dict)
+                and has_linked_gap(
+                    raw_gaps,
+                    "outcome_observation",
+                    outcome_observation.get("evidence"),
+                )
             )
+            if (
+                outcome_state != "meaningful-outcome-observed"
+                and not direct_unknown_intake
+            ):
+                errors.append(
+                    f"{scenario_id} selects retrospective-improvement without a meaningful observed outcome or linked direct-intake gap"
+                )
 
         extra_justifications = receipt.get("extra_capability_justifications")
         if not isinstance(extra_justifications, dict):

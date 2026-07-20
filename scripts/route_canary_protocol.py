@@ -896,8 +896,10 @@ Output contract:
 - Return exactly one JSON object conforming to the installed `skills/.shared/live-route-receipt-v3.schema.json`; return no Markdown fence or prose.
 - Preserve the scenario order and exact IDs/prompts below.
 - Use the exact mechanically supplied plugin identity and public receipt slug below. Set `repository_identity` to name `projectless-canary`, revision `not-applicable`, and working-tree state `no-repository`.
-- Set `task_identity.selected_at` to the actual UTC selection time within this task. Compute the canonical semantic-envelope digest exactly as the installed template specifies.
-- Root observation lists must equal the sorted unique union of their scenario-local counterparts. Record all gaps structurally and truthfully; a blocker remains a blocker.
+- For every `unknown` conditional trigger, create a gap linked to `conditional_dispositions.<skill>` or a descendant and cite that exact gap ID in the same disposition's evidence. Do not reuse an uncited generic gap. Missing delivery inputs are nonblocking when the installed profile and route remain truthfully selectable; `blocks-route` means the route itself cannot be selected safely.
+- A direct retrospective request may keep its required intake owner with outcome `unknown` only when a nonblocking `outcome_observation` gap is cited in `outcome_observation.evidence` and no findings are claimed.
+- Root observation lists must equal the sorted unique union of their scenario-local counterparts. Record all gaps structurally and truthfully; a real route-selection blocker remains a blocker.
+- After all semantic and observation fields are final, set `task_identity.selected_at` to the actual UTC selection time. Compute `source_observation_sha256` over the completed object excluding the entire `task_identity` field, using UTF-8 JSON with recursively sorted keys, compact separators, direct Unicode, and no trailing newline. Insert the digest, independently recompute it from the completed object with `task_identity` excluded, and return only after they match. If any included field changes, repeat both computations.
 
 Public run nonce: {public_run_nonce}
 Public receipt slug: {public_receipt_slug}

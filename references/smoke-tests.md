@@ -12,6 +12,8 @@ Only then compare the raw schema-v3 observation, carrying routing-contract versi
 
 Use the prompts below for post-install and decommission smoke tests. Record fresh behavior with the Live route receipt in [`../plugins/project-delivery/skills/.shared/artifact-templates.md`](../plugins/project-delivery/skills/.shared/artifact-templates.md).
 
+For every ordinary fresh-task prompt, prepend the exact expected installed cachebuster version and require the first line of the final callback to be `PROJECT_DELIVERY_VERSION=<expected-version>`. Check that line before interpreting any selector, icon, route, repository, or delivery result; a missing or different value invalidates the observation. The sealed route-policy task is the exception because it must return exactly one closed JSON object: validate its mechanically supplied `plugin_identity.installed_version` field instead.
+
 | Scenario | Semantic routing policy | Required artifacts/evidence |
 |---|---|---|
 | Clarify and plan this small bug fix | orchestrator planning-only → compact context → compact AC → design delta if needed → plan; stop without edits | problem/root-cause hypothesis, scope, AC, short ordered plan, targeted test and rollback note |
@@ -46,6 +48,7 @@ Before disabling a legacy workflow, inspect active `AGENTS.md` and repository in
 For each live smoke test, record:
 
 - exact prompt, repository revision, relevant instructions, task/model identity, timestamp, plugin source version, installation source, and installed cache identity;
+- expected cachebuster version and the callback's exact first-line `PROJECT_DELIVERY_VERSION` marker, or the sealed JSON equivalent;
 - lead and actual route; required/conditional capability dispositions; precedence/re-entry; loaded specialist paths; scale/risk; authority; artifacts expected/produced; commands/evidence; route and delivery results; and residual gaps;
 - whether a legacy identity was merely visible administratively versus actually invoked, requested, started as a hook/MCP/runtime, or used to create `.boss/`, `.harness/`, or `.superpowers/` state; and
 - whether connectors remained optional and unavailable operations were truthfully reported.
