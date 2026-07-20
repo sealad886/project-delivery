@@ -19,6 +19,7 @@ No changes yet.
 
 ### Changed
 
+- Bound ordinary fresh-task smoke callbacks to the exact expected installed cachebuster version, while keeping sealed JSON route receipts schema-valid through `plugin_identity.installed_version`.
 - Instructed the orchestrator to load selected sibling specialists directly from the installed plugin bundle when Codex's global initial skill-metadata budget omits their catalog entries, with unreadable specialists blocking the route.
 - Replaced exact total-array route grading with semantic capability, gate, authority, and evidence comparison.
 - Strengthened implementation and testing preflight for wrapper side effects such as signing, fixed temporary paths, deletion, credentials, network/provider access, packaging, publication, and deployment.
@@ -35,6 +36,8 @@ No changes yet.
 
 ### Fixed
 
+- Clarified direct-retrospective intake when outcome evidence is unavailable, exact unknown-branch gap citation, and the distinction between missing delivery inputs and route-selection blockers.
+- Made sealed grader tests independent of developer-specific global Git ignore configuration.
 - Prevented Codex's unfiltered local-source cache copy from installing `.git`, `.venv`, bytecode, repository workflows, tests, and maintainer-only evidence with Project Delivery.
 - Prevented an unsafe distribution refresh from erasing unrelated destination content or ignoring empty forbidden/undeclared directories.
 - Corrected missing coordination ownership for operational handoff, missing quality ownership for documentation validation, missing security ownership for distribution validation, premature release ordering, stale candidate-identity acceptance, blanket specialist-load claims, and prospective retrospective activation found by fresh-task and adversarial RC canaries.
