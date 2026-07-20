@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import subprocess
 import sys
@@ -11,11 +12,19 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).parents[1]
 PLUGIN_ROOT = REPOSITORY_ROOT / "plugins" / "project-delivery"
+SCRIPTS_ROOT = REPOSITORY_ROOT / "scripts"
+sys.path.insert(0, str(SCRIPTS_ROOT))
+
+from check_distribution_bundle import payload_sha256  # noqa: E402
+from check_distribution_bundle import select_paths  # noqa: E402
+
 CONTRACT_CHECKER = REPOSITORY_ROOT / "scripts" / "check_routes.py"
 RECEIPT_CHECKER = REPOSITORY_ROOT / "scripts" / "check_route_receipts.py"
 BLIND_FIXTURE = (
     REPOSITORY_ROOT / "tests" / "fixtures" / "blind-route-observations-v1.3.1.json"
 )
+TEST_SOURCE_REVISION = "0123456789abcdef0123456789abcdef01234567"
+PAYLOAD_HASH_METHOD = "project-delivery length-prefixed path-and-content sha256 v1"
 
 
 def run_contract_checker() -> subprocess.CompletedProcess[str]:
@@ -49,8 +58,35 @@ def run_contract_checker_with_contract(
 
 
 def run_receipt_checker(
-    receipts: dict[str, object], *, allow_historical: bool = True
+    receipts: dict[str, object],
+    *,
+    allow_historical: bool = True,
+    recompute_fresh_digest: bool = True,
 ) -> subprocess.CompletedProcess[str]:
+    if (
+        recompute_fresh_digest
+        and receipts.get("evidence_class") == "fresh-task semantic route observation"
+    ):
+        observation = {
+            field: receipts.get(field)
+            for field in (
+                "observation_scope",
+                "effects_performed",
+                "legacy_runtime_events",
+                "legacy_administrative_visibility",
+                "loaded_specialists",
+                "scenarios",
+            )
+        }
+        canonical = json.dumps(
+            observation,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+        receipts["task_identity"]["source_observation_sha256"] = hashlib.sha256(
+            canonical
+        ).hexdigest()
     with tempfile.TemporaryDirectory() as temporary:
         receipt_path = Path(temporary) / "receipts.json"
         receipt_path.write_text(json.dumps(receipts), encoding="utf-8")
@@ -64,6 +100,16 @@ def run_receipt_checker(
         ]
         if allow_historical:
             command.append("--allow-historical-annotations")
+        if receipts.get("evidence_class") == "fresh-task semantic route observation":
+            command.extend(
+                [
+                    "--allow-unsealed-fresh",
+                    "--installed-plugin-root",
+                    str(PLUGIN_ROOT),
+                    "--expected-source-revision",
+                    TEST_SOURCE_REVISION,
+                ]
+            )
         return subprocess.run(
             command,
             check=False,
@@ -101,7 +147,102 @@ def make_fresh_receipts(receipts: dict[str, object]) -> dict[str, object]:
     receipts["annotation_provenance"] = (
         "Synthetic fresh-task regression record with all semantic fields fixed before comparison."
     )
+    receipts["task_identity"] = {
+        field: receipts["task_identity"][field]
+        for field in (
+            "public_receipt_id",
+            "selected_at",
+            "source_observation_sha256",
+        )
+    }
+    manifest_path = PLUGIN_ROOT / ".codex-plugin" / "plugin.json"
+    manifest_bytes = manifest_path.read_bytes()
+    manifest = json.loads(manifest_bytes.decode("utf-8"))
+    receipts["plugin_identity"] = {
+        "name": manifest["name"],
+        "installed_version": manifest["version"],
+        "source_revision": TEST_SOURCE_REVISION,
+        "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+        "payload_sha256": payload_sha256(
+            PLUGIN_ROOT,
+            sorted(select_paths(PLUGIN_ROOT)),
+        ),
+        "payload_hash_method": PAYLOAD_HASH_METHOD,
+        "cache_relative_path": "plugins/project-delivery",
+    }
+    prompts = {
+        item["id"]: item["prompt"] for item in load_contracts()["scenarios"]
+    }
+    for item in receipts["scenarios"]:
+        item["prompt"] = prompts[item["id"]]
+        route = item["actual_route"]
+        if "retrospective-improvement" in route:
+            item["actual_route"] = [
+                skill for skill in route if skill != "retrospective-improvement"
+            ]
+        dispositions = item["conditional_dispositions"]
+        if "retrospective-improvement" in dispositions:
+            dispositions["retrospective-improvement"] = {
+                "state": "planned-future",
+                "rationale": (
+                    "Synthetic route-only fixture has no observed delivery outcome yet."
+                ),
+                "evidence": ["Synthetic delivery result remains not run."],
+            }
+    selected_skills = {
+        skill.removeprefix("project-delivery:")
+        for item in receipts["scenarios"]
+        for skill in item["actual_route"]
+    }
+    receipts["loaded_specialists"] = [
+        loaded
+        for loaded in receipts["loaded_specialists"]
+        if loaded["skill"] in selected_skills
+    ]
+    for loaded in receipts["loaded_specialists"]:
+        skill_path = PLUGIN_ROOT / loaded["relative_path"]
+        loaded["skill_sha256"] = hashlib.sha256(skill_path.read_bytes()).hexdigest()
+        loaded["evidence"] = [
+            "Synthetic fresh-task fixture records a complete read of this exact installed skill."
+        ]
     return receipts
+
+
+def set_fresh_scenarios(
+    receipts: dict[str, object],
+    scenarios: list[dict[str, object]],
+) -> None:
+    receipts["scenarios"] = scenarios
+    selected_skills = {
+        skill.removeprefix("project-delivery:")
+        for item in scenarios
+        for skill in item["actual_route"]
+    }
+    loaded_items = receipts["loaded_specialists"]
+    assert isinstance(loaded_items, list)
+    receipts["loaded_specialists"] = [
+        item for item in loaded_items if item["skill"] in selected_skills
+    ]
+    retained_skills = {
+        item["skill"] for item in receipts["loaded_specialists"]
+    }
+    for skill in sorted(selected_skills.difference(retained_skills)):
+        skill_path = PLUGIN_ROOT / "skills" / skill / "SKILL.md"
+        receipts["loaded_specialists"].append(
+            {
+                "skill": skill,
+                "relative_path": f"skills/{skill}/SKILL.md",
+                "state": "loaded",
+                "skill_sha256": hashlib.sha256(skill_path.read_bytes()).hexdigest(),
+                "evidence": [
+                    "Synthetic fresh-task fixture records a complete read of this exact installed skill."
+                ],
+            }
+        )
+    retained_skills = {
+        item["skill"] for item in receipts["loaded_specialists"]
+    }
+    assert retained_skills == selected_skills
 
 
 def scenario(receipts: dict[str, object], scenario_id: str) -> dict[str, object]:
@@ -133,8 +274,18 @@ def synthetic_policy_scenario(contract: dict[str, object]) -> dict[str, object]:
         owners = contract.get("required_reentry_after", {}).get(controller, [])
         if any(owner in route for owner in owners):
             route.append(controller)
+    for controller, owners in contract.get("required_final_after", {}).items():
+        selected_owners = [owner for owner in owners if owner in route]
+        if controller in route and selected_owners and max(
+            index for index, skill in enumerate(route) if skill == controller
+        ) <= max(
+            max(index for index, skill in enumerate(route) if skill == owner)
+            for owner in selected_owners
+        ):
+            route.append(controller)
     return {
         "id": contract["id"],
+        "prompt": contract["prompt"],
         "scale": contract["scale"],
         "risk": contract["risk"],
         "authority": contract["authority"],
@@ -146,8 +297,16 @@ def synthetic_policy_scenario(contract: dict[str, object]) -> dict[str, object]:
         "actual_route": route,
         "conditional_dispositions": {
             item["skill"]: {
-                "state": "not-applicable",
-                "rationale": "Synthetic policy test leaves this evidence-triggered branch inactive.",
+                "state": (
+                    "planned-future"
+                    if item["skill"] == "retrospective-improvement"
+                    else "not-applicable"
+                ),
+                "rationale": (
+                    "Synthetic route-only fixture has no observed delivery outcome yet."
+                    if item["skill"] == "retrospective-improvement"
+                    else "Synthetic policy test leaves this evidence-triggered branch inactive."
+                ),
                 "evidence": ["Synthetic route-policy regression fixture."],
             }
             for item in contract["conditional_capabilities"]
@@ -272,7 +431,7 @@ class RouteSemanticTests(unittest.TestCase):
             "release-change",
             "release-change",
         ]
-        receipts["scenarios"] = [package]
+        set_fresh_scenarios(receipts, [package])
         result = run_receipt_checker(receipts, allow_historical=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("does not enter before: testing-quality", result.stdout)
@@ -374,6 +533,28 @@ class RouteSemanticTests(unittest.TestCase):
         result = run_receipt_checker(receipts)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("blocked conditional branch", result.stdout)
+
+    def test_fresh_planned_future_retrospective_is_omitted_from_route(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        contract = scenario(load_contracts(), "ROUTE-016")
+        preview = synthetic_policy_scenario(contract)
+        preview["conditional_dispositions"]["retrospective-improvement"] = {
+            "state": "planned-future",
+            "rationale": "Learning remains conditional on a future preview outcome.",
+            "evidence": ["No delivery result exists in this route-only observation."],
+        }
+        set_fresh_scenarios(receipts, [preview])
+
+        result = run_receipt_checker(receipts, allow_historical=False)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+        preview["actual_route"].append("retrospective-improvement")
+        result = run_receipt_checker(receipts, allow_historical=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "fresh receipt includes future-only capability retrospective-improvement",
+            result.stdout,
+        )
 
     def test_conditional_disposition_requires_substantive_rationale(self) -> None:
         receipts = load_fixture()
@@ -518,6 +699,387 @@ class RouteSemanticTests(unittest.TestCase):
         self.assertIn("field scale must be a non-empty string", result.stdout)
         self.assertIn("field risk must be a non-empty string", result.stdout)
 
+    def test_contract_rejects_unknown_nested_fields(self) -> None:
+        contracts = load_contracts()
+        contracts["unexpected_root_metadata"] = True
+        item = scenario(contracts, "ROUTE-001")
+        item["unexpected_scenario_metadata"] = True
+        item["conditional_capabilities"][0]["unexpected_trigger_metadata"] = True
+
+        result = run_contract_checker_with_contract(contracts)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "route suite has unsupported fields: unexpected_root_metadata",
+            result.stdout,
+        )
+        self.assertIn(
+            "ROUTE-001 has unsupported fields: unexpected_scenario_metadata",
+            result.stdout,
+        )
+        self.assertIn(
+            "has unsupported fields: unexpected_trigger_metadata",
+            result.stdout,
+        )
+
+    def test_contract_rejects_noncanonical_taxonomy_tokens(self) -> None:
+        cases = (
+            ("scale", "Medium", "unsupported scale"),
+            ("risk", "medium/high", "unsupported risk"),
+            ("authority", "analysis-only", "unsupported authority"),
+        )
+        for field, value, expected in cases:
+            with self.subTest(field=field, value=value):
+                contracts = load_contracts()
+                scenario(contracts, "ROUTE-001")[field] = value
+                result = run_contract_checker_with_contract(contracts)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(expected, result.stdout)
+
+    def test_contract_rejects_invalid_final_after_policy(self) -> None:
+        cases = (
+            (
+                {"release-change": ["unknown-owner"]},
+                "references unselectable capabilities: unknown-owner",
+            ),
+            (
+                {"documentation-knowledge": ["testing-quality"]},
+                "final-after controller documentation-knowledge must be selectable",
+            ),
+        )
+        for final_after, expected in cases:
+            with self.subTest(final_after=final_after):
+                contracts = load_contracts()
+                scenario(contracts, "ROUTE-014")["required_final_after"] = final_after
+                result = run_contract_checker_with_contract(contracts)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(expected, result.stdout)
+
+    def test_fresh_receipt_requires_declared_lead_to_open_route(self) -> None:
+        cases = {
+            "ROUTE-014": ["release-change", "testing-quality", "release-change"],
+            "ROUTE-017": ["release-change", "testing-quality", "security-operations"],
+            "ROUTE-017C": ["testing-quality", "security-operations", "release-change"],
+        }
+        contracts = load_contracts()
+        for scenario_id, malformed_route in cases.items():
+            with self.subTest(scenario=scenario_id):
+                receipts = make_fresh_receipts(load_fixture())
+                contract = scenario(contracts, scenario_id)
+                item = synthetic_policy_scenario(contract)
+                item["actual_route"] = malformed_route
+                set_fresh_scenarios(receipts, [item])
+                result = run_receipt_checker(receipts, allow_historical=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("does not open with lead capability", result.stdout)
+
+    def test_fresh_receipt_binds_exact_prompt(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        scenario(receipts, "ROUTE-010")["prompt"] = (
+            "Investigate this incomplete idea and tell me what to build."
+        )
+        result = run_receipt_checker(receipts, allow_historical=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("prompt does not match the canonical blind prompt", result.stdout)
+
+    def test_fresh_observation_digest_is_recomputed(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        receipts["task_identity"]["source_observation_sha256"] = "0" * 64
+        result = run_receipt_checker(
+            receipts,
+            allow_historical=False,
+            recompute_fresh_digest=False,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("does not match the canonical fresh observation", result.stdout)
+
+    def test_fresh_loaded_specialist_binds_bytes_and_read_evidence(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        loaded = receipts["loaded_specialists"][0]
+        loaded["skill_sha256"] = "0" * 64
+        loaded["evidence"] = []
+        result = run_receipt_checker(receipts, allow_historical=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("lacks read evidence", result.stdout)
+        self.assertIn("does not match the inspected plugin", result.stdout)
+
+    def test_fresh_loaded_specialists_match_present_routes_exactly(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        contract = scenario(load_contracts(), "ROUTE-014")
+        item = synthetic_policy_scenario(contract)
+        all_load_records = copy.deepcopy(receipts["loaded_specialists"])
+        set_fresh_scenarios(receipts, [item])
+        selected = set(item["actual_route"])
+        extra_record = next(
+            load for load in all_load_records if load["skill"] not in selected
+        )
+        receipts["loaded_specialists"].append(extra_record)
+
+        result = run_receipt_checker(receipts, allow_historical=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "loaded_specialists contains skills absent from every actual route",
+            result.stdout,
+        )
+
+    def test_fresh_envelope_requires_exact_top_level_fields(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        del receipts["legacy_administrative_visibility"]
+        receipts["unexpected_internal_metadata"] = []
+
+        result = run_receipt_checker(receipts, allow_historical=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "fresh-task envelope missing fields: legacy_administrative_visibility",
+            result.stdout,
+        )
+        self.assertIn(
+            "fresh-task envelope has unsupported fields: unexpected_internal_metadata",
+            result.stdout,
+        )
+
+    def test_fresh_envelope_requires_exact_nested_fields(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        receipts["plugin_identity"]["unexpected_secret_metadata"] = "reject-me"
+        receipts["task_identity"]["thread_id"] = (
+            "019f7eca-80d8-7560-b47a-ef20a7dfbf96"
+        )
+        receipts["repository_identity"]["absolute_path"] = "/private/path"
+        receipts["loaded_specialists"][0]["tool_event"] = "unverified"
+        item = scenario(receipts, "ROUTE-014")
+        item["effects_performed"] = ["deployed-production"]
+        disposition = next(iter(item["conditional_dispositions"].values()))
+        disposition["unexpected_trigger_claim"] = True
+        item["actual_route"].append("documentation-knowledge")
+        item["extra_capability_justifications"]["documentation-knowledge"] = {
+            "rationale": "Synthetic extra route owner for nested-schema validation.",
+            "evidence": ["Synthetic evidence."],
+            "internal_task_id": "should-not-pass",
+        }
+
+        result = run_receipt_checker(receipts, allow_historical=False)
+        self.assertNotEqual(result.returncode, 0)
+        for expected in (
+            "plugin_identity has unsupported fields: unexpected_secret_metadata",
+            "task_identity has unsupported fields: thread_id",
+            "repository_identity has unsupported fields: absolute_path",
+            "loaded specialist 1 has unsupported fields: tool_event",
+            "ROUTE-014 receipt has unsupported fields: effects_performed",
+            "has unsupported fields: unexpected_trigger_claim",
+            "has unsupported fields: internal_task_id",
+        ):
+            with self.subTest(expected=expected):
+                self.assertIn(expected, result.stdout)
+
+    def test_fresh_route_only_receipt_rejects_activated_retrospective(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        contract = scenario(load_contracts(), "ROUTE-016")
+        preview = synthetic_policy_scenario(contract)
+        set_fresh_scenarios(receipts, [preview])
+        preview["actual_route"].append("retrospective-improvement")
+        preview["conditional_dispositions"]["retrospective-improvement"] = {
+            "state": "activated",
+            "rationale": "Synthetic mutation activates retrospective before an outcome exists.",
+            "evidence": ["Delivery remains not run in this route-only receipt."],
+        }
+
+        result = run_receipt_checker(receipts, allow_historical=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
+            "route-only retrospective must remain planned-future",
+            result.stdout,
+        )
+
+    def test_fresh_plugin_identity_is_bound_to_inspected_install(self) -> None:
+        cases = (
+            (
+                "installed_version",
+                "1.3.1",
+                "installed_version does not match the installed manifest",
+            ),
+            (
+                "source_revision",
+                "abcdef0123456789",
+                "source_revision does not match the expected release revision",
+            ),
+            (
+                "manifest_sha256",
+                "0" * 64,
+                "manifest_sha256 does not match the installed manifest",
+            ),
+            (
+                "payload_sha256",
+                "0" * 64,
+                "payload_sha256 does not match the installed payload",
+            ),
+            (
+                "payload_hash_method",
+                "unspecified hash",
+                "payload_hash_method does not match the canonical method",
+            ),
+            (
+                "cache_relative_path",
+                "plugins/cache/personal/project-delivery/wrong-version",
+                "cache_relative_path does not match the inspected root",
+            ),
+        )
+        for field, value, expected in cases:
+            with self.subTest(field=field):
+                receipts = make_fresh_receipts(load_fixture())
+                receipts["plugin_identity"][field] = value
+                result = run_receipt_checker(receipts, allow_historical=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(expected, result.stdout)
+
+    def test_task_identity_rejects_internal_ids_and_non_utc_time(self) -> None:
+        receipts = make_fresh_receipts(load_fixture())
+        receipts["task_identity"]["public_receipt_id"] = (
+            "019f7eca-80d8-7560-b47a-ef20a7dfbf96"
+        )
+        receipts["task_identity"]["selected_at"] = "July 20, 2026"
+        result = run_receipt_checker(receipts, allow_historical=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("without an internal identifier", result.stdout)
+        self.assertIn("must be a UTC ISO-8601 timestamp", result.stdout)
+
+    def test_observed_required_owner_omissions_fail(self) -> None:
+        cases = {
+            "ROUTE-006": "delivery-coordination",
+            "ROUTE-009": "testing-quality",
+            "ROUTE-017D": "security-operations",
+        }
+        contracts = load_contracts()
+        for scenario_id, omitted in cases.items():
+            with self.subTest(scenario=scenario_id, omitted=omitted):
+                receipts = make_fresh_receipts(load_fixture())
+                contract = scenario(contracts, scenario_id)
+                item = synthetic_policy_scenario(contract)
+                item["actual_route"] = [
+                    skill for skill in item["actual_route"] if skill != omitted
+                ]
+                set_fresh_scenarios(receipts, [item])
+                result = run_receipt_checker(receipts, allow_historical=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(f"misses required capabilities: {omitted}", result.stdout)
+
+    def test_final_release_disposition_must_follow_evidence_owners(self) -> None:
+        malformed_routes = {
+            "ROUTE-014": [
+                "testing-quality",
+                "release-change",
+                "testing-quality",
+            ],
+            "ROUTE-016": [
+                "delivery-orchestrator",
+                "project-context",
+                "requirements-acceptance",
+                "solution-design",
+                "security-operations",
+                "delivery-planning",
+                "implementation-execution",
+                "release-change",
+                "testing-quality",
+                "documentation-knowledge",
+                "review-audit",
+            ],
+            "ROUTE-017": [
+                "testing-quality",
+                "release-change",
+                "security-operations",
+            ],
+            "ROUTE-017C": [
+                "security-operations",
+                "testing-quality",
+                "release-change",
+                "testing-quality",
+            ],
+        }
+        contracts = load_contracts()
+        for scenario_id, malformed_route in malformed_routes.items():
+            with self.subTest(scenario=scenario_id):
+                receipts = make_fresh_receipts(load_fixture())
+                contract = scenario(contracts, scenario_id)
+                item = synthetic_policy_scenario(contract)
+                item["actual_route"] = malformed_route
+                set_fresh_scenarios(receipts, [item])
+                result = run_receipt_checker(receipts, allow_historical=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(
+                    f"{scenario_id} final release-change disposition does not follow",
+                    result.stdout,
+                )
+
+    def test_final_release_disposition_follows_activated_conditional_evidence(self) -> None:
+        cases = {
+            "ROUTE-017": (
+                [
+                    "testing-quality",
+                    "security-operations",
+                    "release-change",
+                    "documentation-knowledge",
+                ],
+                ["documentation-knowledge"],
+            ),
+            "ROUTE-017A": (
+                [
+                    "testing-quality",
+                    "release-change",
+                    "security-operations",
+                ],
+                ["release-change", "security-operations"],
+            ),
+            "ROUTE-017B": (
+                [
+                    "release-change",
+                    "testing-quality",
+                    "release-change",
+                    "security-operations",
+                ],
+                ["security-operations"],
+            ),
+            "ROUTE-017C": (
+                [
+                    "security-operations",
+                    "testing-quality",
+                    "release-change",
+                    "review-audit",
+                ],
+                ["review-audit"],
+            ),
+            "ROUTE-017D": (
+                [
+                    "release-change",
+                    "testing-quality",
+                    "security-operations",
+                    "release-change",
+                    "review-audit",
+                ],
+                ["review-audit"],
+            ),
+        }
+        contracts = load_contracts()
+        for scenario_id, (malformed_route, activated) in cases.items():
+            with self.subTest(scenario=scenario_id):
+                receipts = make_fresh_receipts(load_fixture())
+                contract = scenario(contracts, scenario_id)
+                item = synthetic_policy_scenario(contract)
+                item["actual_route"] = malformed_route
+                for skill in activated:
+                    item["conditional_dispositions"][skill] = {
+                        "state": "activated",
+                        "rationale": (
+                            "Synthetic evidence activates this decision-bearing branch "
+                            "before contract comparison."
+                        ),
+                        "evidence": ["Synthetic conditional-owner ordering evidence."],
+                    }
+                set_fresh_scenarios(receipts, [item])
+                result = run_receipt_checker(receipts, allow_historical=False)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(
+                    f"{scenario_id} final release-change disposition does not follow",
+                    result.stdout,
+                )
+
     def test_contract_rejects_malformed_scenario_id(self) -> None:
         contracts = load_contracts()
         scenario(contracts, "ROUTE-001")["id"] = "route one"
@@ -528,9 +1090,10 @@ class RouteSemanticTests(unittest.TestCase):
     def test_natural_package_controller_return_passes(self) -> None:
         receipts = make_fresh_receipts(load_fixture())
         contract = scenario(load_contracts(), "ROUTE-017B")
-        receipts["scenarios"] = [
+        set_fresh_scenarios(receipts, [
             {
                 "id": "ROUTE-017B",
+                "prompt": contract["prompt"],
                 "scale": contract["scale"],
                 "risk": contract["risk"],
                 "authority": contract["authority"],
@@ -557,19 +1120,19 @@ class RouteSemanticTests(unittest.TestCase):
                 "evidence": ["Synthetic route-policy regression fixture."],
                 "gaps": [],
             }
-        ]
+        ])
         result = run_receipt_checker(receipts, allow_historical=False)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_synthetic_route_policy_matrix_passes_all_21_contracts(self) -> None:
+    def test_synthetic_route_policy_matrix_passes_all_22_contracts(self) -> None:
         receipts = make_fresh_receipts(load_fixture())
         contracts = load_contracts()["scenarios"]
-        receipts["scenarios"] = [
+        set_fresh_scenarios(receipts, [
             synthetic_policy_scenario(contract) for contract in contracts
-        ]
+        ])
         result = run_receipt_checker(receipts, allow_historical=False)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("route_policy_records=21", result.stdout)
+        self.assertIn("route_policy_records=22", result.stdout)
 
     def test_mutation_does_not_modify_source_fixture(self) -> None:
         first = load_fixture()

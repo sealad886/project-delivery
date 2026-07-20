@@ -11,6 +11,23 @@ import time
 from pathlib import Path
 
 
+ALLOWED_SCALES = {
+    "large",
+    "medium",
+    "medium-or-large",
+    "risk-dependent",
+    "small",
+    "small-or-medium",
+}
+ALLOWED_RISKS = {
+    "critical",
+    "high",
+    "low",
+    "low-or-risk-dependent",
+    "medium",
+    "medium-or-high",
+    "risk-dependent",
+}
 ALLOWED_AUTHORITIES = {
     "change",
     "coordination-only",
@@ -18,7 +35,9 @@ ALLOWED_AUTHORITIES = {
     "documentation-change",
     "incident",
     "planning-only",
+    "report-only",
     "release-preparation",
+    "release-execution",
     "review-only",
 }
 REQUIRED_SCENARIO_FIELDS = {
@@ -37,11 +56,28 @@ REQUIRED_SCENARIO_FIELDS = {
     "required_evidence",
     "stop_conditions",
 }
+OPTIONAL_SCENARIO_FIELDS = {
+    "required_final_after",
+    "required_reentry",
+    "required_reentry_after",
+    "required_reentry_before",
+}
+ALLOWED_SCENARIO_FIELDS = REQUIRED_SCENARIO_FIELDS | OPTIONAL_SCENARIO_FIELDS
+CONTRACT_TOP_LEVEL_FIELDS = {
+    "comparison_policy",
+    "evidence_class",
+    "forbidden_runtime_dependencies",
+    "limitations",
+    "scenarios",
+    "schema_version",
+}
+CONTRACT_CONDITIONAL_FIELDS = {"skill", "when"}
 REQUIRED_SCENARIO_IDS = {f"ROUTE-{index:03d}" for index in range(1, 18)} | {
     "ROUTE-017A",
     "ROUTE-017B",
     "ROUTE-017C",
     "ROUTE-017D",
+    "ROUTE-018",
 }
 REQUIRED_SUPERSEDED_IDENTITIES = {"boss", "epic", "epic-harness", "superpowers"}
 SCENARIO_ID = re.compile(r"^ROUTE-[0-9]{3}[A-D]?$")
@@ -92,6 +128,21 @@ def validate(root: Path) -> tuple[list[str], int, set[str]]:
         contract = json.loads(contract_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
         return [f"invalid route contract file: {error}"], 0, set()
+
+    if not isinstance(contract, dict):
+        return ["route contract root must be an object"], 0, set()
+    missing_contract_fields = CONTRACT_TOP_LEVEL_FIELDS.difference(contract)
+    extra_contract_fields = set(contract).difference(CONTRACT_TOP_LEVEL_FIELDS)
+    if missing_contract_fields:
+        errors.append(
+            "route suite missing fields: "
+            + ", ".join(sorted(missing_contract_fields))
+        )
+    if extra_contract_fields:
+        errors.append(
+            "route suite has unsupported fields: "
+            + ", ".join(sorted(extra_contract_fields))
+        )
 
     if contract.get("schema_version") != 2:
         errors.append("route suite must use semantic schema version 2")
@@ -144,8 +195,13 @@ def validate(root: Path) -> tuple[list[str], int, set[str]]:
             errors.append(f"scenario {index} is not an object")
             continue
         missing = REQUIRED_SCENARIO_FIELDS.difference(scenario)
+        extra = set(scenario).difference(ALLOWED_SCENARIO_FIELDS)
         if missing:
             errors.append(f"{scenario_id} missing fields: {', '.join(sorted(missing))}")
+        if extra:
+            errors.append(
+                f"{scenario_id} has unsupported fields: {', '.join(sorted(extra))}"
+            )
         for field in ("id", "prompt", "scale", "risk"):
             value = scenario.get(field)
             if not isinstance(value, str) or not value.strip():
@@ -159,6 +215,10 @@ def validate(root: Path) -> tuple[list[str], int, set[str]]:
         seen_ids.add(scenario_id)
         if scenario.get("authority") not in ALLOWED_AUTHORITIES:
             errors.append(f"{scenario_id} has unsupported authority: {scenario.get('authority')}")
+        if scenario.get("scale") not in ALLOWED_SCALES:
+            errors.append(f"{scenario_id} has unsupported scale: {scenario.get('scale')}")
+        if scenario.get("risk") not in ALLOWED_RISKS:
+            errors.append(f"{scenario_id} has unsupported risk: {scenario.get('risk')}")
         for field in (
             "required_capabilities",
             "allowed_reentry",
@@ -191,6 +251,18 @@ def validate(root: Path) -> tuple[list[str], int, set[str]]:
                         f"{scenario_id} conditional capability {conditional_index} is not an object"
                     )
                     continue
+                missing_conditional = CONTRACT_CONDITIONAL_FIELDS.difference(item)
+                extra_conditional = set(item).difference(CONTRACT_CONDITIONAL_FIELDS)
+                if missing_conditional:
+                    errors.append(
+                        f"{scenario_id} conditional capability {conditional_index} "
+                        "missing fields: " + ", ".join(sorted(missing_conditional))
+                    )
+                if extra_conditional:
+                    errors.append(
+                        f"{scenario_id} conditional capability {conditional_index} "
+                        "has unsupported fields: " + ", ".join(sorted(extra_conditional))
+                    )
                 skill = item.get("skill")
                 when = item.get("when")
                 if not isinstance(skill, str) or not skill.strip():
@@ -375,6 +447,43 @@ def validate(root: Path) -> tuple[list[str], int, set[str]]:
             if controller in owners:
                 errors.append(
                     f"{scenario_id} entry-before controller {controller} cannot depend on itself"
+                )
+
+        final_after_value = scenario.get("required_final_after", {})
+        if not isinstance(final_after_value, dict):
+            errors.append(f"{scenario_id} required_final_after must be an object")
+            final_after_value = {}
+        for controller, owners_value in final_after_value.items():
+            owners = owners_value if isinstance(owners_value, list) else []
+            if (
+                not isinstance(controller, str)
+                or not isinstance(owners_value, list)
+                or not owners
+                or not all(isinstance(owner, str) and owner.strip() for owner in owners)
+            ):
+                errors.append(
+                    f"{scenario_id} final-after contract for {controller} must name owners"
+                )
+                continue
+            if controller not in selectable:
+                errors.append(
+                    f"{scenario_id} final-after controller {controller} must be selectable"
+                )
+            repeated_owners = duplicates(owners)
+            if repeated_owners:
+                errors.append(
+                    f"{scenario_id} repeats final-after owners for {controller}: "
+                    f"{', '.join(sorted(repeated_owners))}"
+                )
+            invalid_owners = set(owners).difference(selectable)
+            if invalid_owners:
+                errors.append(
+                    f"{scenario_id} final-after contract for {controller} references "
+                    "unselectable capabilities: " + ", ".join(sorted(invalid_owners))
+                )
+            if controller in owners:
+                errors.append(
+                    f"{scenario_id} final-after controller {controller} cannot depend on itself"
                 )
 
         precedence = scenario.get("precedence")

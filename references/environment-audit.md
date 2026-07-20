@@ -4,7 +4,7 @@ Audit date: 2026-07-19 through 2026-07-20. Sources were inspected statically; do
 
 ## Standalone plugin contract
 
-- The canonical package at `plugins/project-delivery/` contains one `.codex-plugin/plugin.json` manifest, 13 lifecycle skills, 13 agent manifests, 26 skill icons, two plugin icons, and three shared runtime documents under `skills/.shared/`.
+- The canonical package at `plugins/project-delivery/` contains one `.codex-plugin/plugin.json` manifest, 13 lifecycle skills, 13 agent manifests, 26 skill icons, two plugin icons, and four shared runtime documents (including the closed live-route schema) under `skills/.shared/`.
 - Project Delivery bundles no MCP server, app, hook, telemetry client, credential, binary, package dependency, or automatic external write.
 - Its validation scripts use Python's standard library. Development-only scanner tooling lives in the project `.venv` and is not required by the installed plugin.
 - External issue trackers, source hosts, document stores, communication tools, calendars, CI systems, deployment platforms, security tools, and memory systems are optional adapters. The core workflow remains useful when none is available.

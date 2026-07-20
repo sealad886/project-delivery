@@ -10,7 +10,7 @@ Read `../.shared/operating-model.md` and `../.shared/external-systems.md`; use t
 
 ## When to invoke
 
-Use when delivery state spans external systems; work items or milestones need synchronization; preparing or following up a meeting; producing stakeholder status; reconciling contradictory sources; communicating a release; or handling a tracker-, status-, meeting-, communication-, or coordination-only request. Invoke after planning and again at release/handoff when live state must change.
+Use when delivery state spans external systems; work items or milestones need synchronization; preparing or following up a meeting; producing stakeholder status; reconciling contradictory sources; communicating a release; completing an operational or stakeholder handoff; or handling a tracker-, status-, meeting-, communication-, or coordination-only request. Invoke after planning and again at release/handoff. The skill remains applicable to a handoff when live writes are unavailable or unauthorized: produce exact owners, artifacts, targets, payloads/drafts, and operations not performed.
 
 ## Inputs and evidence
 

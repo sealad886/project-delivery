@@ -10,7 +10,7 @@ Read `../.shared/operating-model.md`; use the release template in `../.shared/ar
 
 ## When to invoke
 
-Use for PR/branch integration strategy, failing CI, release preparation, version/changelog/release notes, deployment/cutover, migration, rollback, post-release verification, incident/hotfix follow-up, or release-only audit.
+Use for PR/branch integration strategy, failing CI, release preparation, version/changelog/release notes, deployment/cutover, migration, rollback, post-release verification, incident/hotfix follow-up, or release-only audit. Lead package-artifact and distribution/installability claim validation; for performance, flaky-CI, or combined platform claims, receive quality evidence before the release decision unless explicit incident/change-control entry requires an earlier controller pass.
 
 ## Inputs and evidence
 
@@ -29,6 +29,7 @@ Resolve exact change set/revision, host/provider and available read/write capabi
 9. Establish pre-release baseline and release-correlated observation: provider/source, environment, revision/release marker, query/metric, window, threshold, observed delta, redaction/limitations, and stop/rollback decision. Confirm alerts, support/runbooks, drain behavior, capacity/cost, and incident route.
 10. Produce a release gate decision. Preparation does not authorize merge/tag/push/publish/deploy, tracker updates, flag changes, or communications. Execute each action only under its authority; record timestamp, actor/tool, target, revision/artifact, result, readback where available, and rollback readiness. Include packaging/signing/notarization/distribution evidence when the platform requires it.
 11. Verify production/user outcome, not only pipeline success. If degraded: detect/contain → preserve timeline/evidence → mitigate/rollback → diagnose → repair → verify recovery → communicate when authorized → follow up.
+12. For a package-artifact review, enter to pin artifact identity, provenance, and decision scope, route fresh inspection and execution evidence to `testing-quality`, then return for the disposition. For distribution/installability, also require `security-operations` evidence before the return. Neither review sequence authorizes signing, notarization, publishing, deploying, distributing, installing, credential use, or external-state mutation.
 
 ## Outputs and handoff
 

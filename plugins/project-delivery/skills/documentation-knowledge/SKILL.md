@@ -23,12 +23,12 @@ Inspect repository documentation conventions, README/contributing, docs site/con
 3. Cover as applicable: usage/behavior, examples, configuration/defaults, API/data contracts, compatibility/deprecation, migration/rollback, architecture/ADR, development/test workflow, deployment/runbook/troubleshooting, dashboards/queries and stop/rollback triggers, security/privacy, feature-flag lifecycle/removal, environment/configuration identity, changelog/release notes, PR description, status/decision/assumption logs.
 4. Keep claims aligned with implementation and actual test/release evidence. Distinguish planned from released behavior and commands run from illustrative commands.
 5. Use repository terminology and navigation. Avoid plugin-branded project folders or private session details.
-6. Validate links, examples, generated docs, CLI help, docs builds, and version references using repository tools.
-7. Own the content, canonical-location choice, and validation for external documents, but route live external mutation through `delivery-coordination` for exact target resolution, capability discovery, authority, execution, and readback receipt. When live access is absent, produce the exact proposed update and record the operation not performed.
+6. Define the needed link, example, rendered-output, generated-doc, CLI-help, docs-build, and version-reference checks. Route executable or measurable validation through `testing-quality`; keep purely editorial inspection proportional and record what did not run.
+7. Own the content and canonical-location choice for external documents, but route handoff and live external mutation through `delivery-coordination` for exact target resolution, capability discovery, authority, execution, and readback receipt. When live access is absent, produce the exact proposed update and record the operation not performed.
 
 ## Outputs and handoff
 
-Updated/created/retired canonical artifacts, audience/change summary, validation results, stale/duplicate docs resolved, and remaining knowledge gaps. Handoff to `review-audit` and `release-change`; feed durable learning to `retrospective-improvement`.
+Updated/created/retired canonical artifacts, audience/change summary, validation results, stale/duplicate docs resolved, and remaining knowledge gaps. Handoff executable validation to `testing-quality`, operational/stakeholder handoff to `delivery-coordination`, completed evidence to `review-audit` and `release-change`, and durable learning to `retrospective-improvement`.
 
 ## Completion evidence
 

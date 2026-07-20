@@ -10,7 +10,7 @@ Read `../.shared/operating-model.md`.
 
 ## When to invoke
 
-Use for sensitive data, authentication/authorization, public/privileged interfaces, dependencies, infrastructure, migrations, high blast radius, reliability/incident work, explicit security review, or production release. Scale a compact checklist into a formal threat model/readiness review as risk rises.
+Use for sensitive data, authentication/authorization, public/privileged interfaces, dependencies, infrastructure, migrations, high blast radius, reliability/incident work, explicit security review, or production release. Lead signing/notarization claim audits; participate as a required evidence owner for combined platform and distribution/installability claims. Scale a compact checklist into a formal threat model/readiness review as risk rises.
 
 ## Inputs and evidence
 
@@ -26,6 +26,7 @@ Inspect repository/security/privacy policies, data flows/classification/retentio
 6. Define operational readiness: classified/redacted/access-controlled telemetry, secret-free logs, authenticated ingestion, actionable alerts/dashboards, ownership/on-call/support, runbooks, preview data/secrets isolation and teardown, incident/hotfix path, cost/capacity signals, and post-release verification.
 7. Validate with appropriate static/dynamic/dependency/config/IaC/permission tests, graceful-shutdown checks, and recovery/restore exercises. Calibrate severity using reachability, exploitability, impact, existing controls, and evidence.
 8. Close every candidate under the shared finding lifecycle. Suppression is evidence-based closure of a false positive, duplicate, or invalidated candidate—not risk acceptance—and requires closure category, exact rationale/counterevidence, affected sibling/variant checks, qualified reviewer/date, expiry or revalidation trigger, release treatment, residual uncertainty, and a canonical finding link for duplicates. Material uncertainty stays open or becomes deferred/blocked with an owner and next proof action. Specify remediation invariant, regression evidence, rollback, residual risk authority, and release-blocking decision.
+9. For signing/notarization or distribution evidence, inspect signatures, certificate/notarization state, provenance, permissions, access boundaries, and supply-chain exposure without private material. Under review authority, never sign, access signing credentials, submit for notarization, publish, deploy, install, or mutate the provider.
 
 ## Outputs and handoff
 

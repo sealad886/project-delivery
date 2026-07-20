@@ -10,7 +10,7 @@ Read `../.shared/operating-model.md`; use the test evidence template in `../.sha
 
 ## When to invoke
 
-Use after implementation, during planning/design to define strategy, when CI fails, for release gates, or for test-only/quality requests. Select depth from scale, blast radius, failure modes, and repository norms—not a universal coverage percentage.
+Use after implementation, during planning/design to define strategy, when CI fails, for release gates, or for test-only/quality requests. Lead flaky-CI triage, performance-only claims, and combined platform performance/packaging/signing/distribution evidence recovery. Select depth from scale, blast radius, failure modes, and repository norms—not a universal coverage percentage.
 
 ## Inputs and evidence
 
@@ -28,6 +28,7 @@ Expect exact target revision/diff and requirements/acceptance when available. In
 8. For performance/security claims, use representative measurements/tools and state limitations. Prove artifact freshness and identity; for leaks or ownership defects validate the offending path/invariant, not merely a smaller capture. A lack of findings is not proof of absence.
 9. Assess CI quality when relevant: reproducible lock/cache inputs, retained result artifacts, slow/flaky baseline, before/after duration and pass/retry metrics, and approval gates paired with restricted credentials. Select optional domain-specialist tools from the actual platform, but keep the evidence contract provider-neutral.
 10. Produce separate technical and authority gate decisions with residual gaps and release impact.
+11. For combined platform claims, establish the focused scenario and fresh artifact before handing security/signing concerns to `security-operations` and package/distribution decisions to `release-change`. Do not let a downstream release controller pre-judge missing quality evidence.
 
 ## Outputs and handoff
 

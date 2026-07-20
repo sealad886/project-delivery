@@ -16,7 +16,13 @@
 
 Codex may shorten descriptions or omit skills from its initial list when many skills are installed. The orchestrator must resolve selected Project Delivery specialists from their installed sibling paths and read their complete instructions before applying them. Initial-list visibility, explicit selector visibility, installed-file presence, successful specialist loading, and actual invocation are distinct evidence classes.
 
-A route is a set of capability owners plus gate constraints, not necessarily one exact linear sequence. Required specialists must be loaded and applied. Conditional specialists require an explicit `activated`, `not applicable`, `deferred`, or `blocked` disposition with evidence. Additional proportional safety work is allowed, and controller skills may re-enter after evidence recovery. Compare live behavior using required capabilities, forbidden capabilities, precedence, authority, conditional dispositions, and artifacts—not total-order string equality.
+A route is a set of capability owners plus gate constraints, not necessarily one exact linear sequence. Required specialists must be loaded and applied. Conditional specialists require an explicit `activated`, `not-applicable`, `deferred`, `blocked`, or `planned-future` disposition with evidence. Record each blind runtime trigger as a structured `trigger_evaluation`: `activated` requires `met`; `not-applicable` requires `not-met`; `deferred` permits `met` or `unknown`; `blocked` cannot pass; and `planned-future` requires `future-pending`. An `unknown` result requires a linked structured gap. The task derives trigger statements from installed runtime instructions and must not inspect or copy the hidden expected contract.
+
+`planned-future` is reserved for retrospective work when no meaningful outcome has happened: record it in the conditional disposition, omit it from the present `actual_route`, and do not describe it as loaded, applied, or completed. A meaningful pre-existing success, failure, cancellation, incident, or recovery may activate retrospective even though the route-only canary itself records `delivery_result: not-run`; that field denies canary delivery effects, not prior lifecycle outcomes. If outcome evidence is unknown, defer or block retrospective with a linked gap. A machine-comparable fresh receipt lists exactly the distinct specialists in its present routes as loaded—no blanket, exploratory, omitted, or future-only load claims. Additional proportional safety work is allowed, and controller skills may re-enter after evidence recovery. Compare live behavior using required capabilities, forbidden capabilities, precedence, authority, conditional dispositions, and artifacts—not total-order string equality.
+
+Fresh candidate evidence uses the closed schema-v3 observation plus two independently owned bindings: the external coordinator captures the exact raw observation bytes and launch identities before contract comparison, then the checker emits an independent grade linked to the raw observation, coordinator attestation, prompt-only manifest, expected contract, checker, installed payload, and source revision. The task's semantic freeze and instruction-closure declarations remain behavioral self-report; hashes bind bytes but do not prove model attention. Never promote an unattested schema-v3 record or deprecated schema-v2 self-attestation to candidate, release, or decommission proof.
+
+In an ordered route receipt, place the lead evidence owner immediately after `delivery-orchestrator` when the orchestrator is present. Do not move a controller ahead of that lead merely because the controller will make the eventual decision. Controller-first entry is valid only when immediate containment, explicit change control, or the declared route contract requires entry before evidence recovery; record both entry and final return when re-entry applies.
 
 A handoff names the next capability eligible to own unresolved work; it is not an unconditional command to invoke every downstream skill. The orchestrator or current controller applies route conditions, authority, lifecycle state, and existing evidence before selecting that owner.
 
@@ -31,6 +37,16 @@ Classify on two axes before routing.
 | Large | Cross-team/system/migration; multi-PR or multi-release | Formal brief, traceability, ADRs, RAID, milestones, dependency/critical path, staged release |
 
 Raise rigor for authentication/authorization, sensitive or regulated data, money, destructive migrations, public APIs, infrastructure, high blast radius, weak rollback, novel technology, irreversible decisions, concurrency, or production incidents. Lower ceremony only when evidence supports low risk—not merely because the diff is small.
+
+### Normalized route-receipt taxonomy
+
+Use normalized values when a route must be compared, audited, or handed between agents. Do not replace uncertainty with a guessed exact category.
+
+- Scale: `small`, `medium`, `large`, `small-or-medium`, `medium-or-large`, or `risk-dependent`.
+- Risk: `low`, `medium`, `high`, `critical`, `low-or-risk-dependent`, `medium-or-high`, or `risk-dependent`.
+- Authority: `report-only`, `planning-only`, `design-only`, `change`, `review-only`, `documentation-change`, `coordination-only`, `release-preparation`, `release-execution`, or `incident`.
+
+Use a range or `risk-dependent` when the prompt and inspected evidence do not resolve one exact value. Preserve the user's authority even when more work would be useful: implementation intent maps to `change`, release preparation does not become `release-execution`, and an assessment of a failed deployment maps to `incident` without silently granting rollback or redeployment authority. The route label classifies the workflow; it never grants a consequential effect. Separately record exact grants for repository edits, external reads/writes, merge, tag, publish, deploy, rollback, permission change, and communication. Put nuance and provisional assumptions in the rationale and evidence rather than inventing one-off taxonomy labels.
 
 ## Lifecycle gates
 
@@ -64,7 +80,7 @@ Prefer existing repository locations and formats. If none exist, use the templat
 - Coordination record: source-of-truth map, native status/ID mappings, freshness, conflicts, planned actions, authorization, and mutation receipts.
 - Security assessment: mode, target snapshot, reviewed/excluded/deferred surfaces, candidate closure, proof/counterevidence, validation, and residual risk.
 - Runtime/release evidence: focused scenario, exact revision/artifact/environment, source/query/window, baseline/threshold/result, limitations, and decision.
-- Route receipt: prompt, plugin/cache/task identity, lead and actual route, required/conditional capability dispositions, scale/risk, artifacts, authority decision, forbidden-dependency check, semantic comparison result, timestamp, and gaps.
+- Route evidence set: a blind schema-v3 observation (prompt, plugin/cache/public-task identity, lead and actual route, required/conditional dispositions, outcome/effect observations, taxonomy, authority, instruction closure, and structured gaps), a publishable coordinator byte/launch attestation, and an independent digest-linked grade.
 
 ## Release and provider evidence
 

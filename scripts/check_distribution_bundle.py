@@ -213,6 +213,7 @@ def validate_distribution_tree(
         "skills/.shared/operating-model.md",
         "skills/.shared/artifact-templates.md",
         "skills/.shared/external-systems.md",
+        "skills/.shared/live-route-receipt-v3.schema.json",
     ):
         if not (destination / required).is_file():
             errors.append(f"runtime closure is missing dependency: {required}")
@@ -417,7 +418,7 @@ def main(argv: list[str] | None = None) -> int:
     output = f" output={Path(args.output).expanduser().resolve()}" if args.output else ""
     print(
         f"PASS action={action} selected_files={selected_count} skills=13 "
-        f"shared_runtime=3 payload_sha256={digest}{output}"
+        f"shared_runtime=4 payload_sha256={digest}{output}"
     )
     return 0
 
