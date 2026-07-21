@@ -6,7 +6,7 @@ This file records user-visible changes to Project Delivery. Dates use ISO 8601 a
 
 No changes yet.
 
-## 1.4.0-rc.1 - 2026-07-20
+## 1.4.0 - 2026-07-21
 
 ### Added
 
@@ -41,6 +41,10 @@ No changes yet.
 - Prevented Codex's unfiltered local-source cache copy from installing `.git`, `.venv`, bytecode, repository workflows, tests, and maintainer-only evidence with Project Delivery.
 - Prevented an unsafe distribution refresh from erasing unrelated destination content or ignoring empty forbidden/undeclared directories.
 - Corrected missing coordination ownership for operational handoff, missing quality ownership for documentation validation, missing security ownership for distribution validation, premature release ordering, stale candidate-identity acceptance, blanket specialist-load claims, and prospective retrospective activation found by fresh-task and adversarial RC canaries.
+
+### Release-candidate provenance
+
+- Promoted the validated `1.4.0-rc.1` package and its incorporated canary remediations to the stable `1.4.0` contract without changing the plugin's public capability surface.
 
 ## 1.3.2 - 2026-07-19
 

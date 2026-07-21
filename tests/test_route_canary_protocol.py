@@ -96,8 +96,8 @@ class CanaryFixture:
         self.binding = self.control / "task-binding.json"
         self.observation = self.control / "raw-observation.bin"
         self.capture_output = self.control / "capture.json"
-        self.source_version = "1.4.0-rc.1"
-        self.prepared_version = "1.4.0-rc.1+codex.test-20260720"
+        self.source_version = "1.4.0"
+        self.prepared_version = "1.4.0+codex.test-20260721"
         self.installed = (
             self.root
             / ".codex"
