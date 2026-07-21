@@ -7,7 +7,9 @@
     {
       "name": "project-delivery",
       "source": {
-        "source": "local",
+        "source": "git-subdir",
+        "url": "https://github.com/sealad886/project-delivery.git",
+        "ref": "v1.4.0",
         "path": "./plugins/project-delivery"
       },
       "policy": {

@@ -53,6 +53,58 @@ class MarketplaceTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("escapes the repository", result.stdout)
 
+    def test_mutable_marketplace_ref_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "repository"
+            (root / ".agents" / "plugins").mkdir(parents=True)
+            shutil.copytree(
+                REPOSITORY_ROOT / "plugins" / "project-delivery",
+                root / "plugins" / "project-delivery",
+            )
+            shutil.copy2(REPOSITORY_ROOT / "LICENSE", root / "LICENSE")
+            marketplace = json.loads(
+                (REPOSITORY_ROOT / ".agents" / "plugins" / "marketplace.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            marketplace["plugins"][0]["source"]["ref"] = "main"
+            (root / ".agents" / "plugins" / "marketplace.json").write_text(
+                json.dumps(marketplace),
+                encoding="utf-8",
+            )
+
+            result = run_checker(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("must be immutable release 'v1.4.0'", result.stdout)
+
+    def test_wrong_marketplace_repository_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "repository"
+            (root / ".agents" / "plugins").mkdir(parents=True)
+            shutil.copytree(
+                REPOSITORY_ROOT / "plugins" / "project-delivery",
+                root / "plugins" / "project-delivery",
+            )
+            shutil.copy2(REPOSITORY_ROOT / "LICENSE", root / "LICENSE")
+            marketplace = json.loads(
+                (REPOSITORY_ROOT / ".agents" / "plugins" / "marketplace.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            marketplace["plugins"][0]["source"]["url"] = (
+                "https://github.com/example/project-delivery.git"
+            )
+            (root / ".agents" / "plugins" / "marketplace.json").write_text(
+                json.dumps(marketplace),
+                encoding="utf-8",
+            )
+
+            result = run_checker(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("source.url must be", result.stdout)
+
     def test_additional_marketplace_entry_fails(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "repository"
