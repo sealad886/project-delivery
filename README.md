@@ -46,7 +46,7 @@ For later iterations, add `--replace`. Replacement first proves that the destina
 
 Then use Codex's system Plugin Creator skill to validate, register, cachebust, and install the prepared `~/plugins/project-delivery` folder through the personal marketplace. Do not hand-edit Codex configuration. Start a fresh Codex task after each reinstall.
 
-The repository also carries marketplace metadata for Git-backed installation. Public marketplace entries should pin an immutable release commit and use `git-subdir` with `./plugins/project-delivery`.
+The repository also carries marketplace metadata for Git-backed installation. The public entry uses `git-subdir` with `./plugins/project-delivery` and is pinned to immutable stable release ref `v1.4.0`; future package releases must advance that ref in a separate untagged catalog commit after the new tag exists.
 
 ### Upgrade from the 1.3.x checkout layout
 

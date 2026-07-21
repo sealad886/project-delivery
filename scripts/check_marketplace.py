@@ -12,6 +12,10 @@ from pathlib import Path
 
 
 PLUGIN_NAME = "project-delivery"
+EXPECTED_SOURCE_TYPE = "git-subdir"
+EXPECTED_SOURCE_URL = "https://github.com/sealad886/project-delivery.git"
+EXPECTED_SOURCE_REF = "v1.4.0"
+EXPECTED_SOURCE_PATH = "./plugins/project-delivery"
 EXPECTED_LICENSE_SHA256 = "486b9c74f1d5bf1a5be12a8fe070db7cfad5a4901f083d4810a677b32f2d4993"
 EXPECTED_COPYRIGHT = "Copyright (c) 2026 Andrew Cox"
 
@@ -78,8 +82,22 @@ def validate_repository_marketplace(root: Path) -> list[str]:
     source = entry.get("source")
     if not isinstance(source, dict):
         return errors + ["marketplace plugin source must be an object"]
-    if source.get("source") != "local":
-        errors.append("repository marketplace source.source must be 'local'")
+    if source.get("source") != EXPECTED_SOURCE_TYPE:
+        errors.append(
+            f"repository marketplace source.source must be {EXPECTED_SOURCE_TYPE!r}"
+        )
+    if source.get("url") != EXPECTED_SOURCE_URL:
+        errors.append(
+            f"repository marketplace source.url must be {EXPECTED_SOURCE_URL!r}"
+        )
+    if source.get("ref") != EXPECTED_SOURCE_REF:
+        errors.append(
+            f"repository marketplace source.ref must be immutable release {EXPECTED_SOURCE_REF!r}"
+        )
+    if source.get("path") != EXPECTED_SOURCE_PATH:
+        errors.append(
+            f"repository marketplace source.path must be {EXPECTED_SOURCE_PATH!r}"
+        )
     plugin_root, path_errors = safe_source_path(root, source.get("path"))
     errors.extend(path_errors)
     if plugin_root is None:
@@ -144,7 +162,8 @@ def main(argv: list[str] | None = None) -> int:
         print("\n".join(f"ERROR {error}" for error in errors))
         return 1
     print(
-        "PASS marketplace=project-delivery target=plugins/project-delivery "
+        "PASS marketplace=project-delivery source=git-subdir "
+        "ref=v1.4.0 target=plugins/project-delivery "
         "policy=AVAILABLE/ON_INSTALL license_parity=true"
     )
     return 0
